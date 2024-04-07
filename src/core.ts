@@ -4,7 +4,6 @@ import {
   ArrayOrObject,
   Callback,
   HashFunction,
-  MingoError,
   Predicate,
   RawArray,
   RawObject,
@@ -20,6 +19,7 @@ import {
   isObjectLike,
   isOperator,
   isString,
+  MingoError,
   resolve
 } from "./util";
 

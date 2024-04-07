@@ -6,8 +6,15 @@ import {
   PipelineOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { MingoError, RawObject } from "../../types";
-import { assert, hashCode, isArray, isString, resolve } from "../../util";
+import { RawObject } from "../../types";
+import {
+  assert,
+  hashCode,
+  isArray,
+  isString,
+  MingoError,
+  resolve
+} from "../../util";
 import { $mergeObjects } from "../expression";
 
 interface InputExpr {

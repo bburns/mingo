@@ -3,12 +3,11 @@ import {
   AnyVal,
   Callback,
   GroupByOutput,
-  MingoError,
   RawArray,
   RawObject,
   WindowOperatorInput
 } from "../../types";
-import { groupBy, isEqual } from "../../util";
+import { groupBy, isEqual, MingoError } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
 import { isUnbounded } from "../pipeline/_internal";

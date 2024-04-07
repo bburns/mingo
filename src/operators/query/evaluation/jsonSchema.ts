@@ -1,7 +1,8 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
 import { Options } from "../../../core";
-import { AnyVal, MingoError, Predicate, RawObject } from "../../../types";
+import { AnyVal, Predicate, RawObject } from "../../../types";
+import { MingoError } from "../../../util";
 
 /**
  * Validate documents against the given JSON Schema.

@@ -1,7 +1,8 @@
 // Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Callback, MingoError, RawObject } from "../../../types";
+import { AnyVal, Callback, RawObject } from "../../../types";
+import { MingoError } from "../../../util";
 
 const FIXED_POINTS = {
   undefined: null,

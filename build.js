@@ -1,14 +1,30 @@
 const fs = require("fs");
 const path = require("path");
 const cp = require("child_process");
+const esbuild = require("esbuild");
+
 const glob = require("glob").globSync;
 const packageJson = require("./package.json");
 
+const SRC_FILES = glob("./src/**/*.ts");
 const OUT_DIR = path.resolve("build");
 const npmArgs = process.argv.slice(2);
 
 // .npmignore
 const NPM_IGNORE = [".*", "*.tgz", "node_modules", "package-lock.json"];
+
+/** Builds */
+function build() {
+  // generate minified output
+  for (const format of ["esm", "cjs"]) {
+    esbuild.buildSync({
+      entryPoints: SRC_FILES,
+      minify: true,
+      outdir: path.join(OUT_DIR, "dist", format),
+      format: format
+    });
+  }
+}
 
 /**
  * Create module in OUT_DIR
@@ -39,18 +55,14 @@ function createModule() {
   // add exports explicitly
   const files = Array.from(
     new Set(
-      glob("./src/**/*.ts")
-        .filter(s => !s.includes("_"))
-        .map(s => {
-          const d = path.dirname(s);
-          if (d === "src") return path.basename(s).slice(0, -3);
-          if (d.includes("init")) return s.slice(4, -3);
-          return d.slice(4);
-        })
+      SRC_FILES.filter(s => !s.includes("_")).map(s => {
+        const d = path.dirname(s);
+        if (d === "src") return path.basename(s).slice(0, -3);
+        if (d.includes("init")) return s.slice(4, -3);
+        return d.slice(4);
+      })
     )
   );
-
-  // console.log(files);
 
   packageJson.exports = {
     "./package.json": "./package.json"
@@ -61,10 +73,10 @@ function createModule() {
       name == "index" // root
         ? [name, "."]
         : name.startsWith("init") // side-effects
-        ? [name, `./${name}`]
-        : !name.includes("/") // top-level
-        ? [name, `./${name}`]
-        : [`${name}/index`, `./${name}`]; //nested parents
+          ? [name, `./${name}`]
+          : !name.includes("/") // top-level
+            ? [name, `./${name}`]
+            : [`${name}/index`, `./${name}`]; //nested parents
 
     const typesPath = `./dist/types/${outFile}.d.ts`;
     const cjsPath = `./dist/cjs/${outFile}.js`;
@@ -103,6 +115,7 @@ function createModule() {
 }
 
 function main() {
+  build();
   createModule();
 
   if (npmArgs.length) {

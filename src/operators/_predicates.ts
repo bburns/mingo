@@ -14,7 +14,6 @@ import {
   BsonType,
   Callback,
   JsType,
-  MingoError,
   Predicate,
   RawArray,
   RawObject
@@ -41,6 +40,7 @@ import {
   MAX_LONG,
   MIN_INT,
   MIN_LONG,
+  MingoError,
   resolve,
   truthy
 } from "../util";

@@ -8,8 +8,8 @@
   "scripts": {
     "prepare": "husky install",
     "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
-    "compile": "tsc && tsc --build tsconfig.cjs.json",
-    "build": "npm run clean && npm run compile && node ./build.js",
+    "build": "npm run clean && node ./build.js",
+    "postbuild": "tsc",
     "clean": "rm -fr build",
     "test": "jest",
     "release": "npm run test && npm run build && cd build && npm publish",
@@ -31,6 +31,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "ajv": "^8.12.0",
+    "esbuild": "^0.20.2",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.28.1",
@@ -44,7 +45,7 @@
     "perf_hooks": "^0.0.1",
     "prettier": "^3.0.0",
     "ts-jest": "^29.0.3",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
     "typescript": "^5.2.2"
   },

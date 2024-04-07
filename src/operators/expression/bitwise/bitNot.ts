@@ -1,8 +1,8 @@
 // Bitwise Operators: https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitNot/#mongodb-expression-exp
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, MingoError, RawObject } from "../../../types";
-import { isNil, isNumber } from "../../../util";
+import { AnyVal, RawObject } from "../../../types";
+import { isNil, isNumber, MingoError } from "../../../util";
 
 /**
  * Returns the result of a bitwise not operation on a single argument or an array that contains a single int or long value.

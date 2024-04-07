@@ -94,6 +94,3 @@ export interface WindowOperatorInput {
   readonly documentNumber: number;
   readonly field: string;
 }
-
-/** Represents an error reported by the mingo library. */
-export class MingoError extends Error {}

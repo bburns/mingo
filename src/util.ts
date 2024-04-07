@@ -10,10 +10,12 @@ import {
   GroupByOutput,
   HashFunction,
   JsType,
-  MingoError,
   RawArray,
   RawObject
 } from "./types";
+
+/** Represents an error reported by the mingo library. */
+export class MingoError extends Error {}
 
 export const MAX_INT = 2147483647;
 export const MIN_INT = -2147483648;

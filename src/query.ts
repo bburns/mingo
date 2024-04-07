@@ -7,8 +7,15 @@ import {
 } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { AnyVal, Callback, MingoError, Predicate, RawObject } from "./types";
-import { assert, inArray, isObject, isOperator, normalize } from "./util";
+import { AnyVal, Callback, Predicate, RawObject } from "./types";
+import {
+  assert,
+  inArray,
+  isObject,
+  isOperator,
+  MingoError,
+  normalize
+} from "./util";
 
 /**
  * An object used to filter input documents

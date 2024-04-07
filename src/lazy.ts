@@ -1,11 +1,5 @@
-import {
-  AnyVal,
-  Callback,
-  MingoError,
-  Predicate,
-  RawArray,
-  RawObject
-} from "./types";
+import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
+import { MingoError } from "./util";
 
 interface Iteratee {
   action: Action;
