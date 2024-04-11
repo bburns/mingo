@@ -33,14 +33,6 @@ const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 
 type Constructor = new (...args: RawArray) => AnyVal;
-class Null {}
-class Undefined {}
-
-const getConstructor = (v: AnyVal): Constructor => {
-  if (v === null) return Null;
-  if (v === undefined) return Undefined;
-  return v.constructor as Constructor;
-};
 
 /**
  * Uses the simple hash method as described in Effective Java.
@@ -73,50 +65,6 @@ const JS_SIMPLE_TYPES = new Set<JsType>([
   "date",
   "regexp"
 ]);
-
-const IMMUTABLE_TYPES_SET = new Set([Undefined, Null, Boolean, String, Number]);
-
-/** Convert simple value to string representation. */
-const toString = (v: AnyVal) => (v as string).toString(); // eslint-disable-line @typescript-eslint/no-base-to-string
-/** Convert a typed array to string representation. */
-const typedArrayToString = (v: AnyVal) =>
-  `${getConstructor(v).name}[${v.toString()}]`; // eslint-disable-line @typescript-eslint/no-base-to-string
-/** Map of constructors to string converter functions */
-const STRING_CONVERTERS = new Map<AnyVal, Callback<string>>([
-  [Number, toString],
-  [Boolean, toString],
-  [RegExp, toString],
-  [Function, toString],
-  [Symbol, toString],
-  [Date, (d: Date) => d.toISOString()],
-  [String, JSON.stringify],
-  [Null, (_: AnyVal) => "null"],
-  [Undefined, (_: AnyVal) => "undefined"],
-  [Int8Array, typedArrayToString],
-  [Uint8Array, typedArrayToString],
-  [Uint8ClampedArray, typedArrayToString],
-  [Int16Array, typedArrayToString],
-  [Uint16Array, typedArrayToString],
-  [Int32Array, typedArrayToString],
-  [Uint32Array, typedArrayToString],
-  [Float32Array, typedArrayToString],
-  [Float64Array, typedArrayToString]
-]);
-
-/**
- * Some types like BigInt are not available on more exotic
- * JavaScript runtimes like ReactNative or QuickJS.
- * So we fill them in only if they exist so that it does not throw an error.
- */
-if (typeof BigInt !== "undefined") {
-  STRING_CONVERTERS.set(BigInt, (n: bigint) => "0x" + n.toString(16));
-}
-if (typeof BigInt64Array !== "undefined") {
-  STRING_CONVERTERS.set(BigInt64Array, typedArrayToString);
-}
-if (typeof BigUint64Array !== "undefined") {
-  STRING_CONVERTERS.set(BigUint64Array, typedArrayToString);
-}
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
 const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
@@ -163,44 +111,6 @@ export const compare = <T = AnyVal>(a: T, b: T): number => {
 export function assert(condition: boolean, message: string): void {
   if (!condition) throw new MingoError(message);
 }
-
-const isTypedArray = (v: AnyVal): boolean =>
-  typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
-
-/**
- * Deep clone an object. Value types and immutable objects are returned as is.
- */
-export const cloneDeep = (obj: AnyVal): AnyVal => {
-  if (IMMUTABLE_TYPES_SET.has(getConstructor(obj))) return obj;
-  const cycle = new Set();
-  const clone = (val: AnyVal): AnyVal => {
-    if (cycle.has(val)) throw CYCLE_FOUND_ERROR;
-    const ctor = getConstructor(val);
-    if (IMMUTABLE_TYPES_SET.has(ctor)) return val;
-    try {
-      // arrays
-      if (isArray(val)) {
-        cycle.add(val);
-        return val.map(clone) as AnyVal;
-      }
-      // object literals
-      if (isObject(val)) {
-        cycle.add(val);
-        const res = {};
-        for (const k in val) res[k] = clone(val[k]);
-        return res;
-      }
-    } finally {
-      cycle.delete(val);
-    }
-    // dates, regex, typed arrays
-    if (ctor === Date || ctor === RegExp || isTypedArray(val)) {
-      return new ctor(val);
-    }
-    return val;
-  };
-  return clone(obj);
-};
 
 /**
  * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
@@ -251,6 +161,35 @@ export const ensureArray = <T>(x: T | T[]): T[] =>
 
 export const has = (obj: object, prop: string): boolean =>
   !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
+
+const isTypedArray = (v: AnyVal): boolean =>
+  typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
+
+const INSTANCE_CLONE = [isDate, isRegExp, isTypedArray];
+const cloneInternal = (val: AnyVal, refs: Set<AnyVal>): AnyVal => {
+  if (isNil(val)) return val;
+  if (refs.has(val)) throw CYCLE_FOUND_ERROR;
+  const ctor = val.constructor as Constructor;
+  if (INSTANCE_CLONE.some(f => f(val))) return new ctor(val);
+  try {
+    refs.add(val);
+    if (isArray(val)) return val.map(v => cloneInternal(v, refs)) as AnyVal;
+    if (isObject(val)) {
+      const res = {};
+      for (const k in val) res[k] = cloneInternal(val[k], refs);
+      return res;
+    }
+  } finally {
+    refs.delete(val);
+  }
+  // primitive, non-buffer reference, or custom type
+  return val;
+};
+
+/**
+ * Deep clone an object. Value types and immutable objects are returned as is.
+ */
+export const cloneDeep = (obj: AnyVal): AnyVal => cloneInternal(obj, new Set());
 
 /** Options to merge function */
 interface MergeOptions {
@@ -538,6 +477,61 @@ export function unique(
   return result.filter(v => v !== MISSING);
 }
 
+type HasToString = { toString(): string };
+const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
+  if (v === null) return "null";
+  if (v === undefined) return "undefined";
+  const ctor = v.constructor;
+  switch (ctor) {
+    case RegExp:
+    case Number:
+    case Boolean:
+    case Function:
+    case Symbol:
+      return (v as HasToString).toString();
+    case String:
+      return JSON.stringify(v);
+    case Date:
+      return (v as Date).toISOString();
+  }
+  if (isTypedArray(v))
+    return ctor.name + "[" + (v as HasToString).toString() + "]";
+  if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
+  try {
+    cycle.add(v);
+    if (isArray(v)) {
+      return "[" + v.map(s => toString(s, cycle)).join(",") + "]";
+    }
+    if (ctor === Object) {
+      return (
+        "{" +
+        Object.keys(v)
+          .sort()
+          .map(k => k + ":" + toString(v[k], cycle))
+          .join(",") +
+        "}"
+      );
+    }
+
+    // use toString represenation of custom-type
+    const proto = Object.getPrototypeOf(v) as object;
+    if (
+      proto !== Object.prototype &&
+      proto !== Array.prototype &&
+      (Object.prototype.hasOwnProperty.call(proto, "toString") as boolean)
+    ) {
+      return (
+        ctor.name + "(" + JSON.stringify((v as HasToString).toString()) + ")"
+      );
+    }
+    // no toString() for custom object, so process all members.
+    const [members, _] = getMembersOf(v);
+    return ctor.name + toString(members, cycle);
+  } finally {
+    cycle.delete(v);
+  }
+};
+
 /**
  * Encode value to string using a simple non-colliding stable scheme.
  * Handles user-defined types by processing keys on first non-empty prototype.
@@ -546,58 +540,7 @@ export function unique(
  * @param value The value to convert to a string representation.
  * @returns {String}
  */
-export function stringify(value: AnyVal): string {
-  const cycle = new Set();
-  // stringify with cycle check
-  const str = (v: AnyVal): string => {
-    const ctor = getConstructor(v);
-    // string convertable types
-    if (STRING_CONVERTERS.has(ctor)) {
-      return STRING_CONVERTERS.get(ctor)(v);
-    }
-
-    const tag = ctor === Object ? "" : ctor.name;
-    // handle JSONable objects.
-    if (isFunction((v as RawObject)["toJSON"])) {
-      return `${tag}(${JSON.stringify(v)})`;
-    }
-
-    // handle cycles
-    if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
-    cycle.add(v);
-
-    try {
-      // handle array
-      if (ctor === Array) {
-        return "[" + (v as RawArray).map(str).join(",") + "]";
-      }
-
-      // handle user-defined object
-      if (ctor !== Object) {
-        // handle user-defined types or object literals.
-        const [members, _] = getMembersOf(v);
-        // custom type derived from array.
-        if (isArray(v)) {
-          // include other members as part of array elements.
-          return `${tag}${str([...(v as RawArray), members])}`;
-        }
-        // get members as literal
-        v = members;
-      }
-      const objKeys = Object.keys(v);
-      objKeys.sort();
-      return (
-        `${tag}{` +
-        objKeys.map(k => `${k}:${str((v as RawObject)[k])}`).join(",") +
-        "}"
-      );
-    } finally {
-      cycle.delete(v);
-    }
-  };
-  // convert to string
-  return str(value);
-}
+export const stringify = (value: AnyVal): string => toString(value, new Set());
 
 /**
  * Generate hash code
