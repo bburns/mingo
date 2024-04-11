@@ -46,6 +46,10 @@ export const testPath = (filename: string): string =>
 export class ObjectId {
   constructor(readonly _id: string) {}
 
+  toString() {
+    return this._id;
+  }
+
   toJSON(): string {
     return this._id;
   }

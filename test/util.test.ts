@@ -73,7 +73,7 @@ describe("util", () => {
       ],
       [() => void {}, () => void {}, false],
       [RegExp, RegExp, true],
-      [new ObjectId("100"), new ObjectId("100"), false]
+      [new ObjectId("100"), new ObjectId("100"), true]
     ])("should check: %p == %p", (a, b, c) => {
       expect(isEqual(a, b)).toEqual(c);
     });
@@ -287,7 +287,7 @@ describe("util", () => {
     });
 
     it("preserves other keys of the resolved object graph", () => {
-      const result = resolveGraph(doc, "b.e.1", { preserveKeys: true })!;
+      const result = resolveGraph(doc, "b.e.1", { preserveKeys: true });
       expect({ a: 1, b: { c: 2, d: ["hello"], e: [2] } }).toEqual(result);
       expect(doc).toEqual(sameDoc);
 

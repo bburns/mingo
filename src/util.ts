@@ -29,8 +29,6 @@ const CYCLE_FOUND_ERROR = Object.freeze(
   new Error("mingo: cycle detected while processing object/array")
 ) as Error;
 
-const ARRAY_PROTO = Object.getPrototypeOf([]) as AnyVal;
-const OBJECT_PROTO = Object.getPrototypeOf({}) as AnyVal;
 const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 
@@ -166,10 +164,8 @@ export function assert(condition: boolean, message: string): void {
   if (!condition) throw new MingoError(message);
 }
 
-const isTypedArray = (v: AnyVal): boolean => {
-  const proto = Object.getPrototypeOf(getConstructor(v)) as Callback;
-  return proto && proto.name === "TypedArray";
-};
+const isTypedArray = (v: AnyVal): boolean =>
+  typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
 
 /**
  * Deep clone an object. Value types and immutable objects are returned as is.
@@ -226,7 +222,7 @@ export const isObject = (v: AnyVal): v is object => {
   if (!v) return false;
   const proto = Object.getPrototypeOf(v) as AnyVal;
   return (
-    (proto === OBJECT_PROTO || proto === null) &&
+    (proto === Object.prototype || proto === null) &&
     OBJECT_TAG === Object.prototype.toString.call(v)
   );
 };
@@ -253,7 +249,7 @@ export const isMissing = (v: AnyVal): boolean => v === MISSING;
 export const ensureArray = <T>(x: T | T[]): T[] =>
   x instanceof Array ? x : [x];
 
-export const has = (obj: RawObject, prop: string): boolean =>
+export const has = (obj: object, prop: string): boolean =>
   !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
 
 /** Options to merge function */
@@ -465,7 +461,11 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
   // save effective prototype
   let activeProto = proto;
   // traverse the prototype hierarchy until we get property names or hit the bottom prototype.
-  while (!names.length && proto !== OBJECT_PROTO && proto !== ARRAY_PROTO) {
+  while (
+    !names.length &&
+    proto !== Object.prototype &&
+    proto !== Array.prototype
+  ) {
     activeProto = proto;
     names = Object.getOwnPropertyNames(proto);
     proto = Object.getPrototypeOf(proto);
@@ -475,6 +475,8 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
   return [o, activeProto];
 };
 
+type Stringer = { toString(): string };
+
 /**
  * Determine whether two values are the same or strictly equivalent.
  * Checking whether values are the same only applies to built in objects.
@@ -483,56 +485,41 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
  *
  * @param  {*}  a The first value
  * @param  {*}  b The second value
- * @return {Boolean}   Result of comparison
+ * @return {Boolean} True if value contents are the same, false otherwise.
  */
 export function isEqual(a: AnyVal, b: AnyVal): boolean {
-  const stack = [[a, b]];
-  while (stack.length > 0) {
-    [a, b] = stack.pop();
-
-    // strictly equal must be equal. matches referentially equal values.
-    if (Object.is(a, b)) continue;
-
-    // unequal types and functions (unless referentially equivalent) cannot be equal.
-    const ctor = getConstructor(a);
-    if (ctor !== getConstructor(b) || isFunction(a)) return false;
-
-    // string convertable types
-    if (STRING_CONVERTERS.has(ctor)) {
-      const str = STRING_CONVERTERS.get(ctor);
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      if (str(a) !== str(b)) return false;
-      // values are equal, so move next
-      continue;
-    }
-
-    // handle array and object types
-    if (ctor === Array || ctor === Object) {
-      const aKeys = Object.keys(a);
-      const bKeys = Object.keys(b);
-      if (aKeys.length !== bKeys.length) return false;
-      if (new Set([...aKeys, ...bKeys]).size != aKeys.length) return false;
-      for (const k of aKeys) {
-        if (Object.is(a[k], b[k])) continue;
-        const f = getConstructor(a[k]);
-        if (f !== getConstructor(b[k]) || isFunction(a[k])) return false;
-        const str = STRING_CONVERTERS.get(f);
-        if (!str) {
-          stack.push([a[k], b[k]]); // complex object, skip for later
-        } else if (str(a[k]) !== str(b[k])) {
-          return false; // fast path
-        }
-      }
-
-      // move next
-      continue;
-    }
-    // user-defined type detected.
-    // we don't try to compare user-defined types (even though we could...shhhh).
+  // strictly equal must be equal. matches referentially equal values.
+  if (a === b || Object.is(a, b)) return true;
+  // get the constructor for non-nil values
+  const ctor = (!!a && a.constructor) || a;
+  // cannot be equal given first constraint
+  if (
+    a === null ||
+    b === null ||
+    a === undefined ||
+    b === undefined ||
+    ctor !== b.constructor ||
+    ctor === Function
+  ) {
     return false;
   }
-  // nothing left to compare
-  return !stack.length;
+  // iterate array or object keys to compare them
+  if (ctor === Array || ctor === Object) {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    if (aKeys.length !== bKeys.length) return false;
+    if (new Set([...aKeys, ...bKeys]).size != aKeys.length) return false;
+    for (const k of aKeys) if (!isEqual(a[k], b[k])) return false;
+    return true;
+  }
+  // toString() compare all supported types including custom ones.
+  const proto = Object.getPrototypeOf(a) as object;
+  const cmp =
+    isTypedArray(a) ||
+    (proto !== Object.prototype &&
+      proto !== Array.prototype &&
+      (Object.prototype.hasOwnProperty.call(proto, "toString") as boolean));
+  return cmp && (a as Stringer).toString() === (b as Stringer).toString();
 }
 
 /**
