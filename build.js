@@ -19,7 +19,6 @@ function build() {
   for (const format of ["esm", "cjs"]) {
     esbuild.buildSync({
       entryPoints: SRC_FILES,
-      minify: true,
       outdir: path.join(OUT_DIR, "dist", format),
       format: format
     });
