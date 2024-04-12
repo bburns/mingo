@@ -15,41 +15,19 @@ MongoDB query language for in-memory objects
 
 ## Features
 
-- Supports dot notation for both _`<array>.<index>`_ and _`<document>.<field>`_ selectors.
-- Query and Projection Operators.
-  - [Array Operators](https://docs.mongodb.com/manual/reference/operator/query-array/)
-  - [Bitwise Operators](https://docs.mongodb.com/manual/reference/operator/query-bitwise/)
-  - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/query-comparison/)
-  - [Element Operators](https://docs.mongodb.com/manual/reference/operator/query-element/)
-  - [Evaluation Operators](https://docs.mongodb.com/manual/reference/operator/query-evaluation/)
-  - [Logical Operators](https://docs.mongodb.com/manual/reference/operator/query-logical/)
-  - [Projection Operators](https://docs.mongodb.com/manual/reference/operator/projection/)
-- Aggregation Framework Operators
-  - [Pipeline Operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
-  - [Accumulator Operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
-  - [Expression Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
-    - [Arithmetic Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators)
-    - [Array Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators/)
-    - [Bitwise Operators](https://www.mongodb.com/docs/manual/reference/operator/aggregation/#bitwise-operators)
-    - [Boolean Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators/)
-    - [Comparisons Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators/)
-    - [Conditional Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators/)
-    - [Custom Aggregation Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators)
-    - [Date Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators/)
-    - [Literal Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operators/)
-    - [Miscellaneous Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators)
-    - [Object Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators)
-    - [Set Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators/)
-    - [String Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators)
-    - [Trignometry Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators)
-    - [Type Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators)
-    - [Variable Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators)
-  - [Window Operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
-- Supports aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
+- Dot notation selectors. _`<array>.<index>`_ and _`<document>.<field>`_.
+- Query and Projection [operators](https://www.mongodb.com/docs/manual/reference/operator/.query/).
+- Aggregation Framework.
+  - [Pipeline operators](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/)
+  - [Accumulator operators](https://docs.mongodb.com/manual/reference/operator/aggregation#accumulators-group/)
+  - [Expression operators](https://docs.mongodb.com/manual/reference/operator/aggregation/#expression-operators)
+  - [Window operators](https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/#window-operators)
+- Aggregaion variables; [`$$ROOT`, `$$CURRENT`, `$$DESCEND`, `$$PRUNE`, `$$KEEP`, `$$REMOVE`, `$$NOW`](https://docs.mongodb.com/manual/reference/aggregation-variables/)
 - Filtering and aggregation using streaming.
-- ✨**NEW**✨ Support for [Update Operators](https://www.mongodb.com/docs/manual/reference/operator/update/). See [Updating Documents](#updating-documents).
+- Document [update](https://www.mongodb.com/docs/manual/reference/operator/update/) support. See [Updating Documents](#updating-documents).
+- Custom type value equality using `toString` when implemented.
 
-For documentation on using operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/)
+For more documentation on how to use operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/).
 
 Browse [package docs](http://kofrasa.net/mingo/) for modules.
 
@@ -238,11 +216,11 @@ Query and aggregation operations can be configured with options to enabled diffe
 | useStrictMode       | Enforces strict MongoDB compatibilty.                                                                                                  | true                                                                 | When disabled, behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><ul>                                                             |
 | scriptEnabled       | Enable or disable using custom script execution.                                                                                       | true                                                                 | When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`.                                                                                                                                                                                                                                |
 | hashFunction        | Custom hash function to replace the default based on "Effective Java" hashCode.                                                        | _default_                                                            | Expects function `(value: unknown) => number`.                                                                                                                                                                                                                                                                                                      |
-| collectionResolver  | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_                                                               | Expects function `(name: string) => RawObject[]`                                                                                                                                                                                                                                                                                               |
-| jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator.                                                                           | _none_                                                               | Expects function `(schema: RawObject) => (document: RawObject) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided.                                                                                                                                                                                            |
+| collectionResolver  | Function to resolve strings to arrays for use with operators that reference other collections such as; `$lookup`, `$out` and `$merge`. | _none_                                                               | Expects function `(name: string) => RawObject[]`                                                                                                                                                                                                                                                                                                    |
+| jsonSchemaValidator | JSON schema validator to use for the `$jsonSchema` operator.                                                                           | _none_                                                               | Expects function `(schema: RawObject) => (document: RawObject) => boolean`.<br> The `$jsonSchema` operation would fail if a validator is not provided.                                                                                                                                                                                              |
 | variables           | Global variables to pass to all operators                                                                                              | _none_                                                               |                                                                                                                                                                                                                                                                                                                                                     |
 | context             | Container to use for loading operators.                                                                                                | _none_                                                               | This option allow users to load only desired operators or register custom operators which need not be available globally.                                                                                                                                                                                                                           |
-| useGlobalContext    | Allow falling back to the global context when operator is not found in the provided context.                                           | true                                                                 | This is provided to allow users to strictly enforce which operators may be usable. |
+| useGlobalContext    | Allow falling back to the global context when operator is not found in the provided context.                                           | true                                                                 | This is provided to allow users to strictly enforce which operators may be usable.                                                                                                                                                                                                                                                                  |
 
 ## Adding Custom Operators
 
