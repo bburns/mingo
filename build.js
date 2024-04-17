@@ -20,7 +20,8 @@ function build() {
     esbuild.buildSync({
       entryPoints: SRC_FILES,
       outdir: path.join(OUT_DIR, "dist", format),
-      format: format
+      format: format,
+      platform: "node"
     });
   }
 }

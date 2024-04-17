@@ -1,6 +1,10 @@
 # Changelog
 
-## 6.4.14 / 2024-04-12
+## 6.4.15 / 2024-04-16
+**New**
+- Support custom type comparison using `toString` when defined on the type.
+
+## 6.4.14 / 2024-04-12 (deprecated: ESM import broken. See #437)
 **New**
 - Support custom type comparison using `toString` when defined on the type.
 
