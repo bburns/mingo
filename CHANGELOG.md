@@ -4,9 +4,8 @@
 **New**
 - Support custom type comparison using `toString` when defined on the type.
 
-## 6.4.14 / 2024-04-12 (deprecated: ESM import broken. See #437)
-**New**
-- Support custom type comparison using `toString` when defined on the type.
+## 6.4.14 / 2024-04-12 (deprecated)
+- ESM import broken. See #437
 
 ## 6.4.13 / 2024-03-22
 **Update**
