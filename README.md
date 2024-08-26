@@ -29,7 +29,7 @@ MongoDB query language for in-memory objects
 
 For more documentation on how to use operators see [mongodb](http://docs.mongodb.org/manual/reference/operator/).
 
-Browse [package docs](http://kofrasa.net/mingo/) for modules.
+Browse [package docs](http://kofrasa.github.io/mingo/) for modules.
 
 ## Usage
 
@@ -211,8 +211,8 @@ Query and aggregation operations can be configured with options to enabled diffe
 | Name                | Description                                                                                                                            | Default                                                              | Behaviour                                                                                                                                                                                                                                                                                                                                           |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | idKey               | The key that is used to lookup the ID value of a document.                                                                             | "\_id"                                                               |                                                                                                                                                                                                                                                                                                                                                     |
-| collation           | [Collation](http://kofrasa.net/mingo/interfaces/core.CollationSpec.html) specification for string sorting operations.                  | _none_                                                               | See [Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)                                                                                                                                                                                                                                 |
-| processingMode      | Determines copy rules for inputs and outputs.                                                                                          | [CLONE_OFF](http://kofrasa.net/mingo/enums/core.ProcessingMode.html) | Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the `$out` operator to collect immutable intermediate results. |
+| collation           | [Collation](http://kofrasa.github.io/mingo/interfaces/core.CollationSpec.html) specification for string sorting operations.                  | _none_                                                               | See [Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator)                                                                                                                                                                                                                                 |
+| processingMode      | Determines copy rules for inputs and outputs.                                                                                          | [CLONE_OFF](http://kofrasa.github.io/mingo/enums/core.ProcessingMode.html) | Turn off cloning and modifies the input collection as needed. <br>This option will also return output objects with shared paths in their graph when specific operators are used. Provides the greatest speedup by minizing cloning. When using the aggregation pipeline, you can use the `$out` operator to collect immutable intermediate results. |
 | useStrictMode       | Enforces strict MongoDB compatibilty.                                                                                                  | true                                                                 | When disabled, behaviour changes as follows. <ul><li>`$elemMatch` returns all matching nested documents instead of only the first.</li><li>Empty string `""` is coerced to false during boolean checking in supported operators which is consistent with Javascript semantics.</li><ul>                                                             |
 | scriptEnabled       | Enable or disable using custom script execution.                                                                                       | true                                                                 | When disabled, operators that execute custom code are disallowed such as; `$where`, `$accumulator`, and `$function`.                                                                                                                                                                                                                                |
 | hashFunction        | Custom hash function to replace the default based on "Effective Java" hashCode.                                                        | _default_                                                            | Expects function `(value: unknown) => number`.                                                                                                                                                                                                                                                                                                      |
@@ -224,25 +224,25 @@ Query and aggregation operations can be configured with options to enabled diffe
 
 ## Adding Custom Operators
 
-Custom operators can be registered using `Context` via the `context` option which is the recommended way from `6.4.2`. The `Context` is a container for operators, that the execution engine will use to process queries. Previously, the [useOperators(...)](http://kofrasa.net/mingo/modules/core.html#useOperators) function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
+Custom operators can be registered using `Context` via the `context` option which is the recommended way from `6.4.2`. The `Context` is a container for operators, that the execution engine will use to process queries. Previously, the [useOperators(...)](https://kofrasa.github.io/mingo/functions/core.useOperators.html) function was used to register operators globally but that is no longer preferred. The difference between the two is that a globally registered operator cannot be overwritten whereas a new context may be created and used at anytime.
 
 **NB: Note that the execution engine will first try to find the operator in the context and fallback to the global context when not found.**
 
 Each operator type has a specific interface to which an implementation must conform to be valid.
 
-- [AccumulatorOperator](http://kofrasa.net/mingo/types/core.AccumulatorOperator.html)
-- [ExpressionOperator](http://kofrasa.net/mingo/types/core.ExpressionOperator.html)
-- [ProjectionOperator](http://kofrasa.net/mingo/types/core.ProjectionOperator.html)
-- [PipelineOperator](http://kofrasa.net/mingo/types/core.PipelineOperator.html)
-- [WindowOperator](http://kofrasa.net/mingo/types/core.WindowOperator.html)
-- [QueryOperator](http://kofrasa.net/mingo/types/core.QueryOperator.html)
+- [AccumulatorOperator](http://kofrasa.github.io/mingo/types/core.AccumulatorOperator.html)
+- [ExpressionOperator](http://kofrasa.github.io/mingo/types/core.ExpressionOperator.html)
+- [ProjectionOperator](http://kofrasa.github.io/mingo/types/core.ProjectionOperator.html)
+- [PipelineOperator](http://kofrasa.github.io/mingo/types/core.PipelineOperator.html)
+- [WindowOperator](http://kofrasa.github.io/mingo/types/core.WindowOperator.html)
+- [QueryOperator](http://kofrasa.github.io/mingo/types/core.QueryOperator.html)
 
 Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master/src/init/basic.ts) cannot be overridden. These include;
 
-- All [query](http://kofrasa.net/mingo/modules/operators_query.html) operators.
-- All [projection](http://kofrasa.net/mingo/modules/operators_projection.html) operators.
-- Expression operators for [boolean](http://kofrasa.net/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.net/mingo/modules/operators_expression_comparison.html).
-- Pipeline [operators](http://kofrasa.net/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
+- All [query](http://kofrasa.github.io/mingo/modules/operators_query.html) operators.
+- All [projection](http://kofrasa.github.io/mingo/modules/operators_projection.html) operators.
+- Expression operators for [boolean](http://kofrasa.github.io/mingo/modules/operators_expression_boolean.html) and [comparison](http://kofrasa.github.io/mingo/modules/operators_expression_comparison.html).
+- Pipeline [operators](http://kofrasa.github.io/mingo/modules/operators_pipeline.html); `$project`, `$skip`, `$limit`, and `$sort`.
 
 > NB: _Update operators is not supported in `Context`._
 
