@@ -52,17 +52,20 @@ export type BsonType =
   | "decimal"
   | "regex";
 
+export const TIME_UNITS = [
+  "year",
+  "quarter",
+  "month",
+  "week",
+  "day",
+  "hour",
+  "minute",
+  "second",
+  "millisecond"
+] as const;
+
 /** Time unit for datetime periods */
-export type TimeUnit =
-  | "year"
-  | "quarter"
-  | "month"
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second"
-  | "millisecond";
+export type TimeUnit = (typeof TIME_UNITS)[number];
 
 /** @deprecated. Use TimeUnit */
 export type Duration = TimeUnit;
