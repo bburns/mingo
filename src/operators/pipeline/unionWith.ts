@@ -1,6 +1,6 @@
 import { Aggregator } from "../../aggregator";
 import { Options, PipelineOperator } from "../../core";
-import { compose, Iterator, Lazy } from "../../lazy";
+import { concat, Iterator, Lazy } from "../../lazy";
 import { RawObject } from "../../types";
 import { isString } from "../../util";
 
@@ -32,5 +32,5 @@ export const $unionWith: PipelineOperator = (
       : Lazy(array)
   );
 
-  return compose(...iterators);
+  return concat(...iterators);
 };

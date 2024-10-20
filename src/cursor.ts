@@ -1,6 +1,6 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
-import { compose, Iterator, Lazy, Source } from "./lazy";
+import { concat, Iterator, Lazy, Source } from "./lazy";
 import { AnyVal, Callback, Predicate, RawObject } from "./types";
 import { isObject } from "./util";
 
@@ -51,7 +51,7 @@ export class Cursor<T> {
   private fetchAll(): Iterator {
     const buffered = Lazy([...this.buffer]);
     this.buffer = [];
-    return compose(buffered, this.fetch());
+    return concat(buffered, this.fetch());
   }
 
   /**

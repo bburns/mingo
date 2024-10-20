@@ -9,7 +9,7 @@ import {
   PipelineOperator,
   WindowOperator
 } from "../../core";
-import { compose, Iterator, Lazy } from "../../lazy";
+import { concat, Iterator, Lazy } from "../../lazy";
 import {
   AnyVal,
   Boundary,
@@ -294,6 +294,6 @@ export const $setWindowFields: PipelineOperator = (
       iterators.push(iterator);
     }) as Callback);
 
-    return compose(...iterators);
+    return concat(...iterators);
   }) as Callback<Iterator>);
 };

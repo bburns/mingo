@@ -10,8 +10,8 @@ interface Iteratee {
 /**
  * A value produced by a generator
  */
-interface IteratorResult {
-  readonly value?: AnyVal;
+export interface IteratorResult<T = AnyVal> {
+  readonly value?: T;
   readonly done: boolean;
 }
 
@@ -35,7 +35,13 @@ export function Lazy(source: Source): Iterator {
   return source instanceof Iterator ? source : new Iterator(source);
 }
 
-export function compose(...iterators: Iterator[]): Iterator {
+/**
+ * Concatenate multiple iterators and return a new iterator.
+ *
+ * @param iterators The iterators to concatenate
+ * @returns {Iterator} A new iterator
+ */
+export function concat(...iterators: Iterator[]): Iterator {
   let index = 0;
   return Lazy(() => {
     while (index < iterators.length) {
@@ -138,9 +144,9 @@ function createCallback(
  * A lazy collection iterator yields a single value at a time upon request.
  */
 export class Iterator {
-  private readonly iteratees: Iteratee[] = [];
-  private readonly yieldedValues: RawArray = [];
-  private getNext: Callback<IteratorResult, boolean>;
+  #iteratees: Iteratee[] = [];
+  #yieldedValues: RawArray = [];
+  #getNext: Callback<IteratorResult, boolean>;
 
   private isDone = false;
 
@@ -181,7 +187,11 @@ export class Iterator {
     }
 
     // create next function
-    this.getNext = createCallback(nextVal, this.iteratees, this.yieldedValues);
+    this.#getNext = createCallback(
+      nextVal,
+      this.#iteratees,
+      this.#yieldedValues
+    );
   }
 
   /**
@@ -189,15 +199,15 @@ export class Iterator {
    */
   private push(action: Action, value: Callback<AnyVal> | number) {
     if (typeof value === "function") {
-      this.iteratees.push({ action, func: value });
+      this.#iteratees.push({ action, func: value });
     } else if (typeof value === "number") {
-      this.iteratees.push({ action, count: value });
+      this.#iteratees.push({ action, count: value });
     }
     return this;
   }
 
-  next(): IteratorResult {
-    return this.getNext();
+  next<T = AnyVal>(): IteratorResult<T> {
+    return this.#getNext() as IteratorResult<T>;
   }
 
   // Iteratees methods
@@ -262,9 +272,9 @@ export class Iterator {
    */
   value<T>(): T[] {
     if (!this.isDone) {
-      this.isDone = this.getNext(true).done;
+      this.isDone = this.#getNext(true).done;
     }
-    return this.yieldedValues as T[];
+    return this.#yieldedValues as T[];
   }
 
   /**
