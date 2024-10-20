@@ -5,6 +5,7 @@ import {
   GroupByOutput,
   RawArray,
   RawObject,
+  TimeUnit,
   WindowOperatorInput
 } from "../../types";
 import { groupBy, isEqual, MingoError } from "../../util";
@@ -12,16 +13,10 @@ import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
 import { isUnbounded } from "../pipeline/_internal";
 
-export type TimeUnit =
-  | "week"
-  | "day"
-  | "hour"
-  | "minute"
-  | "second"
-  | "millisecond";
+export type WindowTimeUnit = Exclude<TimeUnit, "year" | "quarter" | "month">;
 
 // millis map to diffirent time units
-export const MILLIS_PER_UNIT: Record<TimeUnit, number> = {
+export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
   week: MILLIS_PER_DAY * 7,
   day: MILLIS_PER_DAY,
   hour: MILLIS_PER_DAY / 24,

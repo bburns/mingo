@@ -2,7 +2,7 @@ import { Options } from "../../core";
 import { AnyVal, Callback, RawObject, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
-import { MILLIS_PER_UNIT, TimeUnit } from "./_internal";
+import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
 
 /**
  * Returns the average rate of change within the specified window
@@ -18,7 +18,7 @@ export function $derivative(
 
   const { input, unit } = expr.inputExpr as {
     input: AnyVal;
-    unit?: TimeUnit;
+    unit?: WindowTimeUnit;
   };
   const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
   const values = [collection[0], collection[collection.length - 1]];
