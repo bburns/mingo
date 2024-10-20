@@ -395,87 +395,23 @@ export function intersection(
   input: RawArray[],
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
-  // if any array is empty, there is no intersection
-  if (input.some(arr => arr.length == 0)) return [];
-  if (input.length === 1) return Array.from(input);
+  const vmaps = [ValueMap.init(hashFunction), ValueMap.init(hashFunction)];
+  if (input.length === 0) return [];
+  if (input.some(arr => arr.length === 0)) return [];
+  if (input.length === 1) return cloneDeep(input) as RawArray;
+  // start with last array to ensure stableness.
+  input[input.length - 1].forEach(v => vmaps[0].set(v, true));
+  // process collection backwards.
+  for (let i = input.length - 2; i > -1; i--) {
+    input[i].forEach(v => {
+      if (vmaps[0].has(v)) vmaps[1].set(v, true);
+    });
+    if (vmaps[1].size === 0) return [];
+    vmaps.reverse();
+    vmaps[1].clear();
+  }
 
-  // sort input arrays by to get smallest array
-  // const sorted = sortBy(input, (a: RawArray) => a.length) as RawArray[];
-  const sortedIndex = sortBy(
-    input.map((a, i) => [i, a.length]),
-    (a: [number, number]) => a[1]
-  ) as Array<[number, number]>;
-  // get the smallest
-  const smallest = input[sortedIndex[0][0]];
-  // get hash index of smallest array
-  const map = buildHashIndex(smallest, hashFunction);
-  // hashIndex for remaining arrays.
-  const rmap = new Map<number, Map<string, number[]>>();
-  // final intersection results and index of first occurrence.
-  const results = new Array<[AnyVal, [number, number]]>();
-  map.forEach((v, k) => {
-    const lhs = v.map(j => smallest[j]);
-    const res = lhs.map(_ => 0);
-    // used to track first occurence of value in order of the original input array.
-    const stable = lhs.map(_ => [sortedIndex[0][0], 0]);
-    let found = false;
-    for (let i = 1; i < input.length; i++) {
-      const [currIndex, _] = sortedIndex[i];
-      const arr = input[currIndex];
-      if (!rmap.has(i)) rmap.set(i, buildHashIndex(arr));
-      // we found a match. let's confirm.
-      if (rmap.get(i).has(k)) {
-        const rhs = rmap
-          .get(i)
-          .get(k)
-          .map(j => arr[j]);
-
-        // confirm the intersection with an equivalence check.
-        found = lhs
-          .map((s, n) =>
-            rhs.some((t, m) => {
-              // we expect only one to match here since these are just collisions.
-              const p = res[n];
-              if (isEqual(s, t)) {
-                res[n]++;
-                // track position of value ordering for stability.
-                if (currIndex < stable[n][0]) {
-                  stable[n] = [currIndex, rmap.get(i).get(k)[m]];
-                }
-              }
-              return p < res[n];
-            })
-          )
-          .some(Boolean);
-      }
-
-      // found nothing, so exclude value. this was just a hash collision.
-      if (!found) return;
-    }
-
-    // extract value into result if we found an intersection.
-    // we find an intersection if the frequency counter matches the count of the remaining arrays.
-    if (found) {
-      into(
-        results,
-        res
-          .map((n, i) => {
-            return n === input.length - 1 ? [lhs[i], stable[i]] : MISSING;
-          })
-          .filter(n => n !== MISSING)
-      );
-    }
-  });
-
-  return results
-    .sort((a, b) => {
-      const [_i, [u, m]] = a;
-      const [_j, [v, n]] = b;
-      const r = compare(u, v);
-      if (r !== 0) return r;
-      return compare(m, n);
-    })
-    .map(v => v[0]);
+  return Array.from(vmaps[0].keys());
 }
 
 /**
@@ -578,11 +514,9 @@ export function unique(
   input: RawArray,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): RawArray {
-  const result: RawArray = input.map(_ => MISSING);
-  buildHashIndex(input, hashFunction).forEach((v, _) => {
-    v.forEach(i => (result[i] = input[i]));
-  });
-  return result.filter(v => v !== MISSING);
+  const m = ValueMap.init(hashFunction);
+  input.forEach(v => m.set(v, true));
+  return Array.from(m.keys());
 }
 
 type HasToString = { toString(): string };
