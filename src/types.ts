@@ -67,9 +67,6 @@ export const TIME_UNITS = [
 /** Time unit for datetime periods */
 export type TimeUnit = (typeof TIME_UNITS)[number];
 
-/** @deprecated. Use TimeUnit */
-export type Duration = TimeUnit;
-
 // Window operator types.
 export type Boundary = "current" | "unbounded" | number;
 
