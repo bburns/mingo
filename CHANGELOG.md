@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.x.x / 2024-10-xx
+**New**
+- Add support for `$densify` pipeline stage operator.
+
 ## 6.4.15 / 2024-04-16
 **New**
 - Support custom type comparison using `toString` when defined on the type.
