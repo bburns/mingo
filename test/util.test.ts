@@ -18,6 +18,7 @@ import {
   stringify,
   truthy,
   unique,
+  ValueMap,
   walk
 } from "../src/util";
 import { ObjectId } from "./support";
@@ -431,6 +432,71 @@ describe("util", () => {
 
       walk(o, "a.b.d.e", () => counter++, { buildGraph: true });
       expect(has(resolve(o, "a.b") as RawObject, "d")).toEqual(true);
+    });
+  });
+
+  describe("ValueMap", () => {
+    it("should process map methods correctly", () => {
+      const m = ValueMap.init();
+
+      // set
+      m.set(100, 100)
+        .set("string", "100")
+        .set([1, 2], { a: 3 })
+        .set([1, 2], { a: 1 }) // replace
+        .set({ a: 1 }, [1, 2])
+        .set({ a: 1 }, [2, 1]); // replace
+
+      // has
+      expect(m.has(100)).toEqual(true);
+      expect(m.has("string")).toEqual(true);
+      expect(m.has([1, 2])).toEqual(true);
+      expect(m.has({ a: 1 })).toEqual(true);
+      expect(m.has("hello")).toEqual(false);
+
+      // size
+      expect(m.size).toEqual(4);
+
+      // get
+      expect(m.get([1, 2])).toEqual({ a: 1 });
+      expect(m.get({ a: 1 })).toEqual([2, 1]);
+
+      // keys
+      expect(Array.from(m.keys()).length).toEqual(4);
+
+      // delete
+      expect(m.delete({ a: 1 })).toEqual(true);
+      expect(m.delete({ a: 1 })).toEqual(false);
+      expect(m.size).toEqual(3);
+
+      // clear
+      m.clear();
+      expect(m.size).toEqual(0);
+      expect(m.get([1, 2])).toBeUndefined();
+      expect(m.get({ a: 1 })).toBeUndefined();
+    });
+
+    it("should handle poor hash function", () => {
+      const badHashFn = (v: AnyVal) => {
+        if (isEqual(v, { a: 1 })) return 1234;
+        if (isEqual(v, { a: 2 })) return 1234;
+        if (isEqual(v, { a: 3 })) return 1234;
+        const r = hashCode(v);
+        return r == null ? 0 : Number(r);
+      };
+      const m = ValueMap.init(badHashFn);
+      m.set({ a: 1 }, "A");
+      m.set({ a: 2 }, "B");
+      m.set({ a: 3 }, "C");
+      m.set({ a: 1 }, "D"); // replace
+
+      expect(m.size).toEqual(3);
+
+      expect(m.delete({ a: 2 })).toEqual(true);
+
+      expect(m.size).toEqual(2);
+      expect(m.get({ a: 1 })).toEqual("D");
+      expect(m.get({ a: 3 })).toEqual("C");
     });
   });
 });

@@ -48,6 +48,11 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
   return hash >>> 0;
 };
 
+const EMPTY_ARRAY = [] as const;
+
+const isPrimitive = (v: AnyVal): boolean =>
+  (typeof v !== "object" && typeof v !== "function") || v === null;
+
 /** Options to resolve() and resolveGraph() functions */
 interface ResolveOptions {
   unwrapArray?: boolean;
@@ -108,6 +113,109 @@ export const compare = <T = AnyVal>(a: T, b: T): number => {
   return 0;
 };
 
+/**
+ * A map implementation that uses value comparison for keys instead of referential identity.
+ */
+export class ValueMap<K, V> extends Map<K, V> {
+  #hashFn = DEFAULT_HASH_FUNCTION;
+  // maps the hashcode to key set
+  #keyMap = new Map<number, Array<K>>();
+  // returns a tuple of [<masterKey>, <hash>]
+  #unpack = (key: K): [K, number] => {
+    const hash = this.#hashFn(key);
+    return [
+      (this.#keyMap.get(hash) || EMPTY_ARRAY).find(k => isEqual(k, key)),
+      hash
+    ];
+  };
+
+  private constructor() {
+    super();
+  }
+
+  /**
+   * Returns a new {@link ValueMap} object.
+   * @param fn An optional custom hash function
+   */
+  static init<K, V>(fn?: HashFunction) {
+    const m = new ValueMap<K, V>();
+    if (fn) m.#hashFn = fn;
+    return m;
+  }
+
+  clear(): void {
+    super.clear();
+    this.#keyMap.clear();
+  }
+
+  /**
+   * @returns true if an element in the Map existed and has been removed, or false if the element does not exist.
+   */
+  delete(key: K): boolean {
+    if (isPrimitive(key)) return super.delete(key);
+
+    const [masterKey, hash] = this.#unpack(key);
+    // nothing deleted
+    if (!super.delete(masterKey)) return false;
+    // filter out the deleted key
+    this.#keyMap.set(
+      hash,
+      this.#keyMap.get(hash).filter(k => !isEqual(k, masterKey))
+    );
+    return true;
+  }
+
+  /**
+   * Returns a specified element from the Map object. If the value that is associated to the provided key is an object, then you will get a reference to that object and any change made to that object will effectively modify it inside the Map.
+   * @returns Returns the element associated with the specified key. If no element is associated with the specified key, undefined is returned.
+   */
+  get(key: K): V | undefined {
+    if (isPrimitive(key)) return super.get(key);
+
+    const [masterKey, _] = this.#unpack(key);
+    return super.get(masterKey);
+  }
+
+  /**
+   * @returns boolean indicating whether an element with the specified key exists or not.
+   */
+  has(key: K): boolean {
+    if (isPrimitive(key)) return super.has(key);
+
+    const [masterKey, _] = this.#unpack(key);
+    return super.has(masterKey);
+  }
+
+  /**
+   * Adds a new element with a specified key and value to the Map. If an element with the same key already exists, the element will be updated.
+   */
+  set(key: K, value: V): this {
+    if (isPrimitive(key)) return super.set(key, value);
+
+    const [masterKey, hash] = this.#unpack(key);
+    if (super.has(masterKey)) {
+      // replace masterKey value
+      super.set(masterKey, value);
+    } else {
+      // add new master key.
+      super.set(key, value);
+      // cache against hash code.
+      const keys = this.#keyMap.get(hash) || [];
+      keys.push(key);
+      // cache the key
+      this.#keyMap.set(hash, keys);
+    }
+    return this;
+  }
+
+  /**
+   * @returns the number of elements in the Map.
+   */
+  get size(): number {
+    return super.size;
+  }
+}
+
 export function assert(condition: boolean, message: string): void {
   if (!condition) throw new MingoError(message);
 }
@@ -137,7 +245,7 @@ export const isObject = (v: AnyVal): v is object => {
   );
 };
 //  objects, arrays, functions, date, custom object
-export const isObjectLike = (v: AnyVal): boolean => v === Object(v);
+export const isObjectLike = (v: AnyVal): boolean => !isPrimitive(v);
 export const isDate = (v: AnyVal): v is Date => v instanceof Date;
 export const isRegExp = (v: AnyVal): v is RegExp => v instanceof RegExp;
 export const isFunction = (v: AnyVal): boolean => typeof v === "function";
