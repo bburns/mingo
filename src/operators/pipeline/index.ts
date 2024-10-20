@@ -6,6 +6,7 @@ export * from "./addFields";
 export * from "./bucket";
 export * from "./bucketAuto";
 export * from "./count";
+export * from "./densify";
 export * from "./facet";
 export * from "./fill";
 export * from "./group";
