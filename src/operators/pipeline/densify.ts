@@ -129,11 +129,9 @@ export const $densify: PipelineOperator = (
   // ==========
   // 1. sort collection. (DONE)
   // 2. create `nilIterator` to yield all nil values from collection.
-  // 2. create a `densifyIterator` to yield non-nil collection items or generate values to fill in the range.
-  // 3. return a new iterator that yields the smallest of `collection.next()` and `range.next()`.
-  // 4. terminate iterator when largest of `collection.next()` and `range.next()` is reached.
-
-  // TODO: assert densify cannot generate fields nested inside arrays.
+  // 3. create a `densifyIterator` to yield non-nil collection items or generate values to fill within the bounds.
+  // 4. return a new iterator that combines the two iterators.
+  // 5. If bounds == "full": create a `fullBoundIterator` that yields remaining dense values based on the maximum in the collection.
 
   // bag to hold the peeked object from the collection
   const peekItem = new Array<IteratorResult>();
@@ -148,7 +146,7 @@ export const $densify: PipelineOperator = (
     return { done: true };
   });
 
-  // Map the partitionKey -> next densified value.
+  // Map of (partitionKey -> nextDensifyValue).
   // We cannot use $group to partition fields here since we need extract the raw fields and validate their values.
   // Rather than try to partition upfront, process the collection in sorted order and compute the next document using
   // the last value for the given partition.
@@ -168,6 +166,7 @@ export const $densify: PipelineOperator = (
         : maxFieldValue;
   };
 
+  // represents a partition over the entire collection
   const rootKey: string[] = [] as const;
 
   // An iterator that yields objects from the collection or add a densified object.
@@ -252,53 +251,50 @@ export const $densify: PipelineOperator = (
     return { done: false, value: denseObj };
   });
 
+  // handles normal bounds and partition.
+  if (lower !== "full") return concat(nilFieldsIterator, densifyIterator);
+
   // used to iterate through the partitions
   let paritionIndex = -1;
   let partitionKeysSet: string[][] = undefined;
-
   // An iterator to return remaining densify values for 'full' bounds.
-  let fullBoundsCallback = () => {
-    return { done: true };
-  };
-  if (lower === "full") {
-    fullBoundsCallback = () => {
-      if (paritionIndex === -1) {
-        const fullDensifyValue = nextDensifyValueMap.get(rootKey);
-        nextDensifyValueMap.delete(rootKey);
-        // insertion order of keys is preserved so will be stable.
-        partitionKeysSet = Array.from(nextDensifyValueMap.keys());
-        // if there are no partitions, then we have a single collection so restore the `fullDensifyValue`
-        if (partitionKeysSet.length === 0) {
-          partitionKeysSet.push(rootKey);
-          nextDensifyValueMap.set(rootKey, fullDensifyValue);
-        }
-        paritionIndex++;
+  const fullBoundsIterator = Lazy(() => {
+    if (paritionIndex === -1) {
+      const fullDensifyValue = nextDensifyValueMap.get(rootKey);
+      nextDensifyValueMap.delete(rootKey);
+      // insertion order of keys is preserved so will be stable.
+      partitionKeysSet = Array.from(nextDensifyValueMap.keys());
+      // if there are no partitions, then we have a single collection so restore the `fullDensifyValue`
+      if (partitionKeysSet.length === 0) {
+        partitionKeysSet.push(rootKey);
+        nextDensifyValueMap.set(rootKey, fullDensifyValue);
       }
+      paritionIndex++;
+    }
 
-      do {
-        const partitionKey = partitionKeysSet[paritionIndex];
-        const partitionMaxValue = nextDensifyValueMap.get(partitionKey);
+    do {
+      const partitionKey = partitionKeysSet[paritionIndex];
+      const partitionMaxValue = nextDensifyValueMap.get(partitionKey);
 
-        // this partition needs extra documents.
-        if (partitionMaxValue < maxFieldValue) {
-          nextDensifyValueMap.set(
-            partitionKey,
-            computeNextValue(partitionMaxValue)
-          );
-          const denseObj: RawObject = { [expr.field]: partitionMaxValue };
-          partitionKey.forEach((v, i) => {
-            denseObj[expr.partitionByFields[i]] = v;
-          });
-          // this is an added dense object
-          return { done: false, value: denseObj };
-        }
-        // go to next partition
-        paritionIndex++;
-      } while (paritionIndex < partitionKeysSet.length);
+      // this partition needs extra documents.
+      if (partitionMaxValue < maxFieldValue) {
+        nextDensifyValueMap.set(
+          partitionKey,
+          computeNextValue(partitionMaxValue)
+        );
+        const denseObj: RawObject = { [expr.field]: partitionMaxValue };
+        partitionKey.forEach((v, i) => {
+          denseObj[expr.partitionByFields[i]] = v;
+        });
+        // this is an added dense object
+        return { done: false, value: denseObj };
+      }
+      // go to next partition
+      paritionIndex++;
+    } while (paritionIndex < partitionKeysSet.length);
 
-      return { done: true };
-    };
-  }
+    return { done: true };
+  });
 
-  return concat(nilFieldsIterator, densifyIterator, Lazy(fullBoundsCallback));
+  return concat(nilFieldsIterator, densifyIterator, fullBoundsIterator);
 };
