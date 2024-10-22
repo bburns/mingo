@@ -5,6 +5,7 @@ export * from "./dateFromString";
 export * from "./dateSubtract";
 export * from "./dateToParts";
 export * from "./dateToString";
+export * from "./dateTrunc";
 export * from "./dayOfMonth";
 export * from "./dayOfWeek";
 export * from "./dayOfYear";
