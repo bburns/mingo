@@ -48,7 +48,7 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
   return hash >>> 0;
 };
 
-const EMPTY_ARRAY = [] as const;
+export const EMPTY_ARRAY = [] as const;
 
 const isPrimitive = (v: AnyVal): boolean =>
   (typeof v !== "object" && typeof v !== "function") || v === null;
@@ -115,12 +115,16 @@ export const compare = <T = AnyVal>(a: T, b: T): number => {
 
 /**
  * A map implementation that uses value comparison for keys instead of referential identity.
+ *
+ * IMPORTANT! we assume objects are never modified once the hash is computed and put in the Map.
+ * Modifying an object after adding to the Map will cause incorrect behaviour.
  */
 export class ValueMap<K, V> extends Map<K, V> {
+  // The hash function
   #hashFn = DEFAULT_HASH_FUNCTION;
   // maps the hashcode to key set
   #keyMap = new Map<number, Array<K>>();
-  // returns a tuple of [<masterKey>, <hash>]
+  // returns a tuple of [<masterKey>, <hash>]. Expects an object key.
   #unpack = (key: K): [K, number] => {
     const hash = this.#hashFn(key);
     return [
@@ -366,24 +370,6 @@ export function merge(
   return target;
 }
 
-function buildHashIndex(
-  arr: RawArray,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): Map<string, number[]> {
-  const map = new Map<string, number[]>();
-  arr.forEach((o, i) => {
-    const h = hashCode(o, hashFunction);
-    if (map.has(h)) {
-      if (!map.get(h).some(j => isEqual(arr[j], o))) {
-        map.get(h).push(i);
-      }
-    } else {
-      map.set(h, [i]);
-    }
-  });
-  return map;
-}
-
 /**
  * Returns the intersection of multiple arrays.
  *
@@ -417,10 +403,10 @@ export function intersection(
 /**
  * Flatten the array
  *
- * @param {Array} xs The array to flatten
- * @param {Number} depth The number of nested lists to iterate
+ * @param xs The array to flatten
+ * @param depth The number of nested lists to iterate. @default 1
  */
-export function flatten(xs: RawArray, depth = 0): RawArray {
+export function flatten(xs: RawArray, depth = 1): RawArray {
   const arr = new Array<AnyVal>();
   function flatten2(ys: RawArray, n: number) {
     for (let i = 0, len = ys.length; i < len; i++) {
@@ -519,7 +505,6 @@ export function unique(
   return Array.from(m.keys());
 }
 
-type HasToString = { toString(): string };
 const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
   if (v === null) return "null";
   if (v === undefined) return "undefined";
@@ -530,14 +515,14 @@ const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
     case Boolean:
     case Function:
     case Symbol:
-      return (v as HasToString).toString();
+      return (v as Stringer).toString();
     case String:
       return JSON.stringify(v);
     case Date:
       return (v as Date).toISOString();
   }
   if (isTypedArray(v))
-    return ctor.name + "[" + (v as HasToString).toString() + "]";
+    return ctor.name + "[" + (v as Stringer).toString() + "]";
   if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
   try {
     cycle.add(v);
@@ -562,9 +547,7 @@ const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
       proto !== Array.prototype &&
       (Object.prototype.hasOwnProperty.call(proto, "toString") as boolean)
     ) {
-      return (
-        ctor.name + "(" + JSON.stringify((v as HasToString).toString()) + ")"
-      );
+      return ctor.name + "(" + JSON.stringify((v as Stringer).toString()) + ")";
     }
     // no toString() for custom object, so process all members.
     const [members, _] = getMembersOf(v);
@@ -616,7 +599,7 @@ export function sortBy<T = AnyVal>(
   keyFn: Callback<T>,
   comparator: Comparator<T> = compare
 ): RawArray {
-  if (isEmpty(collection)) return collection;
+  if (isEmpty(collection)) return [];
 
   type Pair = [T, AnyVal];
   const sorted = new Array<Pair>();
