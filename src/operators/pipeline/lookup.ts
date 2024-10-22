@@ -1,7 +1,16 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawObject } from "../../types";
-import { assert, isString, resolve, ValueMap } from "../../util";
+import { AnyVal, RawArray, RawObject } from "../../types";
+import {
+  assert,
+  ensureArray,
+  flatten,
+  isArray,
+  isString,
+  resolve,
+  unique,
+  ValueMap
+} from "../../util";
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
@@ -25,18 +34,25 @@ export const $lookup: PipelineOperator = (
   const joinColl = isString(expr.from)
     ? options?.collectionResolver(expr.from)
     : expr.from;
-  assert(joinColl instanceof Array, `'from' field must resolve to an array`);
+  assert(isArray(joinColl), "$lookup: 'from' must resolve to an array.");
 
-  const m = ValueMap.init<AnyVal, RawObject[]>(options.hashFunction);
+  const map = ValueMap.init<AnyVal, RawArray>(options.hashFunction);
   for (const obj of joinColl) {
-    const foreign = resolve(obj, expr.foreignField) ?? null;
-    const arr = m.get(foreign) || [];
-    if (arr.length === 0) m.set(foreign, arr);
-    arr.push(obj);
+    // add object for each value in the array.
+    ensureArray(resolve(obj, expr.foreignField) ?? null).forEach(v => {
+      const arr = map.get(v) ?? [];
+      arr.push(obj);
+      map.set(v, arr);
+    });
   }
 
   return collection.map((obj: RawObject) => {
     const local = resolve(obj, expr.localField) ?? null;
-    return { ...obj, [expr.as]: m.get(local) || [] };
+    // if array local field is an array, flatten and get unique values to avoid duplicates
+    // from storing an object for each array member from the join collection.
+    const asValue = isArray(local)
+      ? unique(flatten(local.map(v => map.get(v), options.hashFunction)))
+      : map.get(local);
+    return { ...obj, [expr.as]: asValue };
   });
 };
