@@ -3,25 +3,27 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNil } from "../../../util";
 import { $dateToString } from "../date/dateToString";
 
 export const $toString: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): string | null => {
   const val = computeValue(obj, expr, null, options);
   if (isNil(val)) return null;
 
   if (val instanceof Date) {
-    const dateExpr = {
-      date: expr,
-      format: "%Y-%m-%dT%H:%M:%S.%LZ"
-    };
-    return $dateToString(obj, dateExpr, options);
-  } else {
-    return val.toString();
+    return $dateToString(
+      obj,
+      {
+        date: expr,
+        format: "%Y-%m-%dT%H:%M:%S.%LZ"
+      },
+      options
+    );
   }
+  return (val as { toString(): string }).toString();
 };

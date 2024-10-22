@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, intersection, isArray } from "../../../util";
 
 /**
@@ -12,11 +12,11 @@ import { assert, intersection, isArray } from "../../../util";
  * @param expr
  */
 export const $setIntersection: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray[];
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[][];
   assert(
     isArray(args) && args.every(isArray),
     "$setIntersection: expresssion must resolve to array of arrays"

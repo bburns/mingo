@@ -3,12 +3,12 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, BsonType, JsType, RawObject } from "../../../types";
+import { Any, AnyObject, BsonType, JsType } from "../../../types";
 import { getType, MAX_INT, MIN_INT } from "../../../util";
 
 export const $type: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): BsonType => {
   const val = computeValue(obj, expr, null, options) as number;

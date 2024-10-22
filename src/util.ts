@@ -3,15 +3,14 @@
  */
 
 import {
-  AnyVal,
+  Any,
+  AnyObject,
   ArrayOrObject,
   Callback,
   Comparator,
   GroupByOutput,
   HashFunction,
-  JsType,
-  RawArray,
-  RawObject
+  JsType
 } from "./types";
 
 /** Represents an error reported by the mingo library. */
@@ -32,7 +31,7 @@ const CYCLE_FOUND_ERROR = Object.freeze(
 const OBJECT_TAG = "[object Object]";
 const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 
-type Constructor = new (...args: RawArray) => AnyVal;
+type Constructor = new (...args: Any[]) => Any;
 
 /**
  * Uses the simple hash method as described in Effective Java.
@@ -40,7 +39,7 @@ type Constructor = new (...args: RawArray) => AnyVal;
  * @param value The value to hash
  * @returns {number}
  */
-const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
+const DEFAULT_HASH_FUNCTION: HashFunction = (value: Any): number => {
   const s = stringify(value);
   let hash = 0;
   let i = s.length;
@@ -50,7 +49,7 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: AnyVal): number => {
 
 export const EMPTY_ARRAY = [] as const;
 
-const isPrimitive = (v: AnyVal): boolean =>
+const isPrimitive = (v: Any): boolean =>
   (typeof v !== "object" && typeof v !== "function") || v === null;
 
 /** Options to resolve() and resolveGraph() functions */
@@ -92,7 +91,7 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
  * @param b The second value
  * @returns {Number}
  */
-export const compare = <T = AnyVal>(a: T, b: T): number => {
+export const compare = <T = Any>(a: T, b: T): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
   const [u, v] = [a, b].map(
@@ -228,45 +227,44 @@ export function assert(condition: boolean, message: string): void {
  * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
  * @param v A value
  */
-export const getType = (v: AnyVal): string =>
+export const getType = (v: Any): string =>
   OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
-export const isBoolean = (v: AnyVal): v is boolean => typeof v === "boolean";
-export const isString = (v: AnyVal): v is string => typeof v === "string";
-export const isSymbol = (v: AnyVal): boolean => typeof v === "symbol";
-export const isNumber = (v: AnyVal): v is number =>
+export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
+export const isString = (v: Any): v is string => typeof v === "string";
+export const isSymbol = (v: Any): boolean => typeof v === "symbol";
+export const isNumber = (v: Any): v is number =>
   !isNaN(v as number) && typeof v === "number";
-export const isBigInt = (v: AnyVal): v is bigint =>
+export const isBigInt = (v: Any): v is bigint =>
   !isNaN(v as number) && typeof v === "bigint";
-export const isNotNaN = (v: AnyVal) =>
+export const isNotNaN = (v: Any) =>
   !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
-export const isObject = (v: AnyVal): v is object => {
+export const isObject = (v: Any): v is object => {
   if (!v) return false;
-  const proto = Object.getPrototypeOf(v) as AnyVal;
+  const proto = Object.getPrototypeOf(v) as Any;
   return (
     (proto === Object.prototype || proto === null) &&
     OBJECT_TAG === Object.prototype.toString.call(v)
   );
 };
 //  objects, arrays, functions, date, custom object
-export const isObjectLike = (v: AnyVal): boolean => !isPrimitive(v);
-export const isDate = (v: AnyVal): v is Date => v instanceof Date;
-export const isRegExp = (v: AnyVal): v is RegExp => v instanceof RegExp;
-export const isFunction = (v: AnyVal): boolean => typeof v === "function";
-export const isNil = (v: AnyVal): boolean => v === null || v === undefined;
-export const inArray = (arr: AnyVal[], item: AnyVal): boolean =>
-  arr.includes(item);
-export const notInArray = (arr: RawArray, item: AnyVal): boolean =>
+export const isObjectLike = (v: Any): boolean => !isPrimitive(v);
+export const isDate = (v: Any): v is Date => v instanceof Date;
+export const isRegExp = (v: Any): v is RegExp => v instanceof RegExp;
+export const isFunction = (v: Any): boolean => typeof v === "function";
+export const isNil = (v: Any): boolean => v === null || v === undefined;
+export const inArray = (arr: Any[], item: Any): boolean => arr.includes(item);
+export const notInArray = (arr: Any[], item: Any): boolean =>
   !inArray(arr, item);
-export const truthy = (arg: AnyVal, strict = true): boolean =>
+export const truthy = (arg: Any, strict = true): boolean =>
   !!arg || (strict && arg === "");
-export const isEmpty = (x: AnyVal): boolean =>
+export const isEmpty = (x: Any): boolean =>
   isNil(x) ||
   (isString(x) && !x) ||
   (x instanceof Array && x.length === 0) ||
   (isObject(x) && Object.keys(x).length === 0);
 
-export const isMissing = (v: AnyVal): boolean => v === MISSING;
+export const isMissing = (v: Any): boolean => v === MISSING;
 /** ensure a value is an array or wrapped within one. */
 export const ensureArray = <T>(x: T | T[]): T[] =>
   x instanceof Array ? x : [x];
@@ -274,18 +272,18 @@ export const ensureArray = <T>(x: T | T[]): T[] =>
 export const has = (obj: object, prop: string): boolean =>
   !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
 
-const isTypedArray = (v: AnyVal): boolean =>
+const isTypedArray = (v: Any): boolean =>
   typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
 
 const INSTANCE_CLONE = [isDate, isRegExp, isTypedArray];
-const cloneInternal = (val: AnyVal, refs: Set<AnyVal>): AnyVal => {
+const cloneInternal = (val: Any, refs: Set<Any>): Any => {
   if (isNil(val)) return val;
   if (refs.has(val)) throw CYCLE_FOUND_ERROR;
   const ctor = val.constructor as Constructor;
   if (INSTANCE_CLONE.some(f => f(val))) return new ctor(val);
   try {
     refs.add(val);
-    if (isArray(val)) return val.map(v => cloneInternal(v, refs)) as AnyVal;
+    if (isArray(val)) return val.map(v => cloneInternal(v, refs)) as Any;
     if (isObject(val)) {
       const res = {};
       for (const k in val) res[k] = cloneInternal(val[k], refs);
@@ -301,7 +299,7 @@ const cloneInternal = (val: AnyVal, refs: Set<AnyVal>): AnyVal => {
 /**
  * Deep clone an object. Value types and immutable objects are returned as is.
  */
-export const cloneDeep = (obj: AnyVal): AnyVal => cloneInternal(obj, new Set());
+export const cloneDeep = (obj: Any): Any => cloneInternal(obj, new Set());
 
 /** Options to merge function */
 interface MergeOptions {
@@ -317,14 +315,10 @@ const mergeable = <T>(left: T, right: T): boolean =>
  * When the inputs have unmergeable types, the  right hand value is returned.
  * If inputs are arrays and options.flatten is set, elements in the same position are merged together. Remaining elements are appended to the target object.
  * If options.flatten is false, the right hand value is just appended to the left-hand value.
- * @param target {Object|Array} the target to merge into
- * @param obj {Object|Array} the source object
+ * @param target {AnyObject|Array} the target to merge into
+ * @param obj {AnyObject|Array} the source object
  */
-export function merge(
-  target: AnyVal,
-  obj: AnyVal,
-  options?: MergeOptions
-): AnyVal {
+export function merge(target: Any, obj: Any, options?: MergeOptions): Any {
   // default options
   options = options || { flatten: false };
 
@@ -342,14 +336,14 @@ export function merge(
   options.skipValidation = true;
 
   if (isArray(target)) {
-    const result = target as RawArray;
-    const input = obj as RawArray;
+    const result = target;
+    const input = obj as Any[];
 
     if (options.flatten) {
       let i = 0;
       let j = 0;
       while (i < result.length && j < input.length) {
-        result[i] = merge(result[i++], input[j++], options) as RawArray;
+        result[i] = merge(result[i++], input[j++], options) as Any[];
       }
       while (j < input.length) {
         result.push(obj[j++] as ArrayOrObject);
@@ -358,7 +352,7 @@ export function merge(
       into(result, input);
     }
   } else {
-    for (const k in obj as RawObject) {
+    for (const k in obj as AnyObject) {
       target[k] = merge(
         target[k] as ArrayOrObject,
         obj[k] as ArrayOrObject,
@@ -378,13 +372,13 @@ export function merge(
  * @return {Array} Array of intersecting values.
  */
 export function intersection(
-  input: RawArray[],
+  input: Any[][],
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): RawArray {
+): Any[] {
   const vmaps = [ValueMap.init(hashFunction), ValueMap.init(hashFunction)];
   if (input.length === 0) return [];
   if (input.some(arr => arr.length === 0)) return [];
-  if (input.length === 1) return cloneDeep(input) as RawArray;
+  if (input.length === 1) return cloneDeep(input) as Any[];
   // start with last array to ensure stableness.
   input[input.length - 1].forEach(v => vmaps[0].set(v, true));
   // process collection backwards.
@@ -406,12 +400,12 @@ export function intersection(
  * @param xs The array to flatten
  * @param depth The number of nested lists to iterate. @default 1
  */
-export function flatten(xs: RawArray, depth = 1): RawArray {
-  const arr = new Array<AnyVal>();
-  function flatten2(ys: RawArray, n: number) {
+export function flatten(xs: Any[], depth = 1): Any[] {
+  const arr = new Array<Any>();
+  function flatten2(ys: Any[], n: number) {
     for (let i = 0, len = ys.length; i < len; i++) {
       if (isArray(ys[i]) && (n > 0 || n < 0)) {
-        flatten2(ys[i] as RawArray, Math.max(-1, n - 1));
+        flatten2(ys[i] as Any[], Math.max(-1, n - 1));
       } else {
         arr.push(ys[i]);
       }
@@ -422,11 +416,11 @@ export function flatten(xs: RawArray, depth = 1): RawArray {
 }
 
 /** Returns all members of the value in an object literal. */
-const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
+const getMembersOf = (value: Any): [AnyObject, Any] => {
   let [proto, names] = [
     Object.getPrototypeOf(value),
     Object.getOwnPropertyNames(value)
-  ] as [AnyVal, string[]];
+  ] as [Any, string[]];
   // save effective prototype
   let activeProto = proto;
   // traverse the prototype hierarchy until we get property names or hit the bottom prototype.
@@ -440,7 +434,7 @@ const getMembersOf = (value: AnyVal): [RawObject, AnyVal] => {
     proto = Object.getPrototypeOf(proto);
   }
   const o = {};
-  names.forEach(k => (o[k] = (value as RawObject)[k]));
+  names.forEach(k => (o[k] = (value as AnyObject)[k]));
   return [o, activeProto];
 };
 
@@ -456,7 +450,7 @@ type Stringer = { toString(): string };
  * @param  {*}  b The second value
  * @return {Boolean} True if value contents are the same, false otherwise.
  */
-export function isEqual(a: AnyVal, b: AnyVal): boolean {
+export function isEqual(a: Any, b: Any): boolean {
   // strictly equal must be equal. matches referentially equal values.
   if (a === b || Object.is(a, b)) return true;
   // get the constructor for non-nil values
@@ -497,15 +491,15 @@ export function isEqual(a: AnyVal, b: AnyVal): boolean {
  * @return {Array}
  */
 export function unique(
-  input: RawArray,
+  input: Any[],
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): RawArray {
+): Any[] {
   const m = ValueMap.init(hashFunction);
   input.forEach(v => m.set(v, true));
   return Array.from(m.keys());
 }
 
-const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
+const toString = (v: Any, cycle: Set<Any>): string => {
   if (v === null) return "null";
   if (v === undefined) return "undefined";
   const ctor = v.constructor;
@@ -565,7 +559,7 @@ const toString = (v: AnyVal, cycle: Set<AnyVal>): string => {
  * @param value The value to convert to a string representation.
  * @returns {String}
  */
-export const stringify = (value: AnyVal): string => toString(value, new Set());
+export const stringify = (value: Any): string => toString(value, new Set());
 
 /**
  * Generate hash code
@@ -576,7 +570,7 @@ export const stringify = (value: AnyVal): string => toString(value, new Set());
  * @returns {number|null}
  */
 export function hashCode(
-  value: AnyVal,
+  value: Any,
   hashFunction?: HashFunction
 ): string | null {
   hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
@@ -594,16 +588,16 @@ export function hashCode(
  * @param {Function} comparator The comparator function to use for comparing keys. Defaults to standard comparison via `compare(...)`
  * @return {Array} Returns a new sorted array by the given key and comparator function
  */
-export function sortBy<T = AnyVal>(
-  collection: RawArray,
+export function sortBy<T = Any>(
+  collection: Any[],
   keyFn: Callback<T>,
   comparator: Comparator<T> = compare
-): RawArray {
+): Any[] {
   if (isEmpty(collection)) return [];
 
-  type Pair = [T, AnyVal];
+  type Pair = [T, Any];
   const sorted = new Array<Pair>();
-  const result = new Array<AnyVal>();
+  const result = new Array<Any>();
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
@@ -619,8 +613,8 @@ export function sortBy<T = AnyVal>(
   sorted.sort((a, b) => comparator(a[0], b[0]));
   return into(
     result,
-    sorted.map((o: RawArray) => o[1])
-  ) as RawArray;
+    sorted.map((o: Any[]) => o[1])
+  ) as Any[];
 }
 
 /**
@@ -631,16 +625,16 @@ export function sortBy<T = AnyVal>(
  * @returns {GroupByOutput}
  */
 export function groupBy(
-  collection: RawArray,
-  keyFn: Callback<AnyVal>,
+  collection: Any[],
+  keyFn: Callback<Any>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): GroupByOutput {
   if (collection.length < 1) return new Map();
 
   // map of hash to collided values
-  const lookup = new Map<string, Array<AnyVal>>();
+  const lookup = new Map<string, Array<Any>>();
   // map of raw key values to objects.
-  const result = new Map<AnyVal, Array<AnyVal>>();
+  const result = new Map<Any, Array<Any>>();
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
@@ -692,11 +686,11 @@ const MAX_ARRAY_PUSH = 50000;
  */
 export function into(
   target: ArrayOrObject,
-  ...rest: Array<ArrayOrObject>
+  ...rest: ArrayOrObject[]
 ): ArrayOrObject {
   if (target instanceof Array) {
     return rest.reduce(
-      ((acc, arr: RawArray) => {
+      ((acc, arr: Any[]) => {
         // push arrary in batches to handle large inputs
         let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
         let begin = 0;
@@ -729,14 +723,14 @@ export function into(
  * @param {*} fn The function object to memoize
  */
 export function memoize(
-  fn: Callback<AnyVal>,
+  fn: Callback<Any>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): Callback<AnyVal> {
-  return ((memo: RawObject) => {
-    return (...args: RawArray): AnyVal => {
+): Callback<Any> {
+  return ((memo: AnyObject) => {
+    return (...args: Any[]): Any => {
       const key = hashCode(args, hashFunction) || "";
       if (!has(memo, key)) {
-        memo[key] = fn.apply(this, args) as AnyVal;
+        memo[key] = fn.apply(this, args) as Any;
       }
       return memo[key];
     };
@@ -754,7 +748,7 @@ export function memoize(
  * @returns {*}
  * @private
  */
-function getValue(obj: ArrayOrObject, key: string | number): AnyVal {
+function getValue(obj: ArrayOrObject, key: string | number): Any {
   return isObjectLike(obj) ? obj[key] : undefined;
 }
 
@@ -763,15 +757,15 @@ function getValue(obj: ArrayOrObject, key: string | number): AnyVal {
  * @param {Array} arr
  * @param {Number} depth
  */
-function unwrap(arr: RawArray, depth: number): RawArray {
+function unwrap(arr: Any[], depth: number): Any[] {
   if (depth < 1) return arr;
-  while (depth-- && arr.length === 1) arr = arr[0] as RawArray;
+  while (depth-- && arr.length === 1) arr = arr[0] as Any[];
   return arr;
 }
 
 /**
  * Resolve the value of the field (dot separated) on the given object
- * @param obj {Object} the object context
+ * @param obj {AnyObject} the object context
  * @param selector {String} dot separated path to field
  * @returns {*}
  */
@@ -779,11 +773,11 @@ export function resolve(
   obj: ArrayOrObject,
   selector: string,
   options?: ResolveOptions
-): AnyVal {
+): Any {
   let depth = 0;
 
-  function resolve2(o: ArrayOrObject, path: Array<string>): AnyVal {
-    let value: AnyVal = o;
+  function resolve2(o: ArrayOrObject, path: string[]): Any {
+    let value: Any = o;
     for (let i = 0; i < path.length; i++) {
       const field = path[i];
       const isText = /^\d+$/.exec(field) === null;
@@ -798,7 +792,7 @@ export function resolve(
         depth += 1;
         // only look at the rest of the path
         const subpath = path.slice(i);
-        value = value.reduce<RawArray>((acc: RawArray, item: ArrayOrObject) => {
+        value = value.reduce<Any[]>((acc: Any[], item: ArrayOrObject) => {
           const v = resolve2(item, subpath);
           if (v !== undefined) acc.push(v);
           return acc;
@@ -825,7 +819,7 @@ export function resolve(
  * Returns the full object to the resolved value given by the selector.
  * This function excludes empty values as they aren't practically useful.
  *
- * @param obj {Object} the object context
+ * @param obj {AnyObject} the object context
  * @param selector {String} dot separated path to field
  */
 export function resolveGraph(
@@ -839,8 +833,8 @@ export function resolveGraph(
   const next = names.slice(1).join(".");
   const isIndex = /^\d+$/.exec(key) !== null;
   const hasNext = names.length > 1;
-  let result: AnyVal;
-  let value: AnyVal;
+  let result: Any;
+  let value: Any;
 
   if (obj instanceof Array) {
     if (isIndex) {
@@ -857,9 +851,9 @@ export function resolveGraph(
           if (value === undefined) {
             value = MISSING;
           }
-          (result as RawArray).push(value);
+          (result as Any[]).push(value);
         } else if (value !== undefined) {
-          (result as RawArray).push(value);
+          (result as Any[]).push(value);
         }
       }
     }
@@ -870,7 +864,7 @@ export function resolveGraph(
     }
     if (value === undefined) return undefined;
     result = options?.preserveKeys ? { ...obj } : {};
-    (result as RawObject)[key] = value;
+    (result as AnyObject)[key] = value;
   }
 
   return result as ArrayOrObject;
@@ -910,7 +904,7 @@ const NUMBER_RE = /^\d+$/;
 /**
  * Walk the object graph and execute the given transform function
  *
- * @param  {Object|Array} obj   The object to traverse.
+ * @param  {AnyObject|Array} obj   The object to traverse.
  * @param  {String} selector    The selector to navigate.
  * @param  {Callback} fn Callback to execute for value at the end the traversal.
  * @param  {WalkOptions} options The opetions to use for the function.
@@ -961,19 +955,19 @@ export function walk(
 /**
  * Set the value of the given object field
  *
- * @param obj {Object|Array} the object context
+ * @param obj {AnyObject|Array} the object context
  * @param selector {String} path to field
  * @param value {*} the value to set. if it is function, it is invoked with the old value and must return the new value.
  */
 export function setValue(
   obj: ArrayOrObject,
   selector: string,
-  value: AnyVal
+  value: Any
 ): void {
   walk(
     obj,
     selector,
-    ((item: RawObject, key: string) => {
+    ((item: AnyObject, key: string) => {
       item[key] = isFunction(value) ? (value as Callback)(item[key]) : value;
     }) as Callback<void>,
     { buildGraph: true }
@@ -996,14 +990,14 @@ export function removeValue(
   walk(
     obj,
     selector,
-    ((item: AnyVal, key: string) => {
+    ((item: Any, key: string) => {
       if (item instanceof Array) {
         if (/^\d+$/.test(key)) {
           item.splice(parseInt(key), 1);
         } else if (options && options.descendArray) {
           for (const elem of item) {
             if (isObject(elem)) {
-              delete (elem as RawObject)[key];
+              delete (elem as AnyObject)[key];
             }
           }
         }
@@ -1030,7 +1024,7 @@ export function isOperator(name: string): boolean {
  * @param expr
  * @returns {*}
  */
-export function normalize(expr: AnyVal): AnyVal {
+export function normalize(expr: Any): Any {
   // normalized primitives
   if (JS_SIMPLE_TYPES.has(getType(expr).toLowerCase() as JsType)) {
     return isRegExp(expr) ? { $regex: expr } : { $eq: expr };
@@ -1038,15 +1032,15 @@ export function normalize(expr: AnyVal): AnyVal {
 
   // normalize object expression. using ObjectLike handles custom types
   if (isObjectLike(expr)) {
-    const exprObj = expr as RawObject;
+    const exprObj = expr as AnyObject;
     // no valid query operator found, so we do simple comparison
     if (!Object.keys(exprObj).some(isOperator)) {
       return { $eq: expr };
     }
 
     // ensure valid regex
-    if (has(expr as RawObject, "$regex")) {
-      const newExpr = { ...(expr as RawObject) };
+    if (has(expr as AnyObject, "$regex")) {
+      const newExpr = { ...(expr as AnyObject) };
       newExpr["$regex"] = new RegExp(
         expr["$regex"] as string,
         expr["$options"] as string
@@ -1065,7 +1059,7 @@ export function normalize(expr: AnyVal): AnyVal {
  * @param {*} sorted The sorted array to search
  * @param {*} item The search key
  */
-export function findInsertIndex(sorted: RawArray, item: AnyVal): number {
+export function findInsertIndex(sorted: Any[], item: Any): number {
   // uses binary search
   let lo = 0;
   let hi = sorted.length - 1;

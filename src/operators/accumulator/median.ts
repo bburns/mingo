@@ -1,6 +1,6 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/median
 import { AccumulatorOperator, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { $percentile } from "./percentile";
 
 /**
@@ -16,7 +16,7 @@ import { $percentile } from "./percentile";
  * @returns {Number}
  */
 export const $median: AccumulatorOperator<number> = (
-  collection: RawObject[],
-  expr: { input: AnyVal; method: "approximate" | "exact" },
+  collection: AnyObject[],
+  expr: { input: Any; method: "approximate" | "exact" },
   options: Options
 ): number => $percentile(collection, { ...expr, p: [0.5] }, options).pop();

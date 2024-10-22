@@ -1,12 +1,12 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawObject } from "../../types";
+import { AnyObject, ArrayOrObject } from "../../types";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Multiply the value of a field by a number. */
 export const $mul = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: Record<string, number>,
-  arrayFilters: RawObject[] = [],
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {

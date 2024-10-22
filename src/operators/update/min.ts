@@ -1,13 +1,13 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawObject } from "../../types";
+import { AnyObject, ArrayOrObject } from "../../types";
 import { compare } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Updates the value of the field to a specified value if the specified value is less than the current value of the field. */
 export const $min = (
-  obj: RawObject,
-  expr: RawObject,
-  arrayFilters: RawObject[] = [],
+  obj: AnyObject,
+  expr: AnyObject,
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {

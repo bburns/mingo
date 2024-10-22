@@ -1,7 +1,7 @@
 import { Aggregator } from "../../aggregator";
 import { Options, PipelineOperator, ProcessingMode } from "../../core";
 import { Iterator } from "../../lazy";
-import { Callback, RawObject } from "../../types";
+import { AnyObject, Callback } from "../../types";
 
 /**
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
@@ -9,11 +9,11 @@ import { Callback, RawObject } from "../../types";
  */
 export const $facet: PipelineOperator = (
   collection: Iterator,
-  expr: Record<string, RawObject[]>,
+  expr: Record<string, AnyObject[]>,
   options: Options
 ): Iterator => {
-  return collection.transform(((array: RawObject[]) => {
-    const o: RawObject = {};
+  return collection.transform(((array: AnyObject[]) => {
+    const o: AnyObject = {};
     for (const [k, pipeline] of Object.entries(expr)) {
       o[k] = new Aggregator(pipeline, {
         ...options,
@@ -21,5 +21,5 @@ export const $facet: PipelineOperator = (
       }).run(array);
     }
     return [o];
-  }) as Callback<RawObject[]>);
+  }) as Callback<AnyObject[]>);
 };

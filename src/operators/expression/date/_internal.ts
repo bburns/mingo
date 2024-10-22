@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../../core";
-import { AnyVal } from "../../../types";
-import { isDate, isNil, isNumber } from "../../../util";
+import { Any } from "../../../types";
+import { isDate, isNil, isNumber, MingoError } from "../../../util";
 
 const COMMON_YEAR_DAYS_OFFSET = [
   0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
@@ -57,14 +57,14 @@ export const DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ";
 
 // Inclusive interval of date parts
 export const DATE_PART_INTERVAL = [
-  ["year", 0, 9999],
-  ["month", 1, 12],
-  ["day", 1, 31],
-  ["hour", 0, 23],
-  ["minute", 0, 59],
-  ["second", 0, 59],
-  ["millisecond", 0, 999]
-];
+  ["year", 0, 9999] as const,
+  ["month", 1, 12] as const,
+  ["day", 1, 31] as const,
+  ["hour", 0, 23] as const,
+  ["minute", 0, 59] as const,
+  ["second", 0, 59] as const,
+  ["millisecond", 0, 999] as const
+] as const;
 
 export interface DatePartFormatter {
   name: string;
@@ -73,7 +73,7 @@ export interface DatePartFormatter {
 }
 
 // used for formatting dates in $dateToString operator
-export const DATE_SYM_TABLE: Record<string, DatePartFormatter> = {
+export const DATE_SYM_TABLE = Object.freeze({
   "%Y": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%G": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%m": { name: "month", padding: 2, re: /(0[1-9]|1[012])/ },
@@ -92,7 +92,7 @@ export const DATE_SYM_TABLE: Record<string, DatePartFormatter> = {
   },
   "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ }
   // "%%": "%",
-};
+}) as Record<string, DatePartFormatter>;
 
 /**
  * Parse and return the timezone string as a number
@@ -102,8 +102,9 @@ export function parseTimezone(tzstr?: string): number {
   if (isNil(tzstr)) return 0;
 
   const m = DATE_SYM_TABLE["%z"].re.exec(tzstr);
-  if (!m)
-    throw Error(`invalid or location-based timezone '${tzstr}' not supported`);
+  if (!m) {
+    throw new MingoError(`Timezone '${tzstr}' is invalid or not supported`);
+  }
 
   const hr = parseInt(m[2]) || 0;
   const min = parseInt(m[3]) || 0;
@@ -137,7 +138,7 @@ export function adjustDate(d: Date, minuteOffset: number): void {
  * @param obj The target object
  * @param expr Any value that resolves to a valid date expression. Valid expressions include a number, Date, or Object{date: number|Date, timezone?: string}
  */
-export function computeDate(obj: AnyVal, expr: AnyVal, options: Options): Date {
+export function computeDate(obj: Any, expr: Any, options: Options): Date {
   const d = computeValue(obj, expr, null, options) as
     | Date
     | number
@@ -157,7 +158,7 @@ export function computeDate(obj: AnyVal, expr: AnyVal, options: Options): Date {
     return date;
   }
 
-  throw Error(`cannot convert ${expr?.toString()} to date`);
+  throw Error(`cannot convert ${JSON.stringify(expr)} to date`);
 }
 
 export function padDigits(n: number, digits: number): string {

@@ -1,10 +1,9 @@
 import { Options } from "../../core";
 import {
-  AnyVal,
+  Any,
+  AnyObject,
   Callback,
   GroupByOutput,
-  RawArray,
-  RawObject,
   TimeUnit,
   WindowOperatorInput
 } from "../../types";
@@ -26,14 +25,14 @@ export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
 };
 
 // internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
-const memo = new WeakMap<RawArray, AnyVal>();
+const memo = new WeakMap<Array<Any>, Any>();
 
 /**
  * Caches all computed values in a window sequence for reuse.
  * This is only useful for operations with unbounded documents.
  */
-export function withMemo<T = AnyVal, R = AnyVal>(
-  collection: RawObject[],
+export function withMemo<T = Any, R = Any>(
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   cacheFn: Callback<T>,
   fn: Callback<R, T>
@@ -47,7 +46,7 @@ export function withMemo<T = AnyVal, R = AnyVal>(
   if (!memo.has(collection)) {
     memo.set(collection, { [expr.field]: cacheFn() });
   }
-  const data = memo.get(collection) as RawObject;
+  const data = memo.get(collection) as AnyObject;
 
   // subsequent computations over the same collection.
   if (data[expr.field] === undefined) {
@@ -69,13 +68,13 @@ export function withMemo<T = AnyVal, R = AnyVal>(
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export function rank(
-  _: RawObject,
-  collection: RawObject[],
+  _: AnyObject,
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options,
   dense: boolean
-): AnyVal {
-  return withMemo<{ values: RawArray; groups: GroupByOutput }, number>(
+): Any {
+  return withMemo<{ values: Any[]; groups: GroupByOutput }, number>(
     collection,
     expr,
     () => {
@@ -83,7 +82,7 @@ export function rank(
       const values = $push(collection, sortKey, options);
       const groups = groupBy(
         values,
-        ((_: RawObject, n: number) => values[n]) as Callback,
+        ((_: AnyObject, n: number) => values[n]) as Callback,
         options.hashFunction
       );
       return { values, groups };

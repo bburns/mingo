@@ -1,12 +1,12 @@
 // Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject, Callback } from "../../../types";
 import { assert } from "../../../util";
 
 interface FunctionExpr {
-  readonly body: Callback<AnyVal>;
-  readonly args: RawArray;
+  readonly body: Callback<Any>;
+  readonly args: Any[];
   readonly lang: "js";
 }
 
@@ -18,14 +18,14 @@ interface FunctionExpr {
  * @param {Options} options Options
  */
 export const $function: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: FunctionExpr,
   options: Options
-): AnyVal => {
+): Any => {
   assert(
     options.scriptEnabled,
     "$function operator requires 'scriptEnabled' option to be true"
   );
   const fn = computeValue(obj, expr, null, options) as FunctionExpr;
-  return fn.body.apply(null, fn.args) as AnyVal;
+  return fn.body.apply(null, fn.args) as Any;
 };

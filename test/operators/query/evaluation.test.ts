@@ -4,7 +4,7 @@ import Ajv, { Schema } from "ajv";
 
 import { aggregate, find } from "../../../src";
 import { JsonSchemaValidator } from "../../../src/core";
-import { RawArray, RawObject } from "../../../src/types";
+import { Any, AnyObject } from "../../../src/types";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
@@ -34,7 +34,7 @@ describe("operators/query/evaluation", () => {
     ];
 
     it("can safely reference properties on 'this'", () => {
-      const criteria: RawObject = {
+      const criteria: AnyObject = {
         "user.color": { $exists: true },
         "user.number": { $exists: true },
         $where: function () {
@@ -126,7 +126,7 @@ describe("operators/query/evaluation", () => {
 
   describe("null or missing fields", () => {
     const data = [{ _id: 1, item: null }, { _id: 2 }];
-    const fixtures: RawArray = [
+    const fixtures: Any[] = [
       // query, result, message
       [
         { item: null },
@@ -151,9 +151,9 @@ describe("operators/query/evaluation", () => {
     ];
 
     for (let i = 0; i < fixtures.length; i++) {
-      const [criteria, result, message] = fixtures[i] as RawArray;
+      const [criteria, result, message] = fixtures[i] as Any[];
       it(message as string, () => {
-        const res = find(data, criteria as RawObject).all();
+        const res = find(data, criteria as AnyObject).all();
         expect(res).toEqual(result);
       });
     }
@@ -161,7 +161,7 @@ describe("operators/query/evaluation", () => {
 
   describe("$regex", () => {
     // no regex - returns expected list: 1 element - ok
-    const res: Array<RawArray> = [];
+    const res: Any[][] = [];
     res.push(
       find([{ l1: [{ tags: ["tag1", "tag2"] }, { notags: "yep" }] }], {
         "l1.tags": "tag1"
@@ -249,10 +249,10 @@ describe("operators/query/evaluation", () => {
       }
     };
 
-    const jsonSchemaValidator: JsonSchemaValidator = (s: RawObject) => {
+    const jsonSchemaValidator: JsonSchemaValidator = (s: AnyObject) => {
       const ajv = new Ajv();
       const v = ajv.compile(s as Schema);
-      return (o: RawObject) => (v(o) ? true : false);
+      return (o: AnyObject) => (v(o) ? true : false);
     };
 
     const options = { jsonSchemaValidator };

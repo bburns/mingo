@@ -1,18 +1,16 @@
 import { Iterator } from "./lazy";
 import {
-  AnyVal,
+  Any,
+  AnyObject,
   ArrayOrObject,
   Callback,
   HashFunction,
   Predicate,
-  RawArray,
-  RawObject,
   WindowOperatorInput
 } from "./types";
 import {
   assert,
   has,
-  isArray,
   isFunction,
   isNil,
   isObject,
@@ -28,7 +26,7 @@ import {
  * This is useful for operators that require a second collection to use such as $lookup and $out.
  * The collection is not cached and will be resolved each time it is used.
  */
-export type CollectionResolver = (name: string) => Array<RawObject>;
+export type CollectionResolver = (name: string) => AnyObject[];
 
 /** Specification for collation options */
 export interface CollationSpec {
@@ -45,7 +43,7 @@ export interface CollationSpec {
 /**
  * JSON schema validator
  */
-export type JsonSchemaValidator = (schema: RawObject) => Predicate<RawObject>;
+export type JsonSchemaValidator = (schema: AnyObject) => Predicate<AnyObject>;
 
 /**
  * This controls how input and output documents are processed to meet different application needs.
@@ -108,16 +106,16 @@ export interface Options {
   /** JSON schema validator to use with the '$jsonSchema' operator. Required in order to use the operator. */
   readonly jsonSchemaValidator?: JsonSchemaValidator;
   /** Global variables. */
-  readonly variables?: Readonly<RawObject>;
+  readonly variables?: Readonly<AnyObject>;
   /** Extra references to operators to be used for processing. */
   readonly context: Context;
 }
 
 interface LocalData {
   /** The groupId computed for a group of documents. */
-  readonly groupId?: AnyVal;
+  readonly groupId?: Any;
   /** Local user-defind variables. */
-  readonly variables?: RawObject;
+  readonly variables?: AnyObject;
 }
 
 /** Custom type to facilitate type checking for global options */
@@ -125,7 +123,7 @@ export class ComputeOptions implements Options {
   private constructor(
     private _opts: Options,
     /** Reference to the root object when processing subgraphs of the object. */
-    private _root: AnyVal,
+    private _root: Any,
     private _local?: LocalData,
     /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
     readonly timestamp = Date.now()
@@ -141,11 +139,7 @@ export class ComputeOptions implements Options {
    * @param local
    * @returns {ComputeOptions}
    */
-  static init(
-    options: Options,
-    root?: AnyVal,
-    local?: LocalData
-  ): ComputeOptions {
+  static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
     return options instanceof ComputeOptions
       ? new ComputeOptions(
           options._opts,
@@ -156,7 +150,7 @@ export class ComputeOptions implements Options {
   }
 
   /** Updates the internal mutable state. */
-  update(root?: AnyVal, local?: LocalData): ComputeOptions {
+  update(root?: Any, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this._root = root;
     this._local = local
@@ -263,49 +257,49 @@ export enum OperatorType {
   WINDOW = "window"
 }
 
-export type AccumulatorOperator<R = AnyVal> = (
-  collection: RawArray,
-  expr: AnyVal,
+export type AccumulatorOperator<R = Any> = (
+  collection: Any[],
+  expr: Any,
   options: Options
 ) => R;
 
-export type ExpressionOperator<R = AnyVal> = (
-  obj: RawObject,
-  expr: AnyVal,
+export type ExpressionOperator<R = Any> = (
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ) => R;
 
 export type PipelineOperator = (
   collection: Iterator,
-  expr: AnyVal,
+  expr: Any,
   options: Options
 ) => Iterator;
 
 export type ProjectionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   selector: string,
   options: Options
-) => AnyVal;
+) => Any;
 
 export type QueryOperator = (
   selector: string,
-  value: AnyVal,
+  value: Any,
   options: Options
-) => (obj: RawObject) => boolean;
+) => (obj: AnyObject) => boolean;
 
 export type WindowOperator = (
-  obj: RawObject,
-  array: RawObject[],
+  obj: AnyObject,
+  array: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-) => AnyVal;
+) => Any;
 
 /** Interface for update operators */
 export type UpdateOperator = (
-  obj: RawObject,
-  expr: RawObject,
-  arrayFilters: RawObject[],
+  obj: AnyObject,
+  expr: AnyObject,
+  arrayFilters: AnyObject[],
   options: UpdateOptions
 ) => string[];
 
@@ -476,16 +470,16 @@ export function getOperator(
  * @type {Object}
  */
 const systemVariables: Record<string, typeof redact> = {
-  $$ROOT(_obj: AnyVal, _expr: AnyVal, options: ComputeOptions) {
+  $$ROOT(_obj: Any, _expr: Any, options: ComputeOptions) {
     return options.root;
   },
-  $$CURRENT(obj: AnyVal, _expr: AnyVal, _options: ComputeOptions) {
+  $$CURRENT(obj: Any, _expr: Any, _options: ComputeOptions) {
     return obj;
   },
-  $$REMOVE(_obj: AnyVal, _expr: AnyVal, _options: ComputeOptions) {
+  $$REMOVE(_obj: Any, _expr: Any, _options: ComputeOptions) {
     return undefined;
   },
-  $$NOW(_obj: AnyVal, _expr: AnyVal, options: ComputeOptions) {
+  $$NOW(_obj: Any, _expr: Any, options: ComputeOptions) {
     return new Date(options.timestamp);
   }
 };
@@ -498,25 +492,25 @@ const systemVariables: Record<string, typeof redact> = {
  * @type {Object}
  */
 const redactVariables: Record<string, typeof redact> = {
-  $$KEEP(obj: AnyVal, _expr: AnyVal, _options: ComputeOptions): AnyVal {
+  $$KEEP(obj: Any, _expr: Any, _options: ComputeOptions): Any {
     return obj;
   },
-  $$PRUNE(_obj: AnyVal, _expr: AnyVal, _options: ComputeOptions): AnyVal {
+  $$PRUNE(_obj: Any, _expr: Any, _options: ComputeOptions): Any {
     return undefined;
   },
-  $$DESCEND(obj: RawObject, expr: AnyVal, options: ComputeOptions): AnyVal {
+  $$DESCEND(obj: AnyObject, expr: Any, options: ComputeOptions): Any {
     // traverse nested documents iff there is a $cond
-    if (!has(expr as RawObject, "$cond")) return obj;
+    if (!has(expr as AnyObject, "$cond")) return obj;
 
     let result: ArrayOrObject;
 
     for (const [key, current] of Object.entries(obj)) {
       if (isObjectLike(current)) {
         if (current instanceof Array) {
-          const array: RawArray = [];
+          const array: Any[] = [];
           for (let elem of current) {
             if (isObject(elem)) {
-              elem = redact(elem as RawObject, expr, options.update(elem));
+              elem = redact(elem as AnyObject, expr, options.update(elem));
             }
             if (!isNil(elem)) {
               array.push(elem);
@@ -525,7 +519,7 @@ const redactVariables: Record<string, typeof redact> = {
           result = array;
         } else {
           result = redact(
-            current as RawObject,
+            current as AnyObject,
             expr,
             options.update(current)
           ) as ArrayOrObject;
@@ -553,11 +547,11 @@ const redactVariables: Record<string, typeof redact> = {
  * @returns {*}
  */
 export function computeValue(
-  obj: AnyVal,
-  expr: AnyVal,
+  obj: Any,
+  expr: Any,
   operator: string | null,
   options?: Options
-): AnyVal {
+): Any {
   // ensure valid options exist on first invocation
   const copts = ComputeOptions.init(options, obj);
   operator = operator || "";
@@ -569,7 +563,7 @@ export function computeValue(
       operator,
       options
     ) as ExpressionOperator;
-    if (callExpression) return callExpression(obj as RawObject, expr, copts);
+    if (callExpression) return callExpression(obj as AnyObject, expr, copts);
 
     // we also handle $group accumulator operators
     const callAccumulator = getOperator(
@@ -589,7 +583,7 @@ export function computeValue(
 
       // for accumulators, we use the global options since the root is specific to each element within array.
       return callAccumulator(
-        obj as RawObject[],
+        obj as AnyObject[],
         expr,
         // reset the root object for accumulators.
         copts.update(null, copts.local)
@@ -620,7 +614,7 @@ export function computeValue(
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
       context = systemVariables[arr[0]](
-        obj as RawObject,
+        obj as AnyObject,
         null,
         copts
       ) as ArrayOrObject;
@@ -637,7 +631,7 @@ export function computeValue(
       const prefix = arr[0].slice(2);
 
       assert(
-        has(context as RawObject, prefix),
+        has(context as AnyObject, prefix),
         `Use of undefined variable: ${prefix}`
       );
       expr = expr.slice(2);
@@ -651,11 +645,11 @@ export function computeValue(
   }
 
   // check and return value if already in a resolved state
-  if (isArray(expr)) {
-    return expr.map((item: AnyVal) => computeValue(obj, item, null, copts));
+  if (expr instanceof Array) {
+    return expr.map((item: Any) => computeValue(obj, item, null, copts));
   } else if (isObject(expr)) {
-    const result: RawObject = {};
-    for (const [key, val] of Object.entries(expr as RawObject)) {
+    const result: AnyObject = {};
+    for (const [key, val] of Object.entries(expr as AnyObject)) {
       result[key] = computeValue(obj, val, key, copts);
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
@@ -687,10 +681,10 @@ export function computeValue(
  * @return {*} returns the result of the redacted object
  */
 export function redact(
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: ComputeOptions
-): AnyVal {
+): Any {
   const result = computeValue(obj, expr, null, options) as string;
   return has(redactVariables, result)
     ? redactVariables[result](obj, expr, options)

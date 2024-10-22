@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, Callback, RawObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
 import { assert, isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { withMemo } from "./_internal";
@@ -9,13 +9,13 @@ import { withMemo } from "./_internal";
  * in a partition defined in the $setWindowFields stage.
  */
 export function $expMovingAvg(
-  _: RawObject,
-  collection: RawObject[],
+  _: AnyObject,
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): AnyVal {
+): Any {
   const { input, N, alpha } = expr.inputExpr as {
-    input: AnyVal;
+    input: Any;
     N: number;
     alpha: number;
   };

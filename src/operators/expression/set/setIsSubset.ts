@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { intersection } from "../../../util";
 
 /**
@@ -12,10 +12,10 @@ import { intersection } from "../../../util";
  * @param expr
  */
 export const $setIsSubset: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray[];
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[][];
   return intersection(args, options?.hashFunction).length === args[0].length;
 };

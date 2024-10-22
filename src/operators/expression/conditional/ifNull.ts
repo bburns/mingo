@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNil } from "../../../util";
 
 /**
@@ -14,10 +14,10 @@ import { isNil } from "../../../util";
  * @returns {*}
  */
 export const $ifNull: ExpressionOperator = (
-  obj: RawObject,
-  expr: RawArray,
+  obj: AnyObject,
+  expr: Any[],
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray[];
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[][];
   return args.find(arg => !isNil(arg));
 };

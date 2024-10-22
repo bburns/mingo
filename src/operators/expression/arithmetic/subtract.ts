@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 
 /**
  * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
@@ -11,8 +11,8 @@ import { AnyVal, RawObject } from "../../../types";
  * @returns {number}
  */
 export const $subtract: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number => {
   const args = computeValue(obj, expr, null, options) as number[];

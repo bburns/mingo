@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isNumber } from "../../../util";
 import { truncate } from "./_internal";
 
@@ -11,11 +11,11 @@ import { truncate } from "./_internal";
  * @param {*} expr
  */
 export const $round: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number | null => {
-  const args = computeValue(obj, expr, null, options) as RawArray;
+  const args = computeValue(obj, expr, null, options) as Any[];
   const num = args[0] as number;
   const place = args[1] as number;
   if (isNil(num) || isNaN(num) || Math.abs(num) === Infinity) return num;

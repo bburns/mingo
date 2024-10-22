@@ -1,6 +1,6 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { AnyObject } from "../../types";
 import { assert, cloneDeep, isString } from "../../util";
 
 /**
@@ -18,16 +18,16 @@ import { assert, cloneDeep, isString } from "../../util";
  */
 export const $out: PipelineOperator = (
   collection: Iterator,
-  expr: string | RawObject[],
+  expr: string | AnyObject[],
   options: Options
 ): Iterator => {
-  const outputColl: RawObject[] = isString(expr)
+  const outputColl: AnyObject[] = isString(expr)
     ? options?.collectionResolver(expr)
     : expr;
   assert(outputColl instanceof Array, `expression must resolve to an array`);
 
-  return collection.map((o: RawObject) => {
-    outputColl.push(cloneDeep(o) as RawObject);
+  return collection.map((o: AnyObject) => {
+    outputColl.push(cloneDeep(o) as AnyObject);
     return o; // passthrough
   });
 };

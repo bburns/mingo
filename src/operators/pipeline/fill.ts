@@ -1,6 +1,6 @@
 import { initOptions, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal } from "../../types";
+import { Any } from "../../types";
 import { assert, has, isObject } from "../../util";
 import { $ifNull } from "../expression/conditional/ifNull";
 import { $linearFill } from "../window/linearFill";
@@ -9,10 +9,10 @@ import { $addFields } from "./addFields";
 import { $setWindowFields } from "./setWindowFields";
 
 interface InputExpr {
-  partitionBy?: AnyVal;
+  partitionBy?: Any;
   partitionByFields?: string[];
   sortBy?: Record<string, 1 | -1>;
-  output: Record<string, { value: AnyVal } | { method: "linear" | "locf" }>;
+  output: Record<string, { value: Any } | { method: "linear" | "locf" }>;
 }
 
 const FILL_METHODS: Record<string, string> = {

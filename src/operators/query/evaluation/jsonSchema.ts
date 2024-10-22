@@ -1,7 +1,7 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
 import { Options } from "../../../core";
-import { AnyVal, Predicate, RawObject } from "../../../types";
+import { Any, AnyObject, Predicate } from "../../../types";
 import { MingoError } from "../../../util";
 
 /**
@@ -13,14 +13,14 @@ import { MingoError } from "../../../util";
  */
 export function $jsonSchema(
   _: string,
-  schema: AnyVal,
+  schema: Any,
   options: Options
-): Predicate<AnyVal> {
+): Predicate<Any> {
   if (!options?.jsonSchemaValidator) {
     throw new MingoError(
       "Missing option 'jsonSchemaValidator'. Configure to use '$jsonSchema' operator."
     );
   }
-  const validate = options?.jsonSchemaValidator(schema as RawObject);
-  return (obj: RawObject) => validate(obj);
+  const validate = options?.jsonSchemaValidator(schema as AnyObject);
+  return (obj: AnyObject) => validate(obj);
 }

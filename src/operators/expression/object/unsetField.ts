@@ -1,13 +1,13 @@
 // Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { $setField } from "./setField";
 
 interface InputExpr {
   readonly field: string;
-  readonly input: RawObject;
-  readonly value: AnyVal;
+  readonly input: AnyObject;
+  readonly value: Any;
 }
 
 /**
@@ -18,10 +18,10 @@ interface InputExpr {
  * @param {Options} options Options to use for operation
  */
 export const $unsetField: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: InputExpr,
   options: Options
-): AnyVal => {
+): Any => {
   return $setField(
     obj,
     {

@@ -2,7 +2,7 @@
 
 import { Options, ProjectionOperator } from "../../core";
 import { Query } from "../../query";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { assert, resolve } from "../../util";
 
 /**
@@ -14,22 +14,22 @@ import { assert, resolve } from "../../util";
  * @returns {*}
  */
 export const $elemMatch: ProjectionOperator = (
-  obj: RawObject,
-  expr: RawObject,
+  obj: AnyObject,
+  expr: AnyObject,
   field: string,
   options: Options
-): AnyVal => {
-  const arr = resolve(obj, field) as Array<RawObject>;
+): Any => {
+  const arr = resolve(obj, field) as AnyObject[];
   const query = new Query(expr, options);
 
   assert(arr instanceof Array, "$elemMatch: argument must resolve to array");
-  const result: RawArray = [];
-  for (let i = 0; i < (arr as RawArray).length; i++) {
+  const result: Any[] = [];
+  for (let i = 0; i < (arr as Any[]).length; i++) {
     if (query.test(arr[i])) {
       // MongoDB projects only the first nested document when using this operator.
       // For some use cases this can lead to complicated queries to selectively project nested documents.
       // When strict mode is disabled, we return all matching nested documents.
-      if (options.useStrictMode) return [arr[i]] as RawArray;
+      if (options.useStrictMode) return [arr[i]] as Any[];
       result.push(arr[i]);
     }
   }

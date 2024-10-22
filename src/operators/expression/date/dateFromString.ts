@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
@@ -17,8 +17,8 @@ interface InputExpr {
   dateString?: string;
   timezone?: string;
   format?: string;
-  onError?: AnyVal;
-  onNull?: AnyVal;
+  onError?: Any;
+  onNull?: Any;
 }
 
 const buildMap = (letters: string, sign: number): Record<string, number> => {
@@ -37,11 +37,11 @@ const TZ_LETTER_OFFSETS = {
  * @param obj
  * @param expr
  */
-export const $dateFromString: ExpressionOperator<AnyVal> = (
-  obj: RawObject,
+export const $dateFromString: ExpressionOperator<Any> = (
+  obj: AnyObject,
   expr: InputExpr,
   options: Options
-): AnyVal => {
+): Any => {
   const args = computeValue(obj, expr, null, options) as InputExpr;
 
   args.format = args.format || DATE_FORMAT;

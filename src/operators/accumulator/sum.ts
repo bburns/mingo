@@ -1,5 +1,5 @@
 import { AccumulatorOperator, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { isArray, isNumber } from "../../util";
 import { $push } from "./push";
 
@@ -7,12 +7,12 @@ import { $push } from "./push";
  * Returns the sum of all the values in a group.
  *
  * @param {Array} collection The input array
- * @param {Object} expr The right-hand side expression value of the operator
+ * @param {AnyObject} expr The right-hand side expression value of the operator
  * @returns {Number}
  */
 export const $sum: AccumulatorOperator<number> = (
-  collection: RawObject[],
-  expr: AnyVal,
+  collection: AnyObject[],
+  expr: Any,
   options: Options
 ): number => {
   if (!isArray(collection)) return 0;

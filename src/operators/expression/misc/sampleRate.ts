@@ -1,7 +1,7 @@
 // Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { RawObject } from "../../../types";
+import { AnyObject } from "../../../types";
 
 /**
  * Randomly select documents at a given rate.
@@ -11,7 +11,7 @@ import { RawObject } from "../../../types";
  * @param {Options} options Options to use for operation
  */
 export const $sampleRate: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: number,
   options: Options
 ): boolean =>

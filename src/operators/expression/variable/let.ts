@@ -8,7 +8,7 @@ import {
   ExpressionOperator,
   Options
 } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 
 /**
  * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
@@ -19,10 +19,10 @@ import { AnyVal, RawObject } from "../../../types";
  * @returns {*}
  */
 export const $let: ExpressionOperator = (
-  obj: RawObject,
-  expr: { vars: RawObject; in: AnyVal },
+  obj: AnyObject,
+  expr: { vars: AnyObject; in: Any },
   options: Options
-): AnyVal => {
+): Any => {
   // resolve vars
   const variables = {};
   for (const [key, val] of Object.entries(expr.vars)) {

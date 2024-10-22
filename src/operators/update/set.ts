@@ -1,13 +1,13 @@
 import { UpdateOptions } from "../../core";
-import { AnyVal, ArrayOrObject, RawObject } from "../../types";
+import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { isEqual } from "../../util";
 import { applyUpdate, clone, walkExpression } from "./_internal";
 
 /** Replaces the value of a field with the specified value. */
 export const $set = (
-  obj: RawObject,
-  expr: Record<string, AnyVal>,
-  arrayFilters: RawObject[] = [],
+  obj: AnyObject,
+  expr: Record<string, Any>,
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, (val, node, queries) => {

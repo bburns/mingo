@@ -1,6 +1,6 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { $group } from "./group";
 import { $sort } from "./sort";
 
@@ -11,16 +11,16 @@ import { $sort } from "./sort";
  * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
  *
  * @param  {Array} collection
- * @param  {Object} expr
- * @param  {Object} options
+ * @param  {AnyObject} expr
+ * @param  {AnyObject} options
  * @return {*}
  */
 export const $sortByCount: PipelineOperator = (
   collection: Iterator,
-  expr: AnyVal,
+  expr: Any,
   options: Options
 ): Iterator => {
-  const newExpr: RawObject = { count: { $sum: 1 } };
+  const newExpr: AnyObject = { count: { $sum: 1 } };
 
   newExpr["_id"] = expr;
 

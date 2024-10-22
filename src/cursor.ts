@@ -1,7 +1,7 @@
 import { Aggregator } from "./aggregator";
 import { CollationSpec, Options } from "./core";
 import { concat, Iterator, Lazy, Source } from "./lazy";
-import { AnyVal, Callback, Predicate, RawObject } from "./types";
+import { Any, AnyObject, Callback, Predicate } from "./types";
 import { isObject } from "./util";
 
 /**
@@ -15,14 +15,14 @@ import { isObject } from "./util";
  * @constructor
  */
 export class Cursor<T> {
-  private readonly operators: Array<RawObject> = [];
+  private readonly operators: AnyObject[] = [];
   private result: Iterator | null = null;
   private buffer: T[] = [];
 
   constructor(
     readonly source: Source,
-    readonly predicate: Predicate<AnyVal>,
-    readonly projection: RawObject,
+    readonly predicate: Predicate<Any>,
+    readonly projection: AnyObject,
     private options?: Options
   ) {}
 
@@ -92,10 +92,10 @@ export class Cursor<T> {
 
   /**
    * Returns results ordered according to a sort specification.
-   * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
+   * @param {AnyObject} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
-  sort(modifier: RawObject): Cursor<T> {
+  sort(modifier: AnyObject): Cursor<T> {
     this.operators.push({ $sort: modifier });
     return this;
   }
@@ -111,7 +111,7 @@ export class Cursor<T> {
 
   /**
    * Returns the next document in a cursor.
-   * @returns {Object | Boolean}
+   * @returns {AnyObject | Boolean}
    */
   next(): T {
     // yield value obtains in hasNext()

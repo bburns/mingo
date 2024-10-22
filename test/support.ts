@@ -15,7 +15,7 @@ import * as pipelineOperators from "../src/operators/pipeline";
 import * as projectionOperators from "../src/operators/projection";
 import * as queryOperators from "../src/operators/query";
 import * as windowOperators from "../src/operators/window";
-import { AnyVal, Callback, RawArray, RawObject } from "../src/types";
+import { Any, AnyObject, Callback } from "../src/types";
 import complexGrades from "./data/grades_complex";
 import simpleGrades from "./data/grades_simple";
 import person from "./data/person";
@@ -192,17 +192,17 @@ export const groupByObjectsData = [
 
 export function runTest(
   description: string,
-  suite: Record<string, RawArray>
+  suite: Record<string, Any[]>
 ): void {
   Object.entries(suite).forEach(arr => {
     const operator = arr[0];
-    const examples = arr[1] as Array<Array<unknown>>;
+    const examples = arr[1] as Any[][];
     describe(description, () => {
       describe(operator, () => {
         examples.forEach(val => {
-          let input = val[0] as RawObject;
+          let input = val[0] as AnyObject;
           let expected = val[1];
-          const ctx = (val[2] || { err: false }) as RawObject;
+          const ctx = (val[2] || { err: false }) as AnyObject;
           const obj = ctx?.obj || {};
 
           let field: string | null = operator;
@@ -212,7 +212,7 @@ export function runTest(
             if (!field) {
               field = operator;
             } else {
-              input = input[field] as RawObject;
+              input = input[field] as AnyObject;
             }
           }
 
@@ -239,9 +239,9 @@ export function runTest(
 }
 
 interface PipelineTestSuite {
-  input: RawArray;
-  pipeline: Array<RawObject>;
-  expected: AnyVal;
+  input: Any[];
+  pipeline: AnyObject[];
+  expected: Any;
   message: string;
   options?: Partial<Options>;
 }
@@ -250,7 +250,7 @@ interface PipelineTestSuite {
  */
 export function runTestPipeline(
   description: string,
-  suite: Array<PipelineTestSuite>
+  suite: PipelineTestSuite[]
 ): void {
   describe(description, () => {
     suite.forEach(unitTest => {
@@ -266,7 +266,7 @@ export function runTestPipeline(
       );
       it(message, () => {
         if (typeof expected === "function") {
-          const cb = expected as Callback<AnyVal>;
+          const cb = expected as Callback<Any>;
           cb(actual);
         } else {
           expect(actual).toEqual(expected);

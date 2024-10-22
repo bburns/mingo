@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNumber, isString } from "../../../util";
 
 const UTF8_MASK = [0xc0, 0xe0, 0xf0];
@@ -31,16 +31,18 @@ function utf8Encode(s: string): number[][] {
  * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
  * The index is zero-based.
  *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/substrBytes/}.
+ *
  * @param obj
  * @param expr
  * @returns {string}
  */
 export const $substrBytes: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray;
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[];
   const s = args[0] as string;
   const index = args[1] as number;
   const count = args[2] as number;

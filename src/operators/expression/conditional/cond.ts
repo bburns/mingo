@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, ArrayOrObject, RawObject } from "../../../types";
+import { Any, AnyObject, ArrayOrObject } from "../../../types";
 import { assert, isObject, truthy } from "../../../util";
 
 /**
@@ -14,13 +14,13 @@ import { assert, isObject, truthy } from "../../../util";
  * @param expr
  */
 export const $cond: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: ArrayOrObject,
   options: Options
-): AnyVal => {
-  let ifExpr: AnyVal;
-  let thenExpr: AnyVal;
-  let elseExpr: AnyVal;
+): Any => {
+  let ifExpr: Any;
+  let thenExpr: Any;
+  let elseExpr: Any;
   const errorMsg = "$cond: invalid arguments";
   if (expr instanceof Array) {
     assert(expr.length === 3, errorMsg);

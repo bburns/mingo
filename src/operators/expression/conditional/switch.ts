@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { truthy } from "../../../util";
 
 /**
@@ -15,13 +15,13 @@ import { truthy } from "../../../util";
  * @param expr
  */
 export const $switch: ExpressionOperator = (
-  obj: RawObject,
-  expr: { branches: Array<{ case: AnyVal; then: AnyVal }>; default: AnyVal },
+  obj: AnyObject,
+  expr: { branches: Array<{ case: Any; then: Any }>; default: Any },
   options: Options
-): AnyVal => {
+): Any => {
   let thenExpr = null;
   // Array.prototype.find not supported in IE, hence the '.some()' proxy
-  expr.branches.some((b: { case: AnyVal; then: AnyVal }) => {
+  expr.branches.some((b: { case: Any; then: Any }) => {
     const condition = truthy(
       computeValue(obj, b.case, null, options),
       options.useStrictMode

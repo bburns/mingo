@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { adjustDate, isoWeek, isoWeekYear, parseTimezone } from "./_internal";
 
 /**
@@ -12,11 +12,11 @@ import { adjustDate, isoWeek, isoWeekYear, parseTimezone } from "./_internal";
  * @param expr
  * @param options
  */
-export const $dateToParts: ExpressionOperator<RawObject> = (
-  obj: RawObject,
-  expr: AnyVal,
+export const $dateToParts: ExpressionOperator<AnyObject> = (
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): RawObject => {
+): AnyObject => {
   const args = computeValue(obj, expr, null, options) as {
     date: Date;
     timezone?: string;

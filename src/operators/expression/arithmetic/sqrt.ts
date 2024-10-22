@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isNumber } from "../../../util";
 
 /**
@@ -12,8 +12,8 @@ import { assert, isNil, isNumber } from "../../../util";
  * @returns {number}
  */
 export const $sqrt: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number | null => {
   const n = computeValue(obj, expr, null, options) as number;

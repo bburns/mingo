@@ -2,7 +2,7 @@
 
 import { Aggregator } from "../../../aggregator";
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, compare, isArray, isNil, isObject } from "../../../util";
 
 /**
@@ -14,13 +14,13 @@ import { assert, compare, isArray, isNil, isObject } from "../../../util";
  * @returns
  */
 export const $sortArray: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const { input, sortBy } = computeValue(obj, expr, null, options) as {
-    input: RawArray;
-    sortBy: RawObject | number;
+    input: Any[];
+    sortBy: AnyObject | number;
   };
 
   if (isNil(input)) return null;

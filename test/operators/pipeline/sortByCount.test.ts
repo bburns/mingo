@@ -1,4 +1,4 @@
-import { RawObject } from "../../../src/types";
+import { AnyObject } from "../../../src/types";
 import * as samples from "../../support";
 
 samples.runTestPipeline("operators/pipeline/sortByCount", [
@@ -64,7 +64,7 @@ samples.runTestPipeline("operators/pipeline/sortByCount", [
 
     pipeline: [{ $unwind: "$tags" }, { $sortByCount: "$tags" }],
 
-    expected: (result: Array<RawObject>) => {
+    expected: (result: AnyObject[]) => {
       expect(result.every(o => Object.keys(o).length === 2)).toEqual(true);
       expect(result[0]["count"]).toEqual(6);
       expect(result[7]["count"]).toEqual(1);

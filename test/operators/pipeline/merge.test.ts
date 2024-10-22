@@ -2,7 +2,7 @@ import "../../../src/init/system";
 
 import { aggregate } from "../../../src";
 import { initOptions, ProcessingMode } from "../../../src/core";
-import { RawObject } from "../../../src/types";
+import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS } from "../../support";
 
 const options = initOptions({
@@ -261,7 +261,7 @@ describe("operators/pipeline/merge", () => {
   });
 
   it("Merge Results from Multiple Collections", () => {
-    const quarterlyreport: RawObject[] = [];
+    const quarterlyreport: AnyObject[] = [];
     const purchaseorders = [
       {
         _id: 1,

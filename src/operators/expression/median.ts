@@ -1,5 +1,5 @@
 import { computeValue, ExpressionOperator, Options } from "../../core";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { $median as __median } from "../accumulator/median";
 
 /**
@@ -11,10 +11,10 @@ import { $median as __median } from "../accumulator/median";
  * @returns {number}
  */
 export const $median: ExpressionOperator = (
-  obj: RawObject,
-  expr: { input: AnyVal },
+  obj: AnyObject,
+  expr: { input: Any },
   options: Options
-): AnyVal => {
-  const input = computeValue(obj, expr.input, null, options) as RawArray;
+): Any => {
+  const input = computeValue(obj, expr.input, null, options) as Any[];
   return __median(input, { input: "$$CURRENT" }, options);
 };

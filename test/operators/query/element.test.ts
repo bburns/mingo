@@ -1,7 +1,7 @@
 import "../../../src/init/system";
 
 import { Query } from "../../../src";
-import { RawObject } from "../../../src/types";
+import { AnyObject } from "../../../src/types";
 
 describe("operators/query/element", () => {
   const obj = {
@@ -15,7 +15,7 @@ describe("operators/query/element", () => {
     regex: /ab/,
     int: 49023,
     long: Math.pow(2, 32),
-    decimal: 20.7823e10,
+    decimal: 20.7823e10
   };
 
   describe("$ype", () => {
@@ -37,13 +37,13 @@ describe("operators/query/element", () => {
       [{ double: { $type: [1] } }, 'can match $type [1] "double"'],
       [{ double: { $type: [1, 4] } }, 'can match $type [1, 4] "double"'],
       [{ array: { $type: [1, 4] } }, 'can match $type [1, 4] "array"'],
-      [{ double: { $not: { $type: [] } } }, "do not match $type []"],
+      [{ double: { $not: { $type: [] } } }, "do not match $type []"]
     ];
 
     queries.forEach(function (arr) {
       const [criteria, message] = arr;
       it(message as string, () => {
-        const query = new Query(criteria as RawObject);
+        const query = new Query(criteria as AnyObject);
         expect(query.test(obj)).toEqual(true);
       });
     });

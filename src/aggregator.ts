@@ -7,7 +7,7 @@ import {
   ProcessingMode
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { RawObject } from "./types";
+import { AnyObject } from "./types";
 import { assert, cloneDeep, intersection, isEmpty } from "./util";
 
 /**
@@ -20,7 +20,7 @@ import { assert, cloneDeep, intersection, isEmpty } from "./util";
 export class Aggregator {
   private readonly options: Options;
   constructor(
-    private readonly pipeline: Array<RawObject>,
+    private readonly pipeline: AnyObject[],
     options?: Partial<Options>
   ) {
     this.options = initOptions(options);
@@ -83,7 +83,7 @@ export class Aggregator {
    * @param {*} collection
    * @param {*} query
    */
-  run<T extends RawObject>(collection: Source): T[] {
+  run<T extends AnyObject>(collection: Source): T[] {
     return this.stream(collection).value();
   }
 }

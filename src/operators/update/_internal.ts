@@ -1,12 +1,6 @@
 import { CloneMode, UpdateOptions } from "../../core";
 import { Query } from "../../query";
-import {
-  AnyVal,
-  ArrayOrObject,
-  Callback,
-  RawArray,
-  RawObject
-} from "../../types";
+import { Any, AnyObject, ArrayOrObject, Callback } from "../../types";
 import {
   assert,
   cloneDeep,
@@ -18,13 +12,13 @@ import {
   WalkOptions
 } from "../../util";
 
-export const clone = (mode: CloneMode, val: AnyVal): AnyVal => {
+export const clone = (mode: CloneMode, val: Any): Any => {
   switch (mode) {
     case "deep":
       return cloneDeep(val);
     case "copy": {
       if (isDate(val)) return new Date(val);
-      if (isArray(val)) return [...(val as RawArray)];
+      if (isArray(val)) return [...(val as Any[])];
       if (isObject(val)) return { ...val };
       return val;
     }
@@ -41,6 +35,7 @@ export type PathNode = {
   child?: string;
   next?: PathNode;
 };
+
 /**
  * Tokenize a selector path to extract parts for the root, arrayFilter, and child
  * @param selector The path to tokenize
@@ -90,12 +85,12 @@ export const applyUpdate = (
     walk(o, parent, g, opts);
     return b;
   }
-  const t = resolve(o, parent) as RawArray;
+  const t = resolve(o, parent) as Any[];
   // do nothing if we don't get correct type.
   if (!isArray(t)) return false;
   // apply update to matching items.
   return t
-    .map((e: RawObject, i) => {
+    .map((e: AnyObject, i) => {
       // filter if applicable.
       if (q[c] && !q[c].test({ [c]: e })) return false;
       // apply update.
@@ -104,7 +99,7 @@ export const applyUpdate = (
     .some(Boolean);
 };
 
-export type Action<T = AnyVal> = (
+export type Action<T = Any> = (
   val: T,
   pathNode: PathNode,
   queries: Record<string, Query>
@@ -117,11 +112,11 @@ export type Action<T = AnyVal> = (
  * @param arrayFilter Filter conditions passed to the operator.
  * @param options The options provided by the caller.
  * @param callback The action to apply for a given path and value.
- * @returns {Array<string>}
+ * @returns {Any[]<string>}
  */
 export function walkExpression<T>(
-  expr: RawObject,
-  arrayFilter: RawObject[],
+  expr: AnyObject,
+  arrayFilter: AnyObject[],
   options: UpdateOptions,
   callback: Action<T>
 ): string[] {
@@ -132,7 +127,7 @@ export function walkExpression<T>(
       if (callback(val as T, node, {})) res.push(node.parent);
     } else {
       // extract conditions for each identifier
-      const conditions: Record<string, RawObject> = {};
+      const conditions: Record<string, AnyObject> = {};
       arrayFilter.forEach(o => {
         Object.keys(o).forEach(k => {
           vars.forEach(w => {

@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, Callback, RawObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
@@ -8,13 +8,13 @@ import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
  * Returns the approximation of the area under a curve.
  */
 export function $integral(
-  _: RawObject,
-  collection: RawObject[],
+  _: AnyObject,
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): AnyVal {
+): Any {
   const { input, unit } = expr.inputExpr as {
-    input: AnyVal;
+    input: Any;
     unit?: WindowTimeUnit;
   };
   const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];

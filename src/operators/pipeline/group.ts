@@ -5,7 +5,7 @@ import {
   PipelineOperator
 } from "../../core";
 import { Iterator, Source } from "../../lazy";
-import { Callback, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import { assert, groupBy, has } from "../../util";
 
 // lookup key for grouping
@@ -17,18 +17,18 @@ const ID_KEY = "_id";
  * @param collection
  * @param expr
  * @param options
- * @returns {Array}
+ * @returns {Any[]}
  */
 export const $group: PipelineOperator = (
   collection: Iterator,
-  expr: RawObject,
+  expr: AnyObject,
   options: Options
 ): Iterator => {
   assert(has(expr, ID_KEY), "a group specification must include an _id");
   const idExpr = expr[ID_KEY];
   const copts = ComputeOptions.init(options);
 
-  return collection.transform(((coll: RawArray) => {
+  return collection.transform(((coll: Any[]) => {
     const partitions = groupBy(
       coll,
       obj => computeValue(obj, idExpr, null, options),
@@ -36,7 +36,7 @@ export const $group: PipelineOperator = (
     );
 
     // remove the group key
-    expr = { ...expr } as RawObject;
+    expr = { ...expr } as AnyObject;
     delete expr[ID_KEY];
 
     let i = -1;
@@ -47,7 +47,7 @@ export const $group: PipelineOperator = (
       if (++i === size) return { done: true };
 
       const groupId = partitionKeys[i];
-      const obj: RawObject = {};
+      const obj: AnyObject = {};
 
       // exclude undefined key value
       if (groupId !== undefined) {

@@ -2,7 +2,7 @@
 
 import { Options, PipelineOperator } from "../../core";
 import { Iterator, Source } from "../../lazy";
-import { Callback, RawArray } from "../../types";
+import { Any, Callback } from "../../types";
 
 /**
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
@@ -17,7 +17,7 @@ export const $sample: PipelineOperator = (
   expr: { size: number },
   _options: Options
 ): Iterator => {
-  return collection.transform(((xs: RawArray) => {
+  return collection.transform(((xs: Any[]) => {
     const len = xs.length;
     let i = -1;
     return () => {

@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { AnyVal, RawArray, RawObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, WindowOperatorInput } from "../../types";
 import { isNil } from "../../util";
 import { $push } from "../accumulator/push";
 import { withMemo } from "./_internal";
@@ -8,11 +8,11 @@ import { withMemo } from "./_internal";
  * Last observation carried forward. Sets values for null and missing fields in a window to the last non-null value for the field.
  */
 export function $locf(
-  _: RawObject,
-  collection: RawObject[],
+  _: AnyObject,
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): AnyVal {
+): Any {
   return withMemo(
     collection,
     expr,
@@ -23,6 +23,6 @@ export function $locf(
       }
       return values;
     },
-    (series: RawArray) => series[expr.documentNumber - 1]
+    (series: Any[]) => series[expr.documentNumber - 1]
   );
 }

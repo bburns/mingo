@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNil, isNumber, isString } from "../../../util";
 
 export class TypeConvertError extends Error {
@@ -9,8 +9,8 @@ export class TypeConvertError extends Error {
 }
 
 export function toInteger(
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options,
   max: number,
   min: number,

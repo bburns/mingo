@@ -1,20 +1,20 @@
 import { computeValue, Options } from "../../core";
-import { AnyVal, RawObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, WindowOperatorInput } from "../../types";
 
 /**
  * Returns the value from an expression applied to a document in a specified
  * position relative to the current document in the $setWindowFields stage partition.
  */
 export function $shift(
-  obj: RawObject,
-  collection: RawObject[],
+  obj: AnyObject,
+  collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): AnyVal {
+): Any {
   const input = expr.inputExpr as {
-    output: AnyVal;
+    output: Any;
     by: number;
-    default?: AnyVal;
+    default?: Any;
   };
 
   const shiftedIndex = expr.documentNumber - 1 + input.by;

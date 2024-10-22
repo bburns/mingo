@@ -7,7 +7,7 @@ import {
 } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { AnyVal, Callback, Predicate, RawObject } from "./types";
+import { Any, AnyObject, Callback, Predicate } from "./types";
 import {
   assert,
   inArray,
@@ -20,16 +20,16 @@ import {
 /**
  * An object used to filter input documents
  *
- * @param {Object} condition The condition for constructing predicates
+ * @param {AnyObject} condition The condition for constructing predicates
  * @param {Options} options Options for use by operators
  * @constructor
  */
 export class Query {
-  private readonly compiled: Callback<AnyVal>[];
+  private readonly compiled: Callback<Any>[];
   private readonly options: Options;
 
   constructor(
-    private readonly condition: RawObject,
+    private readonly condition: AnyObject,
     options?: Partial<Options>
   ) {
     this.options = initOptions(options);
@@ -43,7 +43,7 @@ export class Query {
       `query criteria must be an object: ${JSON.stringify(this.condition)}`
     );
 
-    const whereOperator: { field?: string; expr?: AnyVal } = {};
+    const whereOperator: { field?: string; expr?: Any } = {};
 
     for (const [field, expr] of Object.entries(this.condition)) {
       if ("$where" === field) {
@@ -56,7 +56,7 @@ export class Query {
         // normalize expression
         assert(!isOperator(field), `unknown top level operator: ${field}`);
         for (const [operator, val] of Object.entries(
-          normalize(expr) as RawObject
+          normalize(expr) as AnyObject
         )) {
           this.processOperator(field, operator, val);
         }
@@ -72,11 +72,7 @@ export class Query {
     }
   }
 
-  private processOperator(
-    field: string,
-    operator: string,
-    value: AnyVal
-  ): void {
+  private processOperator(field: string, operator: string, value: Any): void {
     const call = getOperator(
       OperatorType.QUERY,
       operator,
@@ -85,7 +81,7 @@ export class Query {
     if (!call) {
       throw new MingoError(`unknown query operator ${operator}`);
     }
-    const fn = call(field, value, this.options) as Callback<boolean, RawObject>;
+    const fn = call(field, value, this.options) as Callback<boolean, AnyObject>;
     this.compiled.push(fn);
   }
 
@@ -111,10 +107,10 @@ export class Query {
    * @param projection An optional projection criteria
    * @returns {Cursor} A Cursor for iterating over the results
    */
-  find<T>(collection: Source, projection?: RawObject): Cursor<T> {
+  find<T>(collection: Source, projection?: AnyObject): Cursor<T> {
     return new Cursor<T>(
       collection,
-      ((x: RawObject) => this.test(x)) as Predicate<AnyVal>,
+      ((x: AnyObject) => this.test(x)) as Predicate<Any>,
       projection || {},
       this.options
     );

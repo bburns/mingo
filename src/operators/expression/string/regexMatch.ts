@@ -3,7 +3,7 @@
  */
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { regexSearch } from "./_internal";
 
 /**
@@ -13,9 +13,9 @@ import { regexSearch } from "./_internal";
  * @param expr
  */
 export const $regexMatch: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   return regexSearch(obj, expr, options, { global: false }).length != 0;
 };

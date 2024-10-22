@@ -1,12 +1,12 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawObject } from "../../types";
+import { AnyObject, ArrayOrObject } from "../../types";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Sets the value of a field to the current date. */
 export const $currentDate = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: Record<string, true>,
-  arrayFilters: RawObject[] = [],
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   const now = Date.now();

@@ -1,18 +1,18 @@
 import { AccumulatorOperator, computeValue, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 
 /**
  * Returns the first value in a group.
  *
  * @param {Array} collection The input array
- * @param {Object} expr The right-hand side expression value of the operator
+ * @param {AnyObject} expr The right-hand side expression value of the operator
  * @returns {*}
  */
 export const $first: AccumulatorOperator = (
-  collection: RawObject[],
-  expr: AnyVal,
+  collection: AnyObject[],
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   return collection.length > 0
     ? computeValue(collection[0], expr, null, options)
     : undefined;

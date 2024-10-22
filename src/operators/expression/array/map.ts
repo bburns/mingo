@@ -6,7 +6,7 @@ import {
   ExpressionOperator,
   Options
 } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray } from "../../../util";
 
 /**
@@ -14,18 +14,18 @@ import { assert, isArray } from "../../../util";
  *
  * @param obj
  * @param expr
- * @returns {Array|*}
+ * @returns {Any[]|*}
  */
 export const $map: ExpressionOperator = (
-  obj: RawObject,
-  expr: { input: RawArray; as: string; in: AnyVal },
+  obj: AnyObject,
+  expr: { input: Any[]; as: string; in: Any },
   options: Options
-): AnyVal => {
-  const input = computeValue(obj, expr.input, null, options) as RawArray;
+): Any => {
+  const input = computeValue(obj, expr.input, null, options) as Any[];
   assert(isArray(input), `$map 'input' expression must resolve to an array`);
   const copts = ComputeOptions.init(options);
   const k = expr.as || "this";
-  return input.map((o: AnyVal) => {
+  return input.map((o: Any) => {
     return computeValue(
       obj,
       expr.in,

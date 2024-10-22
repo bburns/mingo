@@ -11,11 +11,10 @@ import {
 } from "../../core";
 import { concat, Iterator, Lazy } from "../../lazy";
 import {
-  AnyVal,
+  Any,
+  AnyObject,
   Boundary,
   Callback,
-  RawArray,
-  RawObject,
   SetWindowFieldsInput,
   WindowOutputOption
 } from "../../types";
@@ -52,7 +51,7 @@ const WINDOW_UNBOUNDED_OPS = new Set([
  * Randomly selects the specified number of documents from its input. The given iterator must have finite values
  *
  * @param  {Iterator} collection
- * @param  {Object} expr
+ * @param  {AnyObject} expr
  * @param  {Options} options
  * @return {*}
  */
@@ -108,7 +107,7 @@ export const $setWindowFields: PipelineOperator = (
   );
 
   // transform values
-  return collection.transform(((partitions: RawArray) => {
+  return collection.transform(((partitions: Any[]) => {
     // let iteratorIndex = 0;
     const iterators: Iterator[] = [];
     const outputConfig: Array<{
@@ -117,7 +116,7 @@ export const $setWindowFields: PipelineOperator = (
         left: AccumulatorOperator | null;
         right: WindowOperator | null;
       };
-      args: AnyVal;
+      args: Any;
       field: string;
       window: WindowOutputOption;
     }> = [];
@@ -154,25 +153,25 @@ export const $setWindowFields: PipelineOperator = (
     }
 
     // each parition maintains its own closure to process the documents in the window.
-    partitions.forEach(((group: { items: RawArray }) => {
+    partitions.forEach(((group: { items: Any[] }) => {
       // get the items to process
-      const items = group.items as RawObject[];
+      const items = group.items as AnyObject[];
 
       // create an iterator per group.
       // we need the index of each document so we track it using a special field.
       let iterator = Lazy(items);
 
       // results map
-      const windowResultMap: Record<string, (_: RawObject) => AnyVal> = {};
+      const windowResultMap: Record<string, (_: AnyObject) => Any> = {};
 
       for (const config of outputConfig) {
         const { func, args, field, window } = config;
         const makeResultFunc = (
-          getItemsFn: (_: RawObject, i: number) => RawObject[]
+          getItemsFn: (_: AnyObject, i: number) => AnyObject[]
         ) => {
           // closure for object index within the partition
           let index = -1;
-          return (obj: RawObject) => {
+          return (obj: AnyObject) => {
             ++index;
 
             // process accumulator function
@@ -221,9 +220,9 @@ export const $setWindowFields: PipelineOperator = (
             };
 
             const getItems = (
-              current: RawObject,
+              current: AnyObject,
               index: number
-            ): RawObject[] => {
+            ): AnyObject[] => {
               // handle string boundaries or documents
               if (!!documents || boundary.every(isString)) {
                 return items.slice(toBeginIndex(index), toEndIndex(index));
@@ -255,12 +254,12 @@ export const $setWindowFields: PipelineOperator = (
                 upper = isNumber(end) ? currentValue + end : Infinity;
               }
 
-              let array: RawObject[] = items;
+              let array: AnyObject[] = items;
               if (begin == "current") array = items.slice(index);
               if (end == "current") array = items.slice(0, index + 1);
 
               // look within the boundary and filter down
-              return array.filter((o: RawObject) => {
+              return array.filter((o: AnyObject) => {
                 const n = +o[sortKey];
                 return n >= lower && n <= upper;
               });
@@ -281,7 +280,7 @@ export const $setWindowFields: PipelineOperator = (
           {
             [field]: {
               $function: {
-                body: (obj: RawObject) => windowResultMap[field](obj),
+                body: (obj: AnyObject) => windowResultMap[field](obj),
                 args: ["$$CURRENT"]
               }
             }

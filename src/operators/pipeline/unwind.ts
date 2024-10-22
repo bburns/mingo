@@ -1,6 +1,6 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { AnyVal, Callback, RawObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import {
   isEmpty,
   isString,
@@ -36,12 +36,12 @@ export const $unwind: PipelineOperator = (
   const includeArrayIndex = expr?.includeArrayIndex || false;
   const preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
 
-  const format = (o: RawObject, i: number | null) => {
+  const format = (o: AnyObject, i: number | null) => {
     if (includeArrayIndex !== false) o[includeArrayIndex] = i;
     return o;
   };
 
-  let value: AnyVal;
+  let value: Any;
 
   return Lazy(() => {
     for (;;) {
@@ -56,10 +56,10 @@ export const $unwind: PipelineOperator = (
       if (wrapper.done) return wrapper;
 
       // unwrap value
-      const obj = wrapper.value as RawObject;
+      const obj = wrapper.value as AnyObject;
 
       // get the value of the field to unwind
-      value = resolve(obj, field) as Array<RawObject>;
+      value = resolve(obj, field) as AnyObject[];
 
       // throw error if value is not an array???
       if (value instanceof Array) {
@@ -72,7 +72,7 @@ export const $unwind: PipelineOperator = (
           value = Lazy(value).map(((item, i: number) => {
             const newObj = resolveGraph(obj, field, {
               preserveKeys: true
-            }) as RawObject;
+            }) as AnyObject;
             setValue(newObj, field, item);
             return format(newObj, i);
           }) as Callback);

@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
 import { $toBool } from "./toBool";
@@ -14,10 +14,10 @@ import { $toLong } from "./toLong";
 import { $toString } from "./toString";
 
 interface ConvertOptions {
-  input: AnyVal;
+  input: Any;
   to: string | number;
-  onError?: AnyVal;
-  onNull?: AnyVal;
+  onError?: Any;
+  onNull?: Any;
 }
 
 /**
@@ -27,10 +27,10 @@ interface ConvertOptions {
  * @param expr
  */
 export const $convert: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const args = computeValue(obj, expr, null, options) as ConvertOptions;
 
   args.onNull = args.onNull === undefined ? null : args.onNull;

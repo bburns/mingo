@@ -1,6 +1,6 @@
 import { CollationSpec, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, Comparator, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, Comparator } from "../../types";
 import {
   compare,
   groupBy,
@@ -16,7 +16,7 @@ import {
  *
  * @param collection
  * @param sortKeys
- * @param  {Object} options
+ * @param  {AnyObject} options
  * @returns {*}
  */
 export const $sort: PipelineOperator = (
@@ -35,12 +35,12 @@ export const $sort: PipelineOperator = (
     cmp = collationComparator(collationSpec);
   }
 
-  return collection.transform((coll: RawArray) => {
+  return collection.transform((coll: Any[]) => {
     const modifiers = Object.keys(sortKeys);
     for (const key of modifiers.reverse()) {
       const groups = groupBy(
         coll,
-        (obj: RawObject) => resolve(obj, key),
+        (obj: AnyObject) => resolve(obj, key),
         options.hashFunction
       );
       const sortedKeys = Array.from(groups.keys()).sort(cmp);
@@ -49,7 +49,7 @@ export const $sort: PipelineOperator = (
       // reuse collection so the data is available for the next iteration of the sort modifiers.
       coll = [];
       sortedKeys.reduce(
-        (acc: RawArray, key: AnyVal) => into(acc, groups.get(key)),
+        (acc: Any[], key: Any) => into(acc, groups.get(key)),
         coll
       );
     }
@@ -74,7 +74,7 @@ const COLLATION_STRENGTH: Record<number, "base" | "accent" | "variant"> = {
 /**
  * Creates a comparator function for the given collation spec. See https://docs.mongodb.com/manual/reference/collation/
  *
- * @param spec {Object} The MongoDB collation spec.
+ * @param spec {AnyObject} The MongoDB collation spec.
  * {
  *   locale: string,
  *   caseLevel: boolean,
@@ -86,7 +86,7 @@ const COLLATION_STRENGTH: Record<number, "base" | "accent" | "variant"> = {
  *   backwards: never // unsupported
  * }
  */
-function collationComparator(spec: CollationSpec): Comparator<AnyVal> {
+function collationComparator(spec: CollationSpec): Comparator<Any> {
   const localeOpt: Intl.CollatorOptions = {
     sensitivity: COLLATION_STRENGTH[spec.strength || 3],
     caseFirst: spec.caseFirst === "off" ? "false" : spec.caseFirst || "false",
@@ -102,7 +102,7 @@ function collationComparator(spec: CollationSpec): Comparator<AnyVal> {
 
   const collator = new Intl.Collator(spec.locale, localeOpt);
 
-  return (a: AnyVal, b: AnyVal) => {
+  return (a: Any, b: Any) => {
     // non strings
     if (!isString(a) || !isString(b)) return compare(a, b);
 

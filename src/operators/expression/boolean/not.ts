@@ -1,7 +1,7 @@
 // Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { ensureArray } from "../../../util";
 
 /**
@@ -12,10 +12,10 @@ import { ensureArray } from "../../../util";
  * @returns {boolean}
  */
 export const $not: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const booleanExpr = ensureArray(expr);
   // array values are truthy so an emty array is false
   if (booleanExpr.length == 0) return false;

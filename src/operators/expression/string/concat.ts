@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { inArray } from "../../../util";
 
 /**
@@ -14,15 +14,12 @@ import { inArray } from "../../../util";
  * @returns {string|*}
  */
 export const $concat: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray;
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[];
   // does not allow concatenation with nulls
-  if (
-    ([null, undefined] as RawArray).some(inArray.bind(null, args) as Callback)
-  )
-    return null;
+  if (([null, undefined] as Any[]).some(v => inArray(args, v))) return null;
   return args.join("");
 };

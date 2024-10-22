@@ -1,5 +1,5 @@
 import { AccumulatorOperator, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "./push";
 
@@ -7,13 +7,13 @@ import { $push } from "./push";
  * Returns an average of all the values in a group.
  *
  * @param {Array} collection The input array
- * @param {Object} expr The right-hand side expression value of the operator
+ * @param {AnyObject} expr The right-hand side expression value of the operator
  * @param {Options} options The options to use for this operation
  * @returns {Number}
  */
 export const $avg: AccumulatorOperator = (
-  collection: RawObject[],
-  expr: AnyVal,
+  collection: AnyObject[],
+  expr: Any,
   options: Options
 ): number => {
   const data = $push(collection, expr, options).filter(isNumber);

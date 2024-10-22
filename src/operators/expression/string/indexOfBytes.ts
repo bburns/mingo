@@ -3,22 +3,22 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isNumber, isString } from "../../../util";
 
 /**
  * Searches a string for an occurrence of a substring and returns the UTF-8 code point index of the first occurence.
  * If the substring is not found, returns -1.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {*} expr
  * @return {*}
  */
 export const $indexOfBytes: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const arr = computeValue(obj, expr, null, options);
   const errorMsg = "$indexOfBytes expression resolves to invalid an argument";
 

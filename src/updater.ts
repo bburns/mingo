@@ -4,7 +4,7 @@ import * as comparisonOperators from "./operators/expression/comparison";
 import * as queryOperators from "./operators/query";
 import * as UPDATE_OPERATORS from "./operators/update";
 import { Query } from "./query";
-import { RawObject } from "./types";
+import { AnyObject } from "./types";
 import { assert, has } from "./util";
 
 // https://stackoverflow.com/questions/60872063/enforce-typescript-object-has-exactly-one-key-from-a-set
@@ -15,27 +15,27 @@ type OneKey<K extends keyof any, V, KK extends keyof any = K> = { // eslint-disa
     : never;
 }[K];
 
-export type UpdateExpression = OneKey<keyof typeof UPDATE_OPERATORS, RawObject>;
+export type UpdateExpression = OneKey<keyof typeof UPDATE_OPERATORS, AnyObject>;
 
 /** A condition expression or Query object to use for checking that object meets condition prior to update.  */
-export type Condition = RawObject | Query;
+export type Condition = AnyObject | Query;
 
 /** Interface for update operators */
 export type UpdateOperator = (
-  obj: RawObject,
-  expr: RawObject,
-  arrayFilters: RawObject[],
+  obj: AnyObject,
+  expr: AnyObject,
+  arrayFilters: AnyObject[],
   options?: UpdateOptions
 ) => string[];
 
 /** A function to process an update expression and modify the object. */
 export type Updater = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: UpdateExpression,
-  arrayFilters?: RawObject[],
+  arrayFilters?: AnyObject[],
   condition?: Condition,
   options?: UpdateOptions
-) => Array<string>;
+) => string[];
 
 /**
  * Creates a new updater function with default options.
@@ -54,12 +54,12 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
     .addExpressionOps(comparisonOperators);
 
   return (
-    obj: RawObject,
+    obj: AnyObject,
     expr: UpdateExpression,
-    arrayFilters: RawObject[] = [],
+    arrayFilters: AnyObject[] = [],
     condition: Condition = {},
     options: UpdateOptions = {}
-  ): Array<string> => {
+  ): string[] => {
     const opts = Object.assign({ cloneMode: "copy" }, defaultOptions, options);
     Object.assign(opts, {
       queryOptions: initOptions(
@@ -75,7 +75,7 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
       entry.length === 1,
       "Update expression must contain only one operator."
     );
-    const [op, args] = entry[0] as [string, RawObject];
+    const [op, args] = entry[0];
     // check operator exists
     assert(
       has(UPDATE_OPERATORS, op),
@@ -104,6 +104,6 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
  * @param arrayFilters Filters to apply to nested items.
  * @param conditions Conditions to validate before performing update.
  * @param options Update options to override defaults.
- * @returns {Array<string>} A list of modified field paths in the object.
+ * @returns {string[]} A list of modified field paths in the object.
  */
 export const updateObject = createUpdater({});

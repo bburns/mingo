@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isDate } from "../../../util";
 
 /**
@@ -9,16 +9,16 @@ import { assert, isDate } from "../../../util";
  *
  * @param obj
  * @param expr
- * @returns {Object}
+ * @returns {AnyObject}
  */
 export const $add: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number | Date => {
-  const args = computeValue(obj, expr, null, options) as AnyVal[];
+  const args = computeValue(obj, expr, null, options) as Any[];
   let foundDate = false;
-  const result = args.reduce((acc: number, val: AnyVal) => {
+  const result = args.reduce((acc: number, val: Any) => {
     if (isDate(val)) {
       assert(!foundDate, "'$add' can only have one date value");
       foundDate = true;

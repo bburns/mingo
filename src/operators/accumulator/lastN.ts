@@ -5,12 +5,12 @@ import {
   computeValue,
   Options
 } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
-  n: AnyVal;
-  input: AnyVal;
+  n: Any;
+  input: Any;
 }
 
 /**
@@ -18,15 +18,15 @@ interface InputExpr {
  * If the group contains fewer than n elements, $lastN returns all elements in the group.
  *
  * @param {Array} collection The input array
- * @param {Object} expr The right-hand side expression value of the operator
+ * @param {AnyObject} expr The right-hand side expression value of the operator
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
 export const $lastN: AccumulatorOperator = (
-  collection: RawObject[],
+  collection: AnyObject[],
   expr: InputExpr,
   options: Options
-): AnyVal[] => {
+): Any[] => {
   const copts = ComputeOptions.init(options);
   const m = collection.length;
   const n = computeValue(copts?.local?.groupId, expr.n, null, copts) as number;

@@ -1,6 +1,6 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { AnyObject } from "../../types";
 import { assert, isObject } from "../../util";
 
 /**
@@ -10,13 +10,13 @@ import { assert, isObject } from "../../util";
  * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
  *
  * @param  {Iterator} collection
- * @param  {Object} expr
- * @param  {Object} options
+ * @param  {AnyObject} expr
+ * @param  {AnyObject} options
  * @return {*}
  */
 export const $replaceRoot: PipelineOperator = (
   collection: Iterator,
-  expr: RawObject,
+  expr: AnyObject,
   options: Options
 ): Iterator => {
   return collection.map(obj => {

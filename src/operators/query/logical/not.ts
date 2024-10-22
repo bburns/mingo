@@ -2,7 +2,7 @@
 
 import { Options, QueryOperator } from "../../../core";
 import { Query } from "../../../query";
-import { AnyVal, Callback, RawObject } from "../../../types";
+import { Any, AnyObject, Callback } from "../../../types";
 import { normalize } from "../../../util";
 
 /**
@@ -14,11 +14,11 @@ import { normalize } from "../../../util";
  */
 export const $not: QueryOperator = (
   selector: string,
-  rhs: AnyVal,
+  rhs: Any,
   options: Options
 ): Callback<boolean> => {
   const criteria = {};
   criteria[selector] = normalize(rhs);
   const query = new Query(criteria, options);
-  return (obj: RawObject) => !query.test(obj);
+  return (obj: AnyObject) => !query.test(obj);
 };

@@ -1,7 +1,7 @@
 // Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
 
 import { ExpressionOperator, Options } from "../../core";
-import { AnyVal, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 
 /**
  * Return a value without parsing.
@@ -10,7 +10,7 @@ import { AnyVal, RawObject } from "../../types";
  * @param options
  */
 export const $literal: ExpressionOperator = (
-  _obj: RawObject,
-  expr: AnyVal,
+  _obj: AnyObject,
+  expr: Any,
   _options: Options
-): AnyVal => expr;
+): Any => expr;

@@ -1,6 +1,6 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { AnyVal, Callback, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import {
   assert,
   compare,
@@ -21,10 +21,10 @@ import {
 export const $bucket: PipelineOperator = (
   collection: Iterator,
   expr: {
-    groupBy: AnyVal;
-    boundaries: RawArray;
-    default: AnyVal;
-    output?: RawObject;
+    groupBy: Any;
+    boundaries: Any[];
+    default: Any;
+    output?: AnyObject;
   },
   options: Options
 ): Iterator => {
@@ -58,7 +58,7 @@ export const $bucket: PipelineOperator = (
       "$bucket 'default' expression must be out of boundaries range"
     );
 
-  const grouped: Record<string, RawArray> = {};
+  const grouped: Record<string, Any[]> = {};
   for (const k of boundaries) {
     grouped[k as string] = [];
   }
@@ -70,7 +70,7 @@ export const $bucket: PipelineOperator = (
 
   return Lazy(() => {
     if (!iterator) {
-      collection.each(((obj: RawObject) => {
+      collection.each(((obj: AnyObject) => {
         const key = computeValue(obj, expr.groupBy, null, options);
 
         if (isNil(key) || compare(key, lower) < 0 || compare(key, upper) >= 0) {
@@ -100,9 +100,9 @@ export const $bucket: PipelineOperator = (
           outputExpr,
           null,
           options
-        ) as RawObject[];
+        ) as AnyObject[];
         return into(acc, { _id: key });
-      }) as Callback<RawArray>);
+      }) as Callback<Any[]>);
     }
 
     return iterator.next();

@@ -1,6 +1,6 @@
 import { ComputeOptions, Options, PipelineOperator } from "../../core";
 import { concat, Iterator, IteratorResult, Lazy } from "../../lazy";
-import { RawObject, TIME_UNITS, TimeUnit } from "../../types";
+import { AnyObject, TIME_UNITS, TimeUnit } from "../../types";
 import {
   assert,
   isArray,
@@ -18,7 +18,7 @@ import { $sort } from "./sort";
 interface InputExpr {
   /**
    * The field to densify. The values of the specified field must either be all numeric values or all dates.
-   * Documents that do not contain the specified field continue through the pipeline unmodified.
+   * AnyObjects that do not contain the specified field continue through the pipeline unmodified.
    * To specify a <field> in an embedded document or in an array, use dot notation.
    */
   field: string;
@@ -33,7 +33,7 @@ interface InputExpr {
 
 type DateOrNumber = number | Date;
 
-const EMPTY_OBJECT = Object.freeze({}) as Readonly<RawObject>;
+const EMPTY_OBJECT = Object.freeze({}) as Readonly<AnyObject>;
 
 /**
  * Creates new documents in a sequence of documents where certain values in a field are missing.
@@ -41,7 +41,7 @@ const EMPTY_OBJECT = Object.freeze({}) as Readonly<RawObject>;
  * {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/densify}
  *
  * @param {Iterator} collection
- * @param {Object} expr
+ * @param {AnyObject} expr
  * @param {Options} options
  */
 export const $densify: PipelineOperator = (
@@ -104,7 +104,7 @@ export const $densify: PipelineOperator = (
   };
 
   const isValidUnit = !!unit && TIME_UNITS.includes(unit);
-  const getFieldValue = (o: RawObject): DateOrNumber => {
+  const getFieldValue = (o: AnyObject): DateOrNumber => {
     const v = resolve(o, expr.field);
     // return nil values
     if (isNil(v)) return v as DateOrNumber;
@@ -139,7 +139,7 @@ export const $densify: PipelineOperator = (
   // The nil fields iterator yields items from the collection whose field value is nil.
   const nilFieldsIterator = Lazy(() => {
     const item = collection.next();
-    const fieldValue = getFieldValue(item.value as RawObject);
+    const fieldValue = getFieldValue(item.value as AnyObject);
     if (isNil(fieldValue)) return item;
     // found the first non-nil value. store and exit nil iterator
     peekItem.push(item);
@@ -179,7 +179,7 @@ export const $densify: PipelineOperator = (
     let partitionKey: string[] = rootKey;
     if (isArray(expr.partitionByFields)) {
       partitionKey = expr.partitionByFields.map(k =>
-        resolve(item.value as RawObject, k)
+        resolve(item.value as AnyObject, k)
       ) as string[];
       assert(
         partitionKey.every(isString),
@@ -189,7 +189,7 @@ export const $densify: PipelineOperator = (
 
     // get the item field value
     assert(isObject(item.value), "$densify: collection must contain documents");
-    const itemValue = getFieldValue(item.value as RawObject);
+    const itemValue = getFieldValue(item.value as AnyObject);
 
     // first time, there is no minimum value so we determine it.
     if (!nextDensifyValueMap.has(partitionKey)) {
@@ -239,7 +239,7 @@ export const $densify: PipelineOperator = (
 
     // (itemValue > rangeValue): range is bounded only by max item value (i.e. 'full' or 'partition').
     updateMaxFieldValue(densifyValue);
-    const denseObj: RawObject = { [expr.field]: densifyValue };
+    const denseObj: AnyObject = { [expr.field]: densifyValue };
     // add extra partition field values.
     if (partitionKey) {
       partitionKey.forEach((v, i) => {
@@ -282,7 +282,7 @@ export const $densify: PipelineOperator = (
           partitionKey,
           computeNextValue(partitionMaxValue)
         );
-        const denseObj: RawObject = { [expr.field]: partitionMaxValue };
+        const denseObj: AnyObject = { [expr.field]: partitionMaxValue };
         partitionKey.forEach((v, i) => {
           denseObj[expr.partitionByFields[i]] = v;
         });

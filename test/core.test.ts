@@ -11,7 +11,7 @@ import {
   useOperators
 } from "../src/core";
 import { Iterator } from "../src/lazy";
-import { AnyVal, RawArray, RawObject } from "../src/types";
+import { Any, AnyObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
 import { complexGradesData, DEFAULT_OPTS } from "./support";
 
@@ -64,13 +64,13 @@ describe("core", () => {
   describe("useOperators", () => {
     it("should add new pipeline operator", () => {
       const $pluck: PipelineOperator = (
-        collection: AnyVal,
-        expr: AnyVal,
+        collection: Any,
+        expr: Any,
         options: Options
       ): Iterator => {
-        const array = collection as Array<{ __temp__: AnyVal }>;
+        const array = collection as Array<{ __temp__: Any }>;
         const agg = new Aggregator([{ $project: { __temp__: expr } }], options);
-        return agg.stream(array).map(item => (item as RawObject)["__temp__"]);
+        return agg.stream(array).map(item => (item as AnyObject)["__temp__"]);
       };
 
       const opts = initOptions(DEFAULT_OPTS);
@@ -86,10 +86,10 @@ describe("core", () => {
     });
 
     it("should add new query operator", () => {
-      function $between(selector: string, rhs: AnyVal, _options?: Options) {
+      function $between(selector: string, rhs: Any, _options?: Options) {
         const args = rhs as number[];
         // const value = lhs as number;
-        return (obj: RawObject): boolean => {
+        return (obj: AnyObject): boolean => {
           const value = resolve(obj, selector, { unwrapArray: true }) as number;
           return value >= args[0] && value <= args[1];
         };
@@ -115,7 +115,7 @@ describe("core", () => {
 
     it("should add accumulator operator", () => {
       DEFAULT_OPTS.context.addAccumulatorOps({
-        $stddev: (collection: RawArray, expr: AnyVal, options?: Options) => {
+        $stddev: (collection: Any[], expr: Any, options?: Options) => {
           const result = aggregate(
             collection,
             [{ $group: { _id: null, avg: { $avg: expr } } }],

@@ -2,7 +2,7 @@ import "../../src/init/system";
 
 import { find } from "../../src";
 import { ProcessingMode } from "../../src/core";
-import { RawArray, RawObject } from "../../src/types";
+import { Any, AnyObject } from "../../src/types";
 import { ObjectId, personData } from "../support";
 
 const idStr = "123456789abe";
@@ -102,7 +102,7 @@ describe("operators/projection", () => {
   describe("$slice", () => {
     it("can project $slice with limit", () => {
       const result = find(data, {}, { students: { $slice: 1 } }).all()[0] as {
-        students: RawArray;
+        students: Any[];
       };
       expect(result.students.length).toBe(1);
     });
@@ -113,13 +113,13 @@ describe("operators/projection", () => {
         {},
         { students: { $slice: [1, 2] } }
       ).all()[0] as {
-        students: RawArray;
+        students: Any[];
       };
       expect(result.students.length).toBe(2);
     });
 
     it("can project nested selector with $slice", () => {
-      const data: RawObject[] = [obj];
+      const data: AnyObject[] = [obj];
       const result = find(
         data,
         {},
@@ -170,7 +170,7 @@ describe("operators/projection", () => {
     });
 
     describe("projecting single key in object", () => {
-      let data: RawObject[] = [];
+      let data: AnyObject[] = [];
       beforeEach(() => {
         data = [
           {

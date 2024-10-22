@@ -1,5 +1,5 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawObject } from "../../types";
+import { AnyObject, ArrayOrObject } from "../../types";
 import { assert, isNumber } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
@@ -7,9 +7,9 @@ const BIT_OPS = new Set(["and", "or", "xor"]);
 
 /** Performs a bitwise update of a field. The operator supports AND, OR, and XOR.*/
 export const $bit = (
-  obj: RawObject,
-  expr: RawObject,
-  arrayFilters: RawObject[] = [],
+  obj: AnyObject,
+  expr: AnyObject,
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
@@ -43,5 +43,5 @@ export const $bit = (
       },
       { buildGraph: true }
     );
-  }) as Action<RawObject>);
+  }) as Action<AnyObject>);
 };

@@ -3,20 +3,20 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
 
 /**
  * Replaces all instances of a matched string in a given input.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {Array} expr
  */
 export const $replaceAll: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const args = computeValue(obj, expr, null, options) as {
     input: string;
     find: string;

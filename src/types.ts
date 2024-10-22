@@ -1,29 +1,35 @@
-export type AnyVal = unknown;
-export type RawObject = Record<string, AnyVal>;
-export type RawArray<T = AnyVal> = Array<T>;
-export type ArrayOrObject = RawObject | RawArray;
+export type Any = unknown;
+export type AnyObject = Record<string, Any>;
+export type ArrayOrObject = AnyObject | Any[];
+
+/** @deprecated use {@link Any}. */
+export type AnyVal = Any;
+/** @deprecated use {@link AnyObject}. */
+export type RawObject = AnyObject;
+/** @deprecated use {@link Array<Any>}. */
+export type RawArray = Array<Any>;
 
 // Generic callback
-export interface Callback<R = AnyVal, T = AnyVal> {
+export interface Callback<R = Any, T = Any> {
   (...args: T[]): R;
 }
 
 // Generic predicate
-export interface Predicate<T = AnyVal> {
+export interface Predicate<T = Any> {
   (...args: T[]): boolean;
 }
 
 // Generic comparator callback
-export interface Comparator<T = AnyVal> {
+export interface Comparator<T = Any> {
   (left: T, right: T): number;
 }
 
-export type GroupByOutput = Map<AnyVal, Array<AnyVal>>;
+export type GroupByOutput = Map<Any, Any[]>;
 
 /**
  * Custom function to hash values to improve faster comparaisons
  */
-export type HashFunction = (x: AnyVal) => number;
+export type HashFunction = (x: Any) => number;
 
 type CommonTypes =
   | "null"
@@ -77,12 +83,12 @@ export interface WindowOutputOption {
 }
 
 export interface SetWindowFieldsInput {
-  readonly partitionBy?: AnyVal;
+  readonly partitionBy?: Any;
   readonly sortBy: Record<string, 1 | -1>;
   readonly output: Record<
     string,
     {
-      [x: string]: AnyVal;
+      [x: string]: Any;
       window?: WindowOutputOption;
     }
   >;
@@ -90,7 +96,7 @@ export interface SetWindowFieldsInput {
 
 export interface WindowOperatorInput {
   readonly parentExpr: SetWindowFieldsInput;
-  readonly inputExpr: AnyVal;
+  readonly inputExpr: Any;
   readonly documentNumber: number;
   readonly field: string;
 }

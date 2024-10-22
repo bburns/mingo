@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { computeDate } from "./_internal";
 
 /**
@@ -10,8 +10,8 @@ import { computeDate } from "./_internal";
  * @param expr
  */
 export const $dayOfWeek: ExpressionOperator<number> = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number => {
   return computeDate(obj, expr, options).getUTCDay() + 1;

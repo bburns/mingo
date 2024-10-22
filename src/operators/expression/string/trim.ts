@@ -3,7 +3,7 @@
  */
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { trimString } from "./_internal";
 
 /**
@@ -13,9 +13,9 @@ import { trimString } from "./_internal";
  * @param expr
  */
 export const $trim: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   return trimString(obj, expr, options, { left: true, right: true });
 };

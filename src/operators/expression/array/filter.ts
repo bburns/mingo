@@ -6,22 +6,22 @@ import {
   ExpressionOperator,
   Options
 } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, truthy } from "../../../util";
 
 /**
  * Selects a subset of the array to return an array with only the elements that match the filter condition.
  *
- * @param  {Object} obj The current document
+ * @param  {AnyObject} obj The current document
  * @param  {*} expr The filter spec
  * @return {*}
  */
 export const $filter: ExpressionOperator = (
-  obj: RawObject,
-  expr: { input: RawArray; as: string; cond: AnyVal },
+  obj: AnyObject,
+  expr: { input: Any[]; as: string; cond: Any },
   options: Options
-): RawArray => {
-  const input = computeValue(obj, expr.input, null, options) as RawArray;
+): Any[] => {
+  const input = computeValue(obj, expr.input, null, options) as Any[];
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
   const copts = ComputeOptions.init(options, obj);
@@ -29,7 +29,7 @@ export const $filter: ExpressionOperator = (
   const local = {
     variables: { [k]: null }
   };
-  return input.filter((o: AnyVal) => {
+  return input.filter((o: Any) => {
     local.variables[k] = o;
     const b = computeValue(
       obj,

@@ -6,22 +6,22 @@ import {
   ExpressionOperator,
   Options
 } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Applies an expression to each element in an array and combines them into a single value.
  *
- * @param {Object} obj
+ * @param {AnyObject} obj
  * @param {*} expr
  */
 export const $reduce: ExpressionOperator = (
-  obj: RawObject,
-  expr: RawObject,
+  obj: AnyObject,
+  expr: AnyObject,
   options: Options
-): AnyVal => {
+): Any => {
   const copts = ComputeOptions.init(options);
-  const input = computeValue(obj, expr.input, null, copts) as AnyVal[];
+  const input = computeValue(obj, expr.input, null, copts) as Any[];
   const initialValue = computeValue(obj, expr.initialValue, null, copts);
   const inExpr = expr["in"];
 

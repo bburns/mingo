@@ -1,7 +1,7 @@
 // $slice operator. https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice
 
 import { Options, ProjectionOperator } from "../../core";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { isArray, resolve } from "../../util";
 import { $slice as __slice } from "../expression/array/slice";
 
@@ -13,13 +13,13 @@ import { $slice as __slice } from "../expression/array/slice";
  * @param expr
  */
 export const $slice: ProjectionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   field: string,
   options: Options
-): AnyVal => {
+): Any => {
   const xs = resolve(obj, field);
-  const exprAsArray = expr as RawArray;
+  const exprAsArray = expr as Any[];
 
   if (!isArray(xs)) return xs;
 

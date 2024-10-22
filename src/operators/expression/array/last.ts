@@ -6,26 +6,26 @@ import {
   ExpressionOperator,
   Options
 } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 import { $last as __last } from "../../accumulator";
 
 /**
  * Returns the last element in an array.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {*} expr
  * @return {*}
  */
 export const $last: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const copts = ComputeOptions.init(options);
   if (obj instanceof Array) return __last(obj, expr, copts.update());
 
-  const arr = computeValue(obj, expr, null, options) as RawObject[];
+  const arr = computeValue(obj, expr, null, options) as AnyObject[];
   if (isNil(arr)) return null;
   assert(isArray(arr), "Must resolve to an array/null or missing");
   return __last(arr, "$$this", options);

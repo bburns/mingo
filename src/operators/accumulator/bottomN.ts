@@ -6,29 +6,29 @@ import {
   computeValue,
   Options
 } from "../../core";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { $push } from "./push";
 
 interface InputExpr {
-  n: AnyVal;
+  n: Any;
   sortBy: Record<string, number>;
-  output: AnyVal;
+  output: Any;
 }
 
 /**
  * Returns an aggregation of the bottom n elements within a group, according to the specified sort order.
  * If the group contains fewer than n elements, $bottomN returns all elements in the group.
  *
- * @param {Array} collection The input array
- * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Any[]} collection The input array
+ * @param {AnyObject} expr The right-hand side expression value of the operator
  * @param {Options} options The options to use for this operation
  * @returns {*}
  */
-export const $bottomN: AccumulatorOperator<RawArray> = (
-  collection: RawObject[],
+export const $bottomN: AccumulatorOperator<Any[]> = (
+  collection: AnyObject[],
   expr: InputExpr,
   options: Options
-): RawArray => {
+): Any[] => {
   const copts = ComputeOptions.init(options);
   const { n, sortBy } = computeValue(
     copts.local.groupId,

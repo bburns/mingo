@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { computeDate, isoWeek } from "./_internal";
 
 /**
@@ -11,8 +11,8 @@ import { computeDate, isoWeek } from "./_internal";
  * @param expr
  */
 export const $isoWeek: ExpressionOperator<number> = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number => {
   return isoWeek(computeDate(obj, expr, options));

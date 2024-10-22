@@ -3,7 +3,7 @@ import "../../../src/init/system";
 import { find, Query } from "../../../src";
 import { OperatorType, useOperators } from "../../../src/core";
 import { $where } from "../../../src/operators/query/evaluation/where";
-import { RawArray, RawObject } from "../../../src/types";
+import { Any, AnyObject } from "../../../src/types";
 import { ObjectId, personData } from "../../support";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -94,9 +94,9 @@ describe("operators/query/comparison", () => {
     ]
   ];
 
-  queries.forEach((q: RawArray) => {
+  queries.forEach((q: Any[]) => {
     const [criteria, message] = q;
-    const query = new Query(criteria as RawObject);
+    const query = new Query(criteria as AnyObject);
     it(message as string, () => {
       expect(query.test(obj)).toEqual(true);
     });

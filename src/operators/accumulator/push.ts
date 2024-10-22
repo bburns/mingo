@@ -4,22 +4,22 @@ import {
   computeValue,
   Options
 } from "../../core";
-import { AnyVal, RawArray } from "../../types";
+import { Any } from "../../types";
 import { isNil } from "../../util";
 
 /**
  * Returns an array of all values for the selected field among for each document in that group.
  *
- * @param {Array} collection The input array
+ * @param {Any[]} collection The input array
  * @param {Object} expr The right-hand side expression value of the operator
  * @param {Options} options The options to use for this operation
- * @returns {Array|*}
+ * @returns {Any[]|*}
  */
-export const $push: AccumulatorOperator<RawArray> = (
-  collection: RawArray,
-  expr: AnyVal,
+export const $push: AccumulatorOperator<Any[]> = (
+  collection: Any[],
+  expr: Any,
   options: Options
-): RawArray => {
+): Any[] => {
   if (isNil(expr)) return collection;
   const copts = ComputeOptions.init(options);
   return collection.map(obj =>

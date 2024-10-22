@@ -1,10 +1,10 @@
 import { aggregate } from "../../../src";
-import { RawObject } from "../../../src/types";
+import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS } from "../../support";
 
 describe("operators/pipeline/unionWith", () => {
   describe("$unionWith", () => {
-    const collections: Record<string, RawObject[]> = {
+    const collections: Record<string, AnyObject[]> = {
       warehouses: [
         { _id: 1, warehouse: "A", region: "West", state: "California" },
         { _id: 2, warehouse: "B", region: "Central", state: "Colorado" },
@@ -57,7 +57,7 @@ describe("operators/pipeline/unionWith", () => {
 
     const options = {
       ...DEFAULT_OPTS,
-      collectionResolver: (s: string): RawObject[] => collections[s]
+      collectionResolver: (s: string): AnyObject[] => collections[s]
     };
 
     it("Duplicates Results", () => {

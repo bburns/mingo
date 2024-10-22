@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { intersection, unique } from "../../../util";
 
 /**
@@ -12,11 +12,11 @@ import { intersection, unique } from "../../../util";
  * @param expr
  */
 export const $setEquals: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray[];
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[][];
   const xs = unique(args[0], options?.hashFunction);
   const ys = unique(args[1], options?.hashFunction);
   return (

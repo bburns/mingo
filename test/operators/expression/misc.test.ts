@@ -3,7 +3,7 @@ import "../../../src/init/system";
 import { aggregate, find } from "../../../src";
 import { initOptions } from "../../../src/core";
 import { $getField } from "../../../src/operators/expression/misc/getField";
-import { RawArray, RawObject } from "../../../src/types";
+import { Any, AnyObject } from "../../../src/types";
 import { isEqual } from "../../../src/util";
 
 describe("operators/expression/misc", () => {
@@ -157,12 +157,12 @@ describe("operators/expression/misc", () => {
 
   describe("$sampleRate", () => {
     it("can sample object", () => {
-      const data: RawObject[] = [];
+      const data: AnyObject[] = [];
       for (let i = 0; i < 100; i++) {
         data.push({ _id: i });
       }
 
-      const results: RawArray = [];
+      const results: Any[] = [];
       for (let i = 0; i < 5; i++) {
         results.push(
           aggregate(data, [
@@ -173,7 +173,7 @@ describe("operators/expression/misc", () => {
       }
 
       results.forEach(arr => {
-        const r = (arr as RawObject[])[0];
+        const r = (arr as AnyObject[])[0];
         expect(r.numMatches).toBeGreaterThanOrEqual(15);
       });
     });

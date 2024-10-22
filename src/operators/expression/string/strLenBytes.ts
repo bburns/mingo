@@ -3,20 +3,20 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 
 /**
  * Returns the number of UTF-8 encoded bytes in the specified string.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {String} expr
  * @return {Number}
  */
 export const $strLenBytes: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   return ~-encodeURI(computeValue(obj, expr, null, options) as string).split(
     /%..|./
   ).length;

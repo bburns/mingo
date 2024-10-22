@@ -1,16 +1,16 @@
-import { AnyVal, Callback, Predicate, RawArray, RawObject } from "./types";
+import { Any, AnyObject, Callback, Predicate } from "./types";
 import { MingoError } from "./util";
 
 interface Iteratee {
   action: Action;
-  func?: Callback<AnyVal>;
+  func?: Callback<Any>;
   count?: number;
 }
 
 /**
  * A value produced by a generator
  */
-export interface IteratorResult<T = AnyVal> {
+export interface IteratorResult<T = Any> {
   readonly value?: T;
   readonly done: boolean;
 }
@@ -25,7 +25,7 @@ interface Generator<T> {
 export type Source =
   | Generator<IteratorResult>
   | Callback<IteratorResult>
-  | RawArray;
+  | Any[];
 
 /**
  * Returns an iterator
@@ -57,13 +57,13 @@ export function concat(...iterators: Iterator[]): Iterator {
  * Checks whether the given object is compatible with a generator i.e Object{next:Function}
  * @param {*} o An object
  */
-function isGenerator(o: AnyVal) {
+function isGenerator(o: Any) {
   return (
-    !!o && typeof o === "object" && (o as RawObject)?.next instanceof Function
+    !!o && typeof o === "object" && (o as AnyObject)?.next instanceof Function
   );
 }
 
-function dropItem(array: AnyVal[], i: number) {
+function dropItem(array: Any[], i: number) {
   const rest = array.slice(i + 1);
   array.splice(i);
   Array.prototype.push.apply(array, rest);
@@ -83,7 +83,7 @@ enum Action {
 function createCallback(
   nextFn: Callback,
   iteratees: Iteratee[],
-  buffer: RawArray
+  buffer: Any[]
 ): Callback<IteratorResult, boolean> {
   let done = false;
   let index = -1;
@@ -145,7 +145,7 @@ function createCallback(
  */
 export class Iterator {
   #iteratees: Iteratee[] = [];
-  #yieldedValues: RawArray = [];
+  #yieldedValues: Any[] = [];
   #getNext: Callback<IteratorResult, boolean>;
 
   private isDone = false;
@@ -158,7 +158,7 @@ export class Iterator {
    * @param {Function} fn An optional transformation function
    */
   constructor(source: Source) {
-    let nextVal: Callback<AnyVal>;
+    let nextVal: Callback<Any>;
 
     if (source instanceof Function) {
       // make iterable
@@ -166,9 +166,9 @@ export class Iterator {
     }
 
     if (isGenerator(source)) {
-      const src = source as Generator<AnyVal>;
+      const src = source as Generator<Any>;
       nextVal = () => {
-        const o = src.next() as RawObject;
+        const o = src.next() as AnyObject;
         if (o.done) throw DONE;
         return o.value;
       };
@@ -197,7 +197,7 @@ export class Iterator {
   /**
    * Add an iteratee to this lazy sequence
    */
-  private push(action: Action, value: Callback<AnyVal> | number) {
+  private push(action: Action, value: Callback<Any> | number) {
     if (typeof value === "function") {
       this.#iteratees.push({ action, func: value });
     } else if (typeof value === "number") {
@@ -206,7 +206,7 @@ export class Iterator {
     return this;
   }
 
-  next<T = AnyVal>(): IteratorResult<T> {
+  next<T = Any>(): IteratorResult<T> {
     return this.#getNext() as IteratorResult<T>;
   }
 
@@ -216,7 +216,7 @@ export class Iterator {
    * Transform each item in the sequence to a new value
    * @param {Function} f
    */
-  map<T = AnyVal>(f: Callback<T>): Iterator {
+  map<T = Any>(f: Callback<T>): Iterator {
     return this.push(Action.MAP, f);
   }
 
@@ -224,7 +224,7 @@ export class Iterator {
    * Select only items matching the given predicate
    * @param {Function} pred
    */
-  filter<T = AnyVal>(predicate: Predicate<T>): Iterator {
+  filter<T = Any>(predicate: Predicate<T>): Iterator {
     return this.push(Action.FILTER, predicate as Callback<T>);
   }
 
@@ -250,9 +250,9 @@ export class Iterator {
    * Returns a new lazy object with results of the transformation
    * The entire sequence is realized.
    *
-   * @param {Callback<Source, RawArray>} fn Tranform function of type (Array) => (Any)
+   * @param {Callback<Source, Any[]>} fn Tranform function of type (Array) => (Any)
    */
-  transform(fn: Callback<Source, RawArray>): Iterator {
+  transform(fn: Callback<Source, Any[]>): Iterator {
     const self = this;
     let iter: Iterator;
     return Lazy(() => {
@@ -282,11 +282,11 @@ export class Iterator {
    * @param {Function} f
    * @returns {Boolean} false iff `f` return false for AnyVal execution, otherwise true
    */
-  each<T = AnyVal>(f: Callback<T>): boolean {
+  each<T = Any>(f: Callback<T>): boolean {
     for (;;) {
       const o = this.next();
       if (o.done) break;
-      if ((f(o.value) as AnyVal) === false) return false;
+      if ((f(o.value) as Any) === false) return false;
     }
     return true;
   }
@@ -297,7 +297,7 @@ export class Iterator {
    * @param {*} f a reducing function
    * @param {*} initialValue
    */
-  reduce<T = AnyVal>(f: Callback<T>, initialValue?: AnyVal): T {
+  reduce<T = Any>(f: Callback<T>, initialValue?: Any): T {
     let o = this.next();
 
     if (initialValue === undefined && !o.done) {

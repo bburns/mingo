@@ -3,23 +3,23 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
 
 /**
  * Splits a string into substrings based on a delimiter.
  * If the delimiter is not found within the string, returns an array containing the original string.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {Array} expr
  * @return {Array} Returns an array of substrings.
  */
 export const $split: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as Array<string>;
+): Any => {
+  const args = computeValue(obj, expr, null, options) as string[];
   if (isNil(args[0])) return null;
   assert(
     args.every(isString),

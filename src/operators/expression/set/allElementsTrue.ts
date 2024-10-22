@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { truthy } from "../../../util";
 
 /**
@@ -12,11 +12,11 @@ import { truthy } from "../../../util";
  * @param expr
  */
 export const $allElementsTrue: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   // mongodb nests the array expression in another
-  const args = computeValue(obj, expr, null, options)[0] as RawArray;
+  const args = computeValue(obj, expr, null, options)[0] as Any[];
   return args.every(v => truthy(v, options.useStrictMode));
 };

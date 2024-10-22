@@ -1,5 +1,5 @@
 import { computeValue, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
 
 /* eslint-disable*/
@@ -35,8 +35,8 @@ const WHITESPACE_CHARS = [
  * @param options
  */
 export function trimString(
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options,
   trimOpts: { left: boolean; right: boolean }
 ): string | null {
@@ -78,11 +78,11 @@ export function trimString(
  * @param opts
  */
 export function regexSearch(
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options,
   reOpts: { global: boolean }
-): RawArray | undefined {
+): Any[] | undefined {
   const val = computeValue(obj, expr, null, options) as {
     input: string;
     regex: string;
@@ -105,7 +105,7 @@ export function regexSearch(
   const re = new RegExp(val.regex, regexOptions);
 
   let m: RegExpMatchArray | null;
-  const matches = new Array<AnyVal>();
+  const matches = new Array<Any>();
   let offset = 0;
   while ((m = re.exec(input))) {
     const result: { match: string; idx: number; captures: Array<string|null> } = {

@@ -1,7 +1,7 @@
 // Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isBoolean, isNil } from "../../../util";
 
 /**
@@ -15,16 +15,11 @@ import { assert, isArray, isBoolean, isNil } from "../../../util";
  * @return {*}
  */
 export const $zip: ExpressionOperator = (
-  obj: RawObject,
-  expr: { inputs: RawArray; useLongestLength: boolean; defaults: AnyVal },
+  obj: AnyObject,
+  expr: { inputs: Any[]; useLongestLength: boolean; defaults: Any },
   options: Options
-): AnyVal => {
-  const inputs = computeValue(
-    obj,
-    expr.inputs,
-    null,
-    options
-  ) as Array<RawArray>;
+): Any => {
+  const inputs = computeValue(obj, expr.inputs, null, options) as Any[][];
   const useLongestLength = expr.useLongestLength || false;
 
   assert(isArray(inputs), "'inputs' expression must resolve to an array");
@@ -54,12 +49,12 @@ export const $zip: ExpressionOperator = (
       : Math.min(zipCount || arr.length, arr.length);
   }
 
-  const result: RawArray = [];
+  const result: Any[] = [];
   const defaults = expr.defaults || [];
 
   for (let i = 0; i < zipCount; i++) {
-    const temp = inputs.map((val: RawArray, index: number) => {
-      return isNil(val[i]) ? (defaults[index] as AnyVal) || null : val[i];
+    const temp = inputs.map((val: Any[], index: number) => {
+      return isNil(val[i]) ? (defaults[index] as Any) || null : val[i];
     });
     result.push(temp);
   }

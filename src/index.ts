@@ -6,7 +6,7 @@ import { Options } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
-import { RawObject } from "./types";
+import { AnyObject } from "./types";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";
@@ -23,8 +23,8 @@ export { Query } from "./query";
  */
 export function find<T>(
   collection: Source,
-  criteria: RawObject,
-  projection?: RawObject,
+  criteria: AnyObject,
+  projection?: AnyObject,
   options?: Partial<Options>
 ): Cursor<T> {
   return new Query(criteria, options).find<T>(collection, projection);
@@ -39,10 +39,10 @@ export function find<T>(
  * @returns {Array} New filtered array
  */
 export function remove(
-  collection: RawObject[],
-  criteria: RawObject,
+  collection: AnyObject[],
+  criteria: AnyObject,
   options?: Options
-): RawObject[] {
+): AnyObject[] {
   return new Query(criteria, options).remove(collection);
 }
 
@@ -57,9 +57,9 @@ export function remove(
  */
 export function aggregate(
   collection: Source,
-  pipeline: RawObject[],
+  pipeline: AnyObject[],
   options?: Partial<Options>
-): RawObject[] {
+): AnyObject[] {
   return new Aggregator(pipeline, options).run(collection);
 }
 

@@ -1,4 +1,4 @@
-import { AnyVal, RawArray, RawObject } from "../src/types";
+import { Any, AnyObject } from "../src/types";
 import {
   cloneDeep,
   compare,
@@ -80,8 +80,8 @@ describe("util", () => {
     });
 
     it("should check for cycles in object", () => {
-      const a: RawArray = [1, 2, 3];
-      const b: RawArray = [1, 2, 3];
+      const a: Any[] = [1, 2, 3];
+      const b: Any[] = [1, 2, 3];
       const obj = { a, b };
       a.push(obj);
       b.push(obj);
@@ -121,8 +121,8 @@ describe("util", () => {
   });
 
   describe("stringify", () => {
-    const a: RawArray = [1, 2, 3];
-    const b: RawArray = [4, 5, 6];
+    const a: Any[] = [1, 2, 3];
+    const b: Any[] = [4, 5, 6];
 
     it.each([
       [null, "null"],
@@ -134,7 +134,7 @@ describe("util", () => {
       [/mo/, "/mo/"],
       [[1, "a"], '[1,"a"]'],
       [new Date("2001-01-01T00:00:00.000Z"), "2001-01-01T00:00:00.000Z"],
-      [(id: AnyVal) => id, "(id) => id"],
+      [(id: Any) => id, "(id) => id"],
       [new Uint8Array([5, 2]), "Uint8Array[5,2]"],
       [new Float32Array([1.5, 2.5]), "Float32Array[1.5,2.5]"],
       [{ a: a, b: a }, "{a:[1,2,3],b:[1,2,3]}"],
@@ -147,8 +147,8 @@ describe("util", () => {
     });
 
     it("should check for cycles in object", () => {
-      const a: RawArray = [1, 2, 3];
-      const b: RawArray = [4, 5, 6];
+      const a: Any[] = [1, 2, 3];
+      const b: Any[] = [4, 5, 6];
       const obj = { a, b };
       b.push(obj);
 
@@ -156,8 +156,8 @@ describe("util", () => {
     });
 
     it("should check for cycles in array", () => {
-      const a: RawArray = [1, 2, 3];
-      const b: RawArray = [4, 5, 6, a];
+      const a: Any[] = [1, 2, 3];
+      const b: Any[] = [4, 5, 6, a];
       const c = [a, b];
       a.push(c);
 
@@ -185,7 +185,7 @@ describe("util", () => {
         { userId: b, ix: 5 }
       ];
 
-      const partitions = groupBy(collection, o => (o as RawObject).userId);
+      const partitions = groupBy(collection, o => (o as AnyObject).userId);
 
       expect(partitions.size).toEqual(2);
       expect(partitions.get(a)?.length).toEqual(2);
@@ -202,7 +202,7 @@ describe("util", () => {
       constructor(readonly a: string = "foo") {}
     }
 
-    const OBJECT_PROTO = Object.getPrototypeOf({}) as RawObject;
+    const OBJECT_PROTO = Object.getPrototypeOf({}) as AnyObject;
 
     const arrayWithNullProto = ["a", "b"];
     Object.setPrototypeOf(arrayWithNullProto, null);
@@ -243,8 +243,8 @@ describe("util", () => {
   });
 
   describe("cloneDeep", () => {
-    const a: RawArray = [1, 2, 3];
-    const b: RawArray = [4, 5, 6];
+    const a: Any[] = [1, 2, 3];
+    const b: Any[] = [4, 5, 6];
 
     it.each([
       [null],
@@ -400,7 +400,7 @@ describe("util", () => {
   });
 
   describe("walk", () => {
-    let o: RawObject = {};
+    let o: AnyObject = {};
     beforeEach(() => {
       o = {
         a: { b: { c: [{ x: 1 }, { x: 4 }] } }
@@ -428,10 +428,10 @@ describe("util", () => {
     it("should build path if options provided", () => {
       let counter = 0;
       walk(o, "a.b.d.e", () => counter++);
-      expect(has(resolve(o, "a.b") as RawObject, "d")).toEqual(false);
+      expect(has(resolve(o, "a.b") as AnyObject, "d")).toEqual(false);
 
       walk(o, "a.b.d.e", () => counter++, { buildGraph: true });
-      expect(has(resolve(o, "a.b") as RawObject, "d")).toEqual(true);
+      expect(has(resolve(o, "a.b") as AnyObject, "d")).toEqual(true);
     });
   });
 
@@ -477,7 +477,7 @@ describe("util", () => {
     });
 
     it("should handle poor hash function", () => {
-      const badHashFn = (v: AnyVal) => {
+      const badHashFn = (v: Any) => {
         if (isEqual(v, { a: 1 })) return 1234;
         if (isEqual(v, { a: 2 })) return 1234;
         if (isEqual(v, { a: 3 })) return 1234;

@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
@@ -67,8 +67,8 @@ const DATE_FUNCTIONS: Record<string, ExpressionOperator<number>> = {
  * @param expr operator expression
  */
 export const $dateToString: ExpressionOperator<string> = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): string => {
   const args = computeValue(obj, expr, null, options) as DateOptions;

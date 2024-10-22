@@ -4,14 +4,14 @@ import { performance } from "perf_hooks";
 
 import { aggregate, Aggregator } from "../src";
 import { initOptions } from "../src/core";
-import { Callback, RawObject } from "../src/types";
+import { AnyObject, Callback } from "../src/types";
 
 /* eslint-disable no-console */
 
-const items: Array<RawObject> = [];
+const items: AnyObject[] = [];
 for (let i = 0; i < 100_000; i++) {
-  const books: RawObject[] = [];
-  const authors: RawObject[] = [];
+  const books: AnyObject[] = [];
+  const authors: AnyObject[] = [];
   for (let j = 0; j < 10; j++) {
     books.push({
       id: j,

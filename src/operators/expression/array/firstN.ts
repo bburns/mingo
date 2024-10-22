@@ -1,31 +1,31 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/firstN-array-element/#mongodb-expression-exp.-firstN
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";
 import { $firstN as __firstN } from "../../accumulator/firstN";
 
 interface InputExpr {
-  n: AnyVal;
-  input: AnyVal;
+  n: Any;
+  input: Any;
 }
 
 /**
  * Returns a specified number of elements from the beginning of an array.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {*} expr
  * @return {*}
  */
 export const $firstN: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: InputExpr,
   options: Options
-): AnyVal => {
+): Any => {
   // first try the accumulator if input is an array.
   if (obj instanceof Array) return __firstN(obj, expr, options);
   const { input, n } = computeValue(obj, expr, null, options) as InputExpr;
   if (isNil(input)) return null;
   assert(isArray(input), "Must resolve to an array/null or missing");
-  return __firstN(input as RawObject[], { n, input: "$$this" }, options);
+  return __firstN(input as AnyObject[], { n, input: "$$this" }, options);
 };

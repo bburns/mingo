@@ -1,14 +1,14 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawObject } from "../../types";
+import { AnyObject, ArrayOrObject } from "../../types";
 import { has } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 import { $set } from "./set";
 
 /** Replaces the value of a field with the specified value. */
 export const $rename = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: Record<string, string>,
-  arrayFilters: RawObject[] = [],
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   const res: string[] = [];
@@ -18,7 +18,7 @@ export const $rename = (
     queries
   ) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
-      if (!has(o as RawObject, k)) return false;
+      if (!has(o as AnyObject, k)) return false;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       res.push(...$set(obj, { [val]: o[k] }, arrayFilters, options));
       delete o[k];

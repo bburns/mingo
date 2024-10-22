@@ -1,10 +1,10 @@
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNil, isNumber } from "../../../util";
 
 export const bitwise =
   (op: string, compute: (n: number[]) => number): ExpressionOperator =>
-  (obj: RawObject, expr: AnyVal, options: Options) => {
+  (obj: AnyObject, expr: Any, options: Options) => {
     assert(isArray(expr), `${op}: expression must be an array.`);
     const nums = computeValue(obj, expr, null, options) as number[];
     if (nums.some(isNil)) return null;

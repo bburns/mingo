@@ -1,6 +1,6 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { Callback, RawObject } from "../../types";
+import { AnyObject, Callback } from "../../types";
 import { removeValue, setValue } from "../../util";
 
 /**
@@ -8,19 +8,19 @@ import { removeValue, setValue } from "../../util";
  * Outputs documents that contain all existing fields from the input documents and newly added fields.
  *
  * @param {Iterator} collection
- * @param {Object} expr
+ * @param {AnyObject} expr
  * @param {Options} options
  */
 export const $addFields: PipelineOperator = (
   collection: Iterator,
-  expr: RawObject,
+  expr: AnyObject,
   options: Options
 ): Iterator => {
   const newFields = Object.keys(expr);
 
   if (newFields.length === 0) return collection;
 
-  return collection.map(((obj: RawObject) => {
+  return collection.map(((obj: AnyObject) => {
     const newObj = { ...obj };
     for (const field of newFields) {
       const newValue = computeValue(obj, expr[field], null, options);
@@ -31,5 +31,5 @@ export const $addFields: PipelineOperator = (
       }
     }
     return newObj;
-  }) as Callback<RawObject>);
+  }) as Callback<AnyObject>);
 };

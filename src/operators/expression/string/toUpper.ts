@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isEmpty } from "../../../util";
 
 /**
@@ -14,10 +14,10 @@ import { isEmpty } from "../../../util";
  * @returns {string}
  */
 export const $toUpper: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
+): Any => {
   const value = computeValue(obj, expr, null, options) as string;
   return isEmpty(value) ? "" : value.toUpperCase();
 };

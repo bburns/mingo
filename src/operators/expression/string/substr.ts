@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isString } from "../../../util";
 
 /**
@@ -15,22 +15,16 @@ import { isString } from "../../../util";
  * @returns {string}
  */
 export const $substr: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray;
-  const s = args[0] as string;
-  const index = args[1] as number;
-  const count = args[2] as number;
-  if (isString(s)) {
-    if (index < 0) {
-      return "";
-    } else if (count < 0) {
-      return s.substr(index);
-    } else {
-      return s.substr(index, count);
-    }
-  }
-  return "";
+): Any => {
+  const [s, start, count] = computeValue(obj, expr, null, options) as [
+    string,
+    number,
+    number
+  ];
+  if (start < 0 || !isString(s)) return "";
+  if (count < 0) return s.substring(start);
+  return s.substring(start, start + count);
 };

@@ -1,7 +1,7 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNumber } from "../../../util";
 
 /**
@@ -9,11 +9,11 @@ import { assert, isArray, isNumber } from "../../../util";
  *
  * @param obj
  * @param expr
- * @returns {Object}
+ * @returns {AnyObject}
  */
 export const $pow: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number => {
   const args = computeValue(obj, expr, null, options) as number[];

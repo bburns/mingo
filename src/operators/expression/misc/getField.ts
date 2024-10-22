@@ -1,12 +1,12 @@
 // Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/rand/#mongodb-expression-exp.-rand
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isObject, isString } from "../../../util";
 
 interface InputExpr {
   readonly field: string;
-  readonly input?: RawObject;
+  readonly input?: AnyObject;
 }
 
 /**
@@ -17,10 +17,10 @@ interface InputExpr {
  * @param {Options} options Options to use for operation
  */
 export const $getField: ExpressionOperator = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: InputExpr | string,
   options: Options
-): AnyVal => {
+): Any => {
   const args = computeValue(obj, expr, null, options) as InputExpr | string;
   const [field, input] = isObject(args)
     ? [args.field, args.input || obj]

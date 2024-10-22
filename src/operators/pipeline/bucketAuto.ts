@@ -1,9 +1,9 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { assert, has, into, isNil, memoize, sortBy } from "../../util";
 
-interface Boundary extends RawObject {
+interface Boundary extends AnyObject {
   min?: number;
   max?: number;
 }
@@ -23,9 +23,9 @@ const ID_KEY = "_id";
 export const $bucketAuto: PipelineOperator = (
   collection: Iterator,
   expr: {
-    groupBy: AnyVal;
+    groupBy: Any;
     buckets: number;
-    output?: RawObject;
+    output?: AnyObject;
     granularity: string;
   },
   options: Options
@@ -39,11 +39,11 @@ export const $bucketAuto: PipelineOperator = (
     `The $bucketAuto 'buckets' field must be greater than 0, but found: ${bucketCount}`
   );
 
-  return collection.transform((coll: RawObject[]) => {
+  return collection.transform((coll: AnyObject[]) => {
     const approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
     const computeValueOptimized = memoize(computeValue, options?.hashFunction);
-    const grouped = new Map<AnyVal, RawArray>();
-    const remaining: RawArray = [];
+    const grouped = new Map<Any, Any[]>();
+    const remaining: Any[] = [];
 
     const sorted = sortBy(coll, o => {
       const key = computeValueOptimized(o, groupByExpr, null, options);
@@ -56,12 +56,12 @@ export const $bucketAuto: PipelineOperator = (
       return key;
     });
 
-    const result: RawObject[] = [];
+    const result: AnyObject[] = [];
     let index = 0; // counter for sorted collection
 
     for (let i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
       const boundaries: Boundary = {};
-      const bucketItems: RawArray = [];
+      const bucketItems: Any[] = [];
 
       for (let j = 0; j < approxBucketSize && index < len; j++) {
         let key = computeValueOptimized(
@@ -101,12 +101,12 @@ export const $bucketAuto: PipelineOperator = (
         outputExpr,
         null,
         options
-      ) as RawObject;
+      ) as AnyObject;
 
       result.push(
         into(values, {
           _id: boundaries
-        }) as RawObject
+        }) as AnyObject
       );
     }
 

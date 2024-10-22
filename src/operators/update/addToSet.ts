@@ -1,18 +1,18 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { has, intersection, isObject, unique } from "../../util";
 import { applyUpdate, clone, walkExpression } from "./_internal";
 
 /** Adds a value to an array unless the value is already present. */
 export const $addToSet = (
-  obj: RawObject,
-  expr: RawObject,
-  arrayFilters: RawObject[] = [],
+  obj: AnyObject,
+  expr: AnyObject,
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
     const args = { $each: [val] };
-    if (isObject(val) && has(val as RawObject, "$each")) {
+    if (isObject(val) && has(val as AnyObject, "$each")) {
       Object.assign(args, val);
     }
     return applyUpdate(
@@ -20,7 +20,7 @@ export const $addToSet = (
       node,
       queries,
       (o: ArrayOrObject, k: string) => {
-        const prev = (o[k] ||= []) as RawArray;
+        const prev = (o[k] ||= []) as Any[];
         const common = intersection([prev, args.$each]);
         if (common.length === args.$each.length) return false;
         o[k] = clone(options.cloneMode, unique(prev.concat(args.$each)));

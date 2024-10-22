@@ -2,7 +2,7 @@
 
 import { Options, QueryOperator } from "../../../core";
 import { Query } from "../../../query";
-import { Callback, RawObject } from "../../../types";
+import { AnyObject, Callback } from "../../../types";
 import { assert, isArray } from "../../../util";
 
 /**
@@ -14,10 +14,10 @@ import { assert, isArray } from "../../../util";
  */
 export const $or: QueryOperator = (
   _: string,
-  rhs: Array<RawObject>,
+  rhs: AnyObject[],
   options: Options
 ): Callback<boolean> => {
   assert(isArray(rhs), "Invalid expression. $or expects value to be an Array");
   const queries = rhs.map(expr => new Query(expr, options));
-  return (obj: RawObject) => queries.some(q => q.test(obj));
+  return (obj: AnyObject) => queries.some(q => q.test(obj));
 };

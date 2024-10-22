@@ -3,19 +3,19 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 
 /**
  * Returns the number of UTF-8 code points in the specified string.
  *
- * @param  {Object} obj
+ * @param  {AnyObject} obj
  * @param  {String} expr
  * @return {Number}
  */
 export const $strLenCP: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  return (computeValue(obj, expr, null, options) as RawArray).length;
+): Any => {
+  return (computeValue(obj, expr, null, options) as Any[]).length;
 };

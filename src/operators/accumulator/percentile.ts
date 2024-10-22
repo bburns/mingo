@@ -1,6 +1,6 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/percentile/
 import { AccumulatorOperator, Options } from "../../core";
-import { AnyVal, RawArray, RawObject } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { assert, findInsertIndex, isNumber } from "../../util";
 import { $push } from "./push";
 
@@ -13,11 +13,11 @@ import { $push } from "./push";
  * @param collection The collection of objects.
  * @param expr The operator expression.
  * @param options Options to use for processing.
- * @returns {Object|*}
+ * @returns {AnyObject|*}
  */
 export const $percentile: AccumulatorOperator<number[]> = (
-  collection: RawObject[],
-  expr: { input: AnyVal; p: RawArray; method: "approximate" | "exact" },
+  collection: AnyObject[],
+  expr: { input: Any; p: Any[]; method: "approximate" | "exact" },
   options: Options
 ): number[] => {
   // MongoDB uses the t-digest algorithm to estimate percentiles.

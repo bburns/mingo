@@ -8,7 +8,7 @@ import {
   ProjectionOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyVal, Callback, Predicate, RawObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import {
   assert,
   ensureArray,
@@ -40,7 +40,7 @@ import {
  */
 export const $project: PipelineOperator = (
   collection: Iterator,
-  expr: RawObject,
+  expr: AnyObject,
   options: Options
 ): Iterator => {
   if (isEmpty(expr)) return collection;
@@ -57,9 +57,7 @@ export const $project: PipelineOperator = (
   if (inArray(expressionKeys, ID_KEY)) {
     const id = expr[ID_KEY];
     if (id === 0 || id === false) {
-      expressionKeys = expressionKeys.filter(
-        notInArray.bind(null, [ID_KEY]) as Predicate<AnyVal>
-      );
+      expressionKeys = expressionKeys.filter(v => ID_KEY !== v);
       idOnlyExcluded = expressionKeys.length == 0;
     }
   } else {
@@ -68,7 +66,7 @@ export const $project: PipelineOperator = (
   }
 
   const copts = ComputeOptions.init(options);
-  return collection.map(((obj: RawObject) =>
+  return collection.map(((obj: AnyObject) =>
     processObject(
       obj,
       expr,
@@ -87,12 +85,12 @@ export const $project: PipelineOperator = (
  * @param {Boolean} idOnlyExcluded Boolean value indicating whether only the ID key is excluded
  */
 function processObject(
-  obj: RawObject,
-  expr: RawObject,
+  obj: AnyObject,
+  expr: AnyObject,
   options: ComputeOptions,
   expressionKeys: string[],
   idOnlyExcluded: boolean
-): RawObject {
+): AnyObject {
   let newObj = {};
   let foundSlice = false;
   let foundExclusion = false;
@@ -104,7 +102,7 @@ function processObject(
 
   for (const key of expressionKeys) {
     // final computed value of the key
-    let value: AnyVal = undefined;
+    let value: Any = undefined;
 
     // expression to associate with key
     const subExpr = expr[key];
@@ -127,7 +125,7 @@ function processObject(
         return r;
       });
     } else if (isObject(subExpr)) {
-      const subExprObj = subExpr as RawObject;
+      const subExprObj = subExpr as AnyObject;
       const subExprKeys = Object.keys(subExpr);
       const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
 
@@ -160,13 +158,13 @@ function processObject(
         validateExpression(subExprObj, options);
         let target = obj[key];
         if (target instanceof Array) {
-          value = target.map((o: RawObject) =>
+          value = target.map((o: AnyObject) =>
             processObject(o, subExprObj, options, subExprKeys, false)
           );
         } else {
           target = isObject(target) ? target : obj;
           value = processObject(
-            target as RawObject,
+            target as AnyObject,
             subExprObj,
             options,
             subExprKeys,
@@ -185,7 +183,7 @@ function processObject(
     // get value with object graph
     const objPathGraph = resolveGraph(obj, key, {
       preserveMissing: true
-    }) as RawObject;
+    });
 
     // add the value at the path
     if (objPathGraph !== undefined) {
@@ -229,7 +227,7 @@ function processObject(
  *
  * @param {Object} expr The expression given for the projection
  */
-function validateExpression(expr: RawObject, options: Options): void {
+function validateExpression(expr: AnyObject, options: Options): void {
   const check = [false, false];
   for (const [k, v] of Object.entries(expr)) {
     if (k === options?.idKey) return;

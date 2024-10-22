@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNumber } from "../../../util";
 
 /**
@@ -13,8 +13,8 @@ import { isNumber } from "../../../util";
  * @param expr
  */
 export const $isNumber: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): boolean | null => {
   const n = computeValue(obj, expr, null, options);

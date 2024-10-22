@@ -1,14 +1,14 @@
 import "../../../src/init/system";
 
 import { find, Query } from "../../../src";
-import { RawArray, RawObject } from "../../../src/types";
+import { Any, AnyObject } from "../../../src/types";
 
 interface UserResult {
   user: { username: string };
 }
 
 describe("operators/query/array", () => {
-  const data: Array<RawObject> = [
+  const data: AnyObject[] = [
     {
       _id: "5234ccb7687ea597eabee677",
       code: "efg",
@@ -60,7 +60,7 @@ describe("operators/query/array", () => {
       }
     ];
 
-    const fixtures: Array<RawArray> = [
+    const fixtures: Any[][] = [
       [
         { "key0.key1.key2.a": "value2" },
         [],
@@ -98,8 +98,8 @@ describe("operators/query/array", () => {
       ]
     ];
 
-    fixtures.forEach((row: RawArray) => {
-      const query = row[0] as RawObject;
+    fixtures.forEach((row: Any[]) => {
+      const query = row[0] as AnyObject;
       const expected = row[1];
       const message = row[2] as string;
       it(message, () => {
@@ -139,9 +139,9 @@ describe("operators/query/array", () => {
         "can match with key<-->multi-index<-->key selector"
       ]
     ].forEach(function (row) {
-      const query = row[0] as RawObject;
+      const query = row[0] as AnyObject;
       const message = row[1] as string;
-      const result = find(data, query) as Iterable<RawObject>;
+      const result = find(data, query) as Iterable<AnyObject>;
 
       it(message, () => {
         // using iterator

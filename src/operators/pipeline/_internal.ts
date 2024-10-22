@@ -1,4 +1,4 @@
-import { AnyVal, TimeUnit } from "../../types";
+import { Any, TimeUnit } from "../../types";
 
 export type Boundary = "current" | "unbounded" | number;
 
@@ -9,12 +9,12 @@ export interface WindowOutputOption {
 }
 
 export interface SetWindowFieldsInput {
-  readonly partitionBy?: AnyVal;
+  readonly partitionBy?: Any;
   readonly sortBy: Record<string, 1 | -1>;
   readonly output: Record<
     string,
     {
-      [x: string]: AnyVal;
+      [x: string]: Any;
       window?: WindowOutputOption;
     }
   >;
@@ -22,7 +22,7 @@ export interface SetWindowFieldsInput {
 
 export interface WindowOperatorInput {
   readonly parentExpr: SetWindowFieldsInput;
-  readonly inputExpr: AnyVal;
+  readonly inputExpr: Any;
   readonly documentNumber: number;
   readonly field: string;
 }

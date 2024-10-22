@@ -1,7 +1,7 @@
 // Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import {
   DATE_PART_INTERVAL,
   isLeapYear,
@@ -36,8 +36,8 @@ const getDaysInMonth = (date: DateArgs): number => {
  * @param options Options
  */
 export const $dateFromParts: ExpressionOperator<Date> = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): Date => {
   const args = computeValue(obj, expr, null, options) as DateArgs;

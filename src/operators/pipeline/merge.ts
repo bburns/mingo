@@ -6,7 +6,7 @@ import {
   PipelineOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawObject } from "../../types";
+import { AnyObject } from "../../types";
 import {
   assert,
   hashCode,
@@ -18,15 +18,15 @@ import {
 import { $mergeObjects } from "../expression";
 
 interface InputExpr {
-  readonly into: string | RawObject[];
+  readonly into: string | AnyObject[];
   readonly on?: string | [string];
-  readonly let?: RawObject;
+  readonly let?: AnyObject;
   readonly whenMatched?:
     | "replace"
     | "keepExisting"
     | "merge"
     | "fail"
-    | RawObject[];
+    | AnyObject[];
   readonly whenNotMatched?: "insert" | "discard" | "fail";
 }
 
@@ -49,7 +49,7 @@ export const $merge: PipelineOperator = (
   expr: InputExpr,
   options: Options
 ): Iterator => {
-  const output: RawObject[] = isString(expr.into)
+  const output: AnyObject[] = isString(expr.into)
     ? options?.collectionResolver(expr.into)
     : expr.into;
 
@@ -60,14 +60,14 @@ export const $merge: PipelineOperator = (
 
   const onField = expr.on || options.idKey;
 
-  const getHash = (o: RawObject) => {
+  const getHash = (o: AnyObject) => {
     const val = isString(onField)
       ? resolve(o, onField)
       : onField.map(s => resolve(o, s));
     return hashCode(val, options.hashFunction);
   };
 
-  const hash: Record<string, [RawObject, number]> = {};
+  const hash: Record<string, [AnyObject, number]> = {};
 
   // we assuming the lookup expressions are unique
   for (let i = 0; i < output.length; i++) {
@@ -82,7 +82,7 @@ export const $merge: PipelineOperator = (
 
   const copts = ComputeOptions.init(options);
 
-  return collection.map((o: RawObject) => {
+  return collection.map((o: AnyObject) => {
     const k = getHash(o);
     if (hash[k]) {
       const [target, i] = hash[k];
@@ -94,7 +94,7 @@ export const $merge: PipelineOperator = (
         null,
         // 'root' is the item from the iteration.
         copts.update(o)
-      ) as RawObject;
+      ) as AnyObject;
 
       if (isArray(expr.whenMatched)) {
         const aggregator = new Aggregator(expr.whenMatched, {

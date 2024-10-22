@@ -6,37 +6,37 @@ import {
   computeValue,
   Options
 } from "../../core";
-import { AnyVal, Callback, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import { assert } from "../../util";
 
 interface AccumulatorExpr {
   /** Function used to initialize the state. */
-  readonly init: Callback<AnyVal>;
+  readonly init: Callback<Any>;
   /** Arguments passed to the init function. */
-  readonly initArgs?: RawArray;
+  readonly initArgs?: Any[];
   /** Function used to accumulate documents.*/
-  readonly accumulate: Callback<AnyVal>;
+  readonly accumulate: Callback<Any>;
   /** Arguments passed to the accumulate function. */
-  readonly accumulateArgs: RawArray;
+  readonly accumulateArgs: Any[];
   /** unused */
-  readonly merge?: Callback<AnyVal>;
+  readonly merge?: Callback<Any>;
   /** Function used to update the result of the accumulation. */
-  readonly finalize?: Callback<AnyVal>;
+  readonly finalize?: Callback<Any>;
   readonly lang: "js";
 }
 
 /**
  * Defines a custom accumulator function.
  *
- * @param {Array} collection The input array
+ * @param {Any[]} collection The input array
  * @param {*} expr The expression for the operator
  * @param {Options} options Options
  */
 export const $accumulator: AccumulatorOperator = (
-  collection: RawObject[],
+  collection: AnyObject[],
   expr: AccumulatorExpr,
   options: Options
-): AnyVal => {
+): Any => {
   assert(
     !!options && options.scriptEnabled,
     "$accumulator operator requires 'scriptEnabled' option to be true"
@@ -51,9 +51,9 @@ export const $accumulator: AccumulatorOperator = (
     expr.initArgs || [],
     null,
     copts.update(copts?.local?.groupId || {})
-  ) as RawArray;
+  ) as Any[];
 
-  let state = expr.init.call(null, ...initArgs) as AnyVal;
+  let state = expr.init.call(null, ...initArgs) as Any;
 
   for (const doc of collection) {
     // get arguments for document
@@ -62,11 +62,11 @@ export const $accumulator: AccumulatorOperator = (
       expr.accumulateArgs,
       null,
       copts.update(doc)
-    ) as RawArray;
+    ) as Any[];
     // update the state with each documents value
     // eslint-disable-next-line
-    state = expr.accumulate.call(null, ...[state, ...args]) as AnyVal;
+    state = expr.accumulate.call(null, ...[state, ...args]) as Any;
   }
 
-  return (expr.finalize ? expr.finalize.call(null, state) : state) as AnyVal;
+  return (expr.finalize ? expr.finalize.call(null, state) : state) as Any;
 };

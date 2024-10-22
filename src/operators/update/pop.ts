@@ -1,18 +1,18 @@
 import { UpdateOptions } from "../../core";
-import { ArrayOrObject, RawArray, RawObject } from "../../types";
+import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { assert, isArray } from "../../util";
 import { Action, applyUpdate, walkExpression } from "./_internal";
 
 /** Removes the first or last element of an array. */
 export const $pop = (
-  obj: RawObject,
+  obj: AnyObject,
   expr: Record<string, 1 | -1>,
-  arrayFilters: RawObject[] = [],
+  arrayFilters: AnyObject[] = [],
   options: UpdateOptions = {}
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {
-      const arr = o[k] as RawArray;
+      const arr = o[k] as Any[];
       assert(
         isArray(arr),
         `path '${node.selector}' contains an element of non-array type.`

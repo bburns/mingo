@@ -1,7 +1,7 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Query } from "../../query";
-import { RawObject } from "../../types";
+import { AnyObject } from "../../types";
 
 /**
  * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
@@ -14,9 +14,9 @@ import { RawObject } from "../../types";
  */
 export const $match: PipelineOperator = (
   collection: Iterator,
-  expr: RawObject,
+  expr: AnyObject,
   options: Options
 ): Iterator => {
   const q = new Query(expr, options);
-  return collection.filter((o: RawObject) => q.test(o));
+  return collection.filter((o: AnyObject) => q.test(o));
 };

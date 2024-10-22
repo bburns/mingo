@@ -3,7 +3,7 @@
  */
 
 import { ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { MAX_LONG, MIN_LONG } from "../../../util";
 import { toInteger } from "./_internal";
 
@@ -13,8 +13,8 @@ import { toInteger } from "./_internal";
  * @param expr
  */
 export const $toLong: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): number | null => {
   return toInteger(obj, expr, options, MAX_LONG, MIN_LONG, "long");

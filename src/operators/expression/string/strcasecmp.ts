@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { assert, isEqual, isNil, isString } from "../../../util";
 
 /**
@@ -14,11 +14,11 @@ import { assert, isEqual, isNil, isString } from "../../../util";
  * @returns {number}
  */
 export const $strcasecmp: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as Array<string>;
+): Any => {
+  const args = computeValue(obj, expr, null, options) as string[];
   let a = args[0];
   let b = args[1];
   if (isEqual(a, b) || args.every(isNil)) return 0;

@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
 
@@ -14,8 +14,8 @@ import { TypeConvertError } from "./_internal";
  * @param expr
  */
 export const $toDate: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
 ): Date | null => {
   const val = computeValue(obj, expr, null, options) as string | number | Date;

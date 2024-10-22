@@ -3,7 +3,7 @@
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { AnyVal, Callback, RawArray, RawObject } from "../../../types";
+import { Any, AnyObject } from "../../../types";
 import { notInArray } from "../../../util";
 
 /**
@@ -12,10 +12,10 @@ import { notInArray } from "../../../util";
  * @param expr
  */
 export const $setDifference: ExpressionOperator = (
-  obj: RawObject,
-  expr: AnyVal,
+  obj: AnyObject,
+  expr: Any,
   options: Options
-): AnyVal => {
-  const args = computeValue(obj, expr, null, options) as RawArray[];
-  return args[0].filter(notInArray.bind(null, args[1]) as Callback);
+): Any => {
+  const args = computeValue(obj, expr, null, options) as Any[][];
+  return args[0].filter(v => notInArray(args[1], v));
 };

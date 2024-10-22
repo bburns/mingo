@@ -1,12 +1,12 @@
 import { Aggregator } from "../../aggregator";
 import { Options, PipelineOperator } from "../../core";
 import { concat, Iterator, Lazy } from "../../lazy";
-import { RawObject } from "../../types";
+import { AnyObject } from "../../types";
 import { isString } from "../../util";
 
 interface InputExpr {
-  readonly coll: RawObject[];
-  readonly pipeline?: RawObject[];
+  readonly coll: AnyObject[];
+  readonly pipeline?: AnyObject[];
 }
 
 /**
