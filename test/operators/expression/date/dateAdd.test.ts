@@ -1,32 +1,49 @@
 import { runTest, testPath } from "../../../support";
-import {
-  apply3Units,
-  dayDate,
-  hourDate,
-  millisecondDate,
-  minuteDate,
-  monthDate,
-  quarterDate,
-  secondDate,
-  testDate,
-  weekDate,
-  yearDate,
-} from "./data";
+
+const fixtures: [string, string, string, number, string?][] = [
+  // [result, startDate, unit, amount, ?timezone]
+  // typical amounts
+  ["2020-02-28T10:30:50.905Z", "2020-02-28T10:30:50.900Z", "millisecond", 5],
+  ["2020-02-28T10:30:55.9Z", "2020-02-28T10:30:50.900Z", "second", 5],
+  ["2020-02-28T10:35:50.9Z", "2020-02-28T10:30:50.900Z", "minute", 5],
+  ["2020-02-28T15:30:50.9Z", "2020-02-28T10:30:50.900Z", "hour", 5],
+  ["2020-03-04T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "day", 5],
+  ["2020-07-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "month", 5],
+  ["2021-05-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "quarter", 5],
+  ["2025-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "year", 5],
+  // large amounts
+  ["2020-02-28T10:30:51.1Z", "2020-02-28T10:30:50.900Z", "millisecond", 200],
+  ["2020-02-28T10:34:10.9Z", "2020-02-28T10:30:50.900Z", "second", 200],
+  ["2020-02-28T13:50:50.9Z", "2020-02-28T10:30:50.900Z", "minute", 200],
+  ["2020-03-07T18:30:50.9Z", "2020-02-28T10:30:50.900Z", "hour", 200],
+  ["2020-09-15T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "day", 200],
+  ["2036-10-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "month", 200],
+  ["2070-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "quarter", 200],
+  ["2220-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "year", 200],
+  // small amounts
+  ["2020-02-28T10:30:50.7Z", "2020-02-28T10:30:50.900Z", "millisecond", -200],
+  ["2020-02-28T10:27:30.9Z", "2020-02-28T10:30:50.900Z", "second", -200],
+  ["2020-02-28T07:10:50.9Z", "2020-02-28T10:30:50.900Z", "minute", -200],
+  ["2020-02-20T02:30:50.9Z", "2020-02-28T10:30:50.900Z", "hour", -200],
+  ["2019-08-12T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "day", -200],
+  ["2003-06-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "month", -200],
+  ["1970-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "quarter", -200],
+  ["1820-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "year", -200],
+  // extra
+  ["2020-02-29T10:30:50Z", "2020-02-28T10:30:50Z", "day", 1], //leap year
+  ["2021-03-01T10:30:50Z", "2021-02-28T10:30:50Z", "day", 1] //normal
+  // timezone
+  // All operations performed in UTC.
+];
 
 runTest(testPath(__filename), {
-  $dateAdd: [
-    [{ ...apply3Units, unit: "year" }, testDate, { obj: yearDate }],
-    [{ ...apply3Units, unit: "quarter" }, testDate, { obj: quarterDate }],
-    [{ ...apply3Units, unit: "month" }, testDate, { obj: monthDate }],
-    [{ ...apply3Units, unit: "week" }, testDate, { obj: weekDate }],
-    [{ ...apply3Units, unit: "day" }, testDate, { obj: dayDate }],
-    [{ ...apply3Units, unit: "hour" }, testDate, { obj: hourDate }],
-    [{ ...apply3Units, unit: "minute" }, testDate, { obj: minuteDate }],
-    [{ ...apply3Units, unit: "second" }, testDate, { obj: secondDate }],
-    [
-      { ...apply3Units, unit: "millisecond" },
-      testDate,
-      { obj: millisecondDate },
-    ],
-  ],
+  $dateAdd: fixtures.map(([result, date, unit, amount, timezone]) => [
+    {
+      startDate: new Date(date),
+      unit,
+      amount,
+      timezone
+    },
+    new Date(result)
+  ])
 });

@@ -2,7 +2,7 @@
 
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { computeDate, getDayOfYear } from "./_internal";
+import { computeDate, dayOfYear } from "./_internal";
 
 /**
  * Returns the day of the year for a date as a number between 1 and 366 (leap year).
@@ -14,5 +14,5 @@ export const $dayOfYear: ExpressionOperator<number> = (
   expr: Any,
   options: Options
 ): number => {
-  return getDayOfYear(computeDate(obj, expr, options));
+  return dayOfYear(computeDate(obj, expr, options));
 };

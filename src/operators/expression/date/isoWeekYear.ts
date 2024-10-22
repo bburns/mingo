@@ -2,7 +2,7 @@
 
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { computeDate } from "./_internal";
+import { computeDate, isoWeekYear } from "./_internal";
 
 /**
  * Returns the year number in ISO 8601 format. The year starts with the Monday of week 1 and ends with the Sunday of the last week.
@@ -13,10 +13,4 @@ export const $isoWeekYear: ExpressionOperator<number> = (
   obj: AnyObject,
   expr: Any,
   options: Options
-): number => {
-  const d = computeDate(obj, expr, options);
-  return (
-    d.getUTCFullYear() -
-    Number(d.getUTCMonth() == 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1)
-  );
-};
+): number => isoWeekYear(computeDate(obj, expr, options));

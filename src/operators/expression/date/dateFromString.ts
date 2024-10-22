@@ -8,18 +8,8 @@ import {
   DATE_FORMAT,
   DATE_SYM_TABLE,
   MINUTES_PER_HOUR,
-  parseTimezone,
-  regexQuote,
-  regexStrip
+  parseTimezone
 } from "./_internal";
-
-interface InputExpr {
-  dateString?: string;
-  timezone?: string;
-  format?: string;
-  onError?: Any;
-  onNull?: Any;
-}
 
 const buildMap = (letters: string, sign: number): Record<string, number> => {
   const h: Record<string, number> = {};
@@ -31,6 +21,25 @@ const TZ_LETTER_OFFSETS = {
   ...buildMap("NOPQRSTUVWXY", -1),
   Z: 0
 };
+
+const regexStrip = (s: string): string =>
+  s.replace(/^\//, "").replace(/\/$/, "");
+
+const REGEX_SPECIAL_CHARS = ["^", ".", "-", "*", "?", "$"] as const;
+const regexQuote = (s: string): string => {
+  REGEX_SPECIAL_CHARS.forEach((c: string) => {
+    s = s.replace(c, `\\${c}`);
+  });
+  return s;
+};
+
+interface InputExpr {
+  dateString?: string;
+  timezone?: string;
+  format?: string;
+  onError?: Any;
+  onNull?: Any;
+}
 
 /**
  * Converts a date/time string to a date object.
