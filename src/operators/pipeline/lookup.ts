@@ -1,10 +1,12 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { RawArray, RawObject } from "../../types";
-import { assert, hashCode, into, isString, resolve } from "../../util";
+import { AnyVal, RawObject } from "../../types";
+import { assert, isString, resolve, ValueMap } from "../../util";
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/}
  *
  * @param collection
  * @param expr
@@ -25,18 +27,16 @@ export const $lookup: PipelineOperator = (
     : expr.from;
   assert(joinColl instanceof Array, `'from' field must resolve to an array`);
 
-  const hash: Record<string, RawArray> = {};
-
+  const m = ValueMap.init<AnyVal, RawObject[]>(options.hashFunction);
   for (const obj of joinColl) {
-    const k = hashCode(resolve(obj, expr.foreignField), options?.hashFunction);
-    hash[k] = hash[k] || [];
-    hash[k].push(obj);
+    const foreign = resolve(obj, expr.foreignField) ?? null;
+    const arr = m.get(foreign) || [];
+    if (arr.length === 0) m.set(foreign, arr);
+    arr.push(obj);
   }
 
   return collection.map((obj: RawObject) => {
-    const k = hashCode(resolve(obj, expr.localField), options?.hashFunction);
-    const newObj = into({}, obj);
-    newObj[expr.as] = hash[k] || [];
-    return newObj;
+    const local = resolve(obj, expr.localField) ?? null;
+    return { ...obj, [expr.as]: m.get(local) || [] };
   });
 };
