@@ -120,15 +120,17 @@ interface LocalData {
 
 /** Custom type to facilitate type checking for global options */
 export class ComputeOptions implements Options {
-  private constructor(
-    private _opts: Options,
-    /** Reference to the root object when processing subgraphs of the object. */
-    private _root: Any,
-    private _local?: LocalData,
-    /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
-    readonly timestamp = Date.now()
-  ) {
-    this.update(_root, _local);
+  #options: Options;
+  /** Reference to the root object when processing subgraphs of the object. */
+  #root: Any;
+  #local: LocalData;
+  /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
+  #timestamp: number;
+
+  private constructor(options: Options, root: Any, local?: LocalData) {
+    this.#timestamp = Date.now();
+    this.#options = options;
+    this.update(root, local);
   }
 
   /**
@@ -142,7 +144,7 @@ export class ComputeOptions implements Options {
   static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
     return options instanceof ComputeOptions
       ? new ComputeOptions(
-          options._opts,
+          options.#options,
           isNil(options.root) ? root : options.root,
           Object.assign({}, options.local, local)
         )
@@ -152,10 +154,10 @@ export class ComputeOptions implements Options {
   /** Updates the internal mutable state. */
   update(root?: Any, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
-    this._root = root;
-    this._local = local
+    this.#root = root;
+    this.#local = local
       ? Object.assign({}, local, {
-          variables: Object.assign({}, this._local?.variables, local?.variables)
+          variables: Object.assign({}, this.#local?.variables, local?.variables)
         })
       : local;
 
@@ -164,49 +166,53 @@ export class ComputeOptions implements Options {
 
   getOptions() {
     return Object.freeze({
-      ...this._opts,
-      context: Context.from(this._opts.context)
+      ...this.#options,
+      context: Context.from(this.#options.context)
     }) as Options;
   }
 
+  get timestamp() {
+    return this.#timestamp;
+  }
+
   get root() {
-    return this._root;
+    return this.#root;
   }
   get local() {
-    return this._local;
+    return this.#local;
   }
   get idKey() {
-    return this._opts.idKey;
+    return this.#options.idKey;
   }
   get collation() {
-    return this._opts?.collation;
+    return this.#options?.collation;
   }
   get processingMode() {
-    return this._opts?.processingMode || ProcessingMode.CLONE_OFF;
+    return this.#options?.processingMode || ProcessingMode.CLONE_OFF;
   }
   get useStrictMode() {
-    return this._opts?.useStrictMode;
+    return this.#options?.useStrictMode;
   }
   get scriptEnabled() {
-    return this._opts?.scriptEnabled;
+    return this.#options?.scriptEnabled;
   }
   get useGlobalContext() {
-    return this._opts?.useGlobalContext;
+    return this.#options?.useGlobalContext;
   }
   get hashFunction() {
-    return this._opts?.hashFunction;
+    return this.#options?.hashFunction;
   }
   get collectionResolver() {
-    return this._opts?.collectionResolver;
+    return this.#options?.collectionResolver;
   }
   get jsonSchemaValidator() {
-    return this._opts?.jsonSchemaValidator;
+    return this.#options?.jsonSchemaValidator;
   }
   get variables() {
-    return this._opts?.variables;
+    return this.#options?.variables;
   }
   get context() {
-    return this._opts?.context;
+    return this.#options?.context;
   }
 }
 
