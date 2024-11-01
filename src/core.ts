@@ -11,13 +11,13 @@ import {
 import {
   assert,
   has,
+  isArray,
   isFunction,
   isNil,
   isObject,
   isObjectLike,
   isOperator,
   isString,
-  MingoError,
   resolve
 } from "./util";
 
@@ -537,6 +537,11 @@ const redactVariables: Record<string, typeof redact> = {
 };
 /* eslint-enable unused-imports/no-unused-vars-ts */
 
+const AGGREGATION_OPS = [
+  OperatorType.EXPRESSION,
+  OperatorType.ACCUMULATOR
+] as const;
+
 /**
  * Computes the value of the expression on the object for the given operator
  *
@@ -563,6 +568,7 @@ export function computeValue(
       operator,
       options
     ) as ExpressionOperator;
+
     if (callExpression) return callExpression(obj as AnyObject, expr, copts);
 
     // we also handle $group accumulator operators
@@ -571,27 +577,27 @@ export function computeValue(
       operator,
       options
     ) as AccumulatorOperator;
-    if (callAccumulator) {
-      // if object is not an array, first try to compute using the expression
-      if (!(obj instanceof Array)) {
-        obj = computeValue(obj, expr, null, copts);
-        expr = null;
-      }
-
-      // validate that we have an array
-      assert(obj instanceof Array, `'${operator}' target must be an array.`);
-
-      // for accumulators, we use the global options since the root is specific to each element within array.
-      return callAccumulator(
-        obj as AnyObject[],
-        expr,
-        // reset the root object for accumulators.
-        copts.update(null, copts.local)
-      );
-    }
 
     // operator was not found
-    throw new MingoError(`operator '${operator}' is not registered`);
+    assert(!!callAccumulator, `Operator '${operator}' is not registered.`);
+
+    // if object is not an array, first try to compute using the expression
+    if (!isArray(obj)) {
+      obj = computeValue(obj, expr, null, copts);
+      expr = null;
+    }
+
+    assert(
+      isArray(obj),
+      `The expression for operator '${operator}' must resolve to an array.`
+    );
+
+    // for accumulators, we use the global options since the root is specific to each element within array.
+    return callAccumulator(
+      obj as Any[],
+      expr,
+      copts.update(null, copts.local) // reset the root object.
+    );
   }
 
   // if expr is a string and begins with "$$", then we have a variable.
@@ -601,9 +607,7 @@ export function computeValue(
   // if expr begins only a single "$", then it is a path to a field on the object.
   if (isString(expr) && expr.length > 0 && expr[0] === "$") {
     // we return redact variables as literals
-    if (has(redactVariables, expr)) {
-      return expr;
-    }
+    if (has(redactVariables, expr)) return expr;
 
     // default to root for resolving path.
     let context = copts.root;
@@ -640,24 +644,23 @@ export function computeValue(
       expr = expr.slice(1);
     }
 
-    if (expr === "") return context;
-    return resolve(context as ArrayOrObject, expr as string);
+    return expr === ""
+      ? context
+      : resolve(context as ArrayOrObject, expr as string);
   }
 
   // check and return value if already in a resolved state
-  if (expr instanceof Array) {
+  if (isArray(expr)) {
     return expr.map((item: Any) => computeValue(obj, item, null, copts));
-  } else if (isObject(expr)) {
+  }
+
+  if (isObject(expr)) {
     const result: AnyObject = {};
     for (const [key, val] of Object.entries(expr as AnyObject)) {
       result[key] = computeValue(obj, val, key, copts);
       // must run ONLY one aggregate operator per expression
       // if so, return result of the computed value
-      if (
-        [OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(
-          t => !!getOperator(t, key, options)
-        )
-      ) {
+      if (AGGREGATION_OPS.some(t => !!getOperator(t, key, options))) {
         // there should be only one operator
         assert(
           Object.keys(expr).length === 1,

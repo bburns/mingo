@@ -49,7 +49,7 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: Any): number => {
 
 export const EMPTY_ARRAY = [] as const;
 
-const isPrimitive = (v: Any): boolean =>
+export const isPrimitive = (v: Any): boolean =>
   (typeof v !== "object" && typeof v !== "function") || v === null;
 
 /** Options to resolve() and resolveGraph() functions */
@@ -275,25 +275,30 @@ export const has = (obj: object, prop: string): boolean =>
 const isTypedArray = (v: Any): boolean =>
   typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
 
-const INSTANCE_CLONE = [isDate, isRegExp, isTypedArray];
-const cloneInternal = (val: Any, refs: Set<Any>): Any => {
-  if (isNil(val)) return val;
-  if (refs.has(val)) throw CYCLE_FOUND_ERROR;
-  const ctor = val.constructor as Constructor;
-  if (INSTANCE_CLONE.some(f => f(val))) return new ctor(val);
+const cloneInternal = (v: Any, refs: Set<Any>): Any => {
+  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
+  if (isPrimitive(v)) return v;
+  if (isDate(v)) return new Date(v);
+  if (isRegExp(v)) return new RegExp(v);
+  if (isTypedArray(v)) {
+    const ctor = v.constructor as Constructor;
+    return new ctor(v);
+  }
+
   try {
-    refs.add(val);
-    if (isArray(val)) return val.map(v => cloneInternal(v, refs)) as Any;
-    if (isObject(val)) {
+    refs.add(v);
+    if (isArray(v)) return v.map(e => cloneInternal(e, refs)) as Any;
+    if (isObject(v)) {
       const res = {};
-      for (const k in val) res[k] = cloneInternal(val[k], refs);
+      for (const k of Object.keys(v)) res[k] = cloneInternal(v[k], refs);
       return res;
     }
   } finally {
-    refs.delete(val);
+    refs.delete(v);
   }
-  // primitive, non-buffer reference, or custom type
-  return val;
+
+  // custom-type. will be treated as immutable so return as is.
+  return v;
 };
 
 /**
