@@ -1,8 +1,12 @@
 # Changelog
 
-## 6.x.x / 2024-10-xx
+## 6.x.x / 2024-11-xx
 **New**
 - Add support for `$densify` pipeline stage operator.
+- Add support for `$dateTrunc` expression operator.
+
+**Fixes**
+- Fixed `$dateDiff` implementation to be consistent with MongoDB
 
 ## 6.4.15 / 2024-04-16
 **New**
