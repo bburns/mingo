@@ -91,13 +91,6 @@ describe("util", () => {
   });
 
   describe("merge", () => {
-    it("accepts same input and output arrays", () => {
-      const target = [1, 2];
-      const result = merge(target, [3, 4]);
-      expect(result).toBe(target);
-      expect(result).toStrictEqual([1, 2, 3, 4]);
-    });
-
     it("accepts same input and output objects", () => {
       const target = { a: 1 };
       const result = merge(target, { b: 2 });
@@ -105,16 +98,9 @@ describe("util", () => {
       expect(result).toStrictEqual({ a: 1, b: 2 });
     });
 
-    it("should accept rvalue for mismatched inputs", () => {
-      const target = { a: 1 };
-      expect(() => merge(target, [])).toThrowError();
-    });
-
     it("flattens objects in target array", () => {
       const target = [{ a: 1 }, { a: 2 }];
-      const result = merge(target, [{ b: 3 }, { b: 4 }, { c: 5 }], {
-        flatten: true
-      });
+      const result = merge(target, [{ b: 3 }, { b: 4 }, { c: 5 }]);
       expect(result).toBe(target);
       expect(result).toStrictEqual([{ a: 1, b: 3 }, { a: 2, b: 4 }, { c: 5 }]);
     });

@@ -187,9 +187,7 @@ function processObject(
 
     // add the value at the path
     if (objPathGraph !== undefined) {
-      merge(newObj, objPathGraph, {
-        flatten: true
-      });
+      merge(newObj, objPathGraph);
     }
 
     // if computed add/or remove accordingly

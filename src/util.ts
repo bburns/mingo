@@ -261,13 +261,12 @@ export const truthy = (arg: Any, strict = true): boolean =>
 export const isEmpty = (x: Any): boolean =>
   isNil(x) ||
   (isString(x) && !x) ||
-  (x instanceof Array && x.length === 0) ||
+  (isArray(x) && x.length === 0) ||
   (isObject(x) && Object.keys(x).length === 0);
 
 export const isMissing = (v: Any): boolean => v === MISSING;
 /** ensure a value is an array or wrapped within one. */
-export const ensureArray = <T>(x: T | T[]): T[] =>
-  x instanceof Array ? x : [x];
+export const ensureArray = <T>(x: T | T[]): T[] => (isArray(x) ? x : [x]);
 
 export const has = (obj: object, prop: string): boolean =>
   !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
@@ -306,63 +305,32 @@ const cloneInternal = (v: Any, refs: Set<Any>): Any => {
  */
 export const cloneDeep = (obj: Any): Any => cloneInternal(obj, new Set());
 
-/** Options to merge function */
-interface MergeOptions {
-  flatten?: boolean;
-  skipValidation?: boolean;
-}
-
-const mergeable = <T>(left: T, right: T): boolean =>
-  (isObject(left) && isObject(right)) || (isArray(left) && isArray(right));
-
 /**
  * Deep merge objects or arrays.
  * When the inputs have unmergeable types, the  right hand value is returned.
- * If inputs are arrays and options.flatten is set, elements in the same position are merged together. Remaining elements are appended to the target object.
- * If options.flatten is false, the right hand value is just appended to the left-hand value.
+ * If inputs are arrays and options.flatten is set, elements in the same position are merged together.
+ * Remaining elements are appended to the target object.
  * @param target {AnyObject|Array} the target to merge into
  * @param obj {AnyObject|Array} the source object
  */
-export function merge(target: Any, obj: Any, options?: MergeOptions): Any {
-  // default options
-  options = options || { flatten: false };
-
+export function merge(target: Any, obj: Any): Any {
   // take care of missing inputs
   if (isMissing(target) || isNil(target)) return obj;
   if (isMissing(obj) || isNil(obj)) return target;
+  if (isPrimitive(target) || isPrimitive(obj)) return obj;
 
-  // fail only on initial input.
-  if (!mergeable(target, obj)) {
-    if (options.skipValidation) return obj || target;
-    throw Error("mismatched types. must both be array or object");
-  }
-
-  // skip validation after initial input.
-  options.skipValidation = true;
-
-  if (isArray(target)) {
-    const result = target;
-    const input = obj as Any[];
-
-    if (options.flatten) {
-      let i = 0;
-      let j = 0;
-      while (i < result.length && j < input.length) {
-        result[i] = merge(result[i++], input[j++], options) as Any[];
-      }
-      while (j < input.length) {
-        result.push(obj[j++] as ArrayOrObject);
-      }
-    } else {
-      into(result, input);
+  if (isArray(target) && isArray(obj)) {
+    let i = 0;
+    let j = 0;
+    while (i < target.length && j < obj.length) {
+      target[i] = merge(target[i++], obj[j++]);
+    }
+    while (j < obj.length) {
+      target.push(obj[j++]);
     }
   } else {
     for (const k in obj as AnyObject) {
-      target[k] = merge(
-        target[k] as ArrayOrObject,
-        obj[k] as ArrayOrObject,
-        options
-      );
+      target[k] = merge(target[k], obj[k]);
     }
   }
 
@@ -693,7 +661,7 @@ export function into(
   target: ArrayOrObject,
   ...rest: ArrayOrObject[]
 ): ArrayOrObject {
-  if (target instanceof Array) {
+  if (isArray(target)) {
     return rest.reduce(
       ((acc, arr: Any[]) => {
         // push arrary in batches to handle large inputs
@@ -788,7 +756,7 @@ export function resolve(
       const isText = /^\d+$/.exec(field) === null;
 
       // using instanceof to aid typescript compiler
-      if (isText && value instanceof Array) {
+      if (isText && isArray(value)) {
         // On the first iteration, we check if we received a stop flag.
         // If so, we stop to prevent iterating over a nested array value
         // on consecutive object keys in the selector.
@@ -815,7 +783,7 @@ export function resolve(
     ? obj
     : resolve2(obj, selector.split("."));
 
-  return result instanceof Array && options?.unwrapArray
+  return isArray(result) && options?.unwrapArray
     ? unwrap(result, depth)
     : result;
 }
@@ -841,7 +809,7 @@ export function resolveGraph(
   let result: Any;
   let value: Any;
 
-  if (obj instanceof Array) {
+  if (isArray(obj)) {
     if (isIndex) {
       result = getValue(obj, Number(key)) as ArrayOrObject;
       if (hasNext) {
@@ -881,7 +849,7 @@ export function resolveGraph(
  * @param obj The object to filter
  */
 export function filterMissing(obj: ArrayOrObject): void {
-  if (obj instanceof Array) {
+  if (isArray(obj)) {
     for (let i = obj.length - 1; i >= 0; i--) {
       if (obj[i] === MISSING) {
         obj.splice(i, 1);
@@ -948,7 +916,7 @@ export function walk(
     // Eg: Given { array: [ {k:1}, {k:2}, {k:3} ] }
     //  - individual objecs can be traversed with "array.k"
     //  - a specific object can be traversed with "array.1"
-    if (item instanceof Array && options?.descendArray && !isNextArrayIndex) {
+    if (isArray(item) && options?.descendArray && !isNextArrayIndex) {
       item.forEach(((e: ArrayOrObject) =>
         walk(e, next, fn, options)) as Callback<void>);
     } else {
@@ -996,7 +964,7 @@ export function removeValue(
     obj,
     selector,
     ((item: Any, key: string) => {
-      if (item instanceof Array) {
+      if (isArray(item)) {
         if (/^\d+$/.test(key)) {
           item.splice(parseInt(key), 1);
         } else if (options && options.descendArray) {
