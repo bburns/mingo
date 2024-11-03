@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isNil } from "../../../util";
+import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Returns the element at the specified array index.
@@ -18,7 +18,7 @@ export const $arrayElemAt: ExpressionOperator = (
 ): Any => {
   const args = computeValue(obj, expr, null, options) as Any[];
   assert(
-    args instanceof Array && args.length === 2,
+    isArray(args) && args.length === 2,
     "$arrayElemAt expression must resolve to array(2)"
   );
 

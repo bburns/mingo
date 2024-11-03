@@ -16,6 +16,7 @@ import {
   has,
   inArray,
   into,
+  isArray,
   isEmpty,
   isNil,
   isNumber,
@@ -118,7 +119,7 @@ function processObject(
       value = computeValue(obj, subExpr, key, options);
     } else if (inArray([1, true], subExpr)) {
       // For direct projections, we use the resolved object value
-    } else if (subExpr instanceof Array) {
+    } else if (isArray(subExpr)) {
       value = subExpr.map(v => {
         const r = computeValue(obj, v, null, options);
         if (isNil(r)) return null;
@@ -157,7 +158,7 @@ function processObject(
         // compute the value for the sub expression for the key
         validateExpression(subExprObj, options);
         let target = obj[key];
-        if (target instanceof Array) {
+        if (isArray(target)) {
           value = target.map((o: AnyObject) =>
             processObject(o, subExprObj, options, subExprKeys, false)
           );

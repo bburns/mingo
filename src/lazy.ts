@@ -1,5 +1,5 @@
 import { Any, AnyObject, Callback, Predicate } from "./types";
-import { MingoError } from "./util";
+import { isArray, MingoError } from "./util";
 
 interface Iteratee {
   action: Action;
@@ -172,7 +172,7 @@ export class Iterator {
         if (o.done) throw DONE;
         return o.value;
       };
-    } else if (source instanceof Array) {
+    } else if (isArray(source)) {
       const data = source;
       const size = data.length;
       let index = 0;

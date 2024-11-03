@@ -23,7 +23,7 @@ export const $first: ExpressionOperator = (
   options: Options
 ): Any => {
   const copts = ComputeOptions.init(options);
-  if (obj instanceof Array) return __first(obj, expr, copts.update());
+  if (isArray(obj)) return __first(obj, expr, copts.update());
 
   const arr = computeValue(obj, expr, null, options) as AnyObject[];
   if (isNil(arr)) return null;

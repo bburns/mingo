@@ -19,7 +19,7 @@ export const $arrayToObject: ExpressionOperator = (
     // flatten
     while (isArray(val) && val.length === 1) val = val[0];
 
-    if (val instanceof Array && val.length == 2) {
+    if (isArray(val) && val.length == 2) {
       newObj[val[0] as string] = val[1];
     } else {
       const valObj = val as { k: string; v: Any };

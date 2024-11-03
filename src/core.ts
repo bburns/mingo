@@ -512,7 +512,7 @@ const redactVariables: Record<string, typeof redact> = {
 
     for (const [key, current] of Object.entries(obj)) {
       if (isObjectLike(current)) {
-        if (current instanceof Array) {
+        if (isArray(current)) {
           const array: Any[] = [];
           for (let elem of current) {
             if (isObject(elem)) {
@@ -616,14 +616,14 @@ export function computeValue(
     if (has(redactVariables, expr)) return expr;
 
     // default to root for resolving path.
-    let context = copts.root;
+    let ctx = copts.root;
 
     // handle selectors with explicit prefix
     const arr = expr.split(".");
     if (has(systemVariables, arr[0])) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      context = systemVariables[arr[0]](
+      ctx = systemVariables[arr[0]](
         obj as AnyObject,
         null,
         copts
@@ -631,28 +631,24 @@ export function computeValue(
       expr = expr.slice(arr[0].length + 1); //  +1 for '.'
     } else if (arr[0].slice(0, 2) === "$$") {
       // handle user-defined variables
-      context = Object.assign(
+      ctx = Object.assign(
         {},
         copts.variables, // global vars
         // current item is added before local variables because the binding may be changed.
         { this: obj },
         copts.local?.variables // local vars
       );
-      const prefix = arr[0].slice(2);
+      // the variable name
+      const name = arr[0].slice(2);
 
-      assert(
-        has(context as AnyObject, prefix),
-        `Use of undefined variable: ${prefix}`
-      );
+      assert(has(ctx as AnyObject, name), `Use of undefined variable: ${name}`);
       expr = expr.slice(2);
     } else {
       // 'expr' is a path to a field on the object.
       expr = expr.slice(1);
     }
 
-    return expr === ""
-      ? context
-      : resolve(context as ArrayOrObject, expr as string);
+    return expr === "" ? ctx : resolve(ctx as ArrayOrObject, expr as string);
   }
 
   // check and return value if already in a resolved state

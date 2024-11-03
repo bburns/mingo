@@ -23,7 +23,7 @@ export const $minN: ExpressionOperator = (
   options: Options
 ): Any => {
   // first try the accumulator if input is an array.
-  if (obj instanceof Array) return __minN(obj, expr, options);
+  if (isArray(obj)) return __minN(obj, expr, options);
   const { input, n } = computeValue(obj, expr, null, options) as InputExpr;
   if (isNil(input)) return null;
   assert(isArray(input), "Must resolve to an array/null or missing");

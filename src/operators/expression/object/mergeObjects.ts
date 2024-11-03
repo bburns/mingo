@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { into } from "../../../util";
+import { into, isArray } from "../../../util";
 
 /**
  * Combines multiple documents into a single document.
@@ -17,7 +17,7 @@ export const $mergeObjects: ExpressionOperator<AnyObject> = (
   options: Options
 ): AnyObject => {
   const docs = computeValue(obj, expr, null, options) as AnyObject[];
-  return docs instanceof Array
+  return isArray(docs)
     ? docs.reduce((memo, o) => into(memo, o) as AnyObject, {})
     : {};
 };

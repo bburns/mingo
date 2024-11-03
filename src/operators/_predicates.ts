@@ -96,7 +96,7 @@ export function $eq(a: Any, b: Any, options?: PredicateOptions): boolean {
   if (isNil(a) && isNil(b)) return true;
 
   // check
-  if (a instanceof Array) {
+  if (isArray(a)) {
     return (
       a.some(v => isEqual(v, b)) ||
       flatten(a, options?.depth).some(v => isEqual(v, b))

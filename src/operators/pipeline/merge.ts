@@ -53,10 +53,7 @@ export const $merge: PipelineOperator = (
     ? options?.collectionResolver(expr.into)
     : expr.into;
 
-  assert(
-    output instanceof Array,
-    `$merge: option 'into' must resolve to an array`
-  );
+  assert(isArray(output), `$merge: option 'into' must resolve to an array`);
 
   const onField = expr.on || options.idKey;
 

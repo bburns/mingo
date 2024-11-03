@@ -2,6 +2,7 @@ import { Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { Any, AnyObject, Callback } from "../../types";
 import {
+  isArray,
   isEmpty,
   isString,
   removeValue,
@@ -62,7 +63,7 @@ export const $unwind: PipelineOperator = (
       value = resolve(obj, field) as AnyObject[];
 
       // throw error if value is not an array???
-      if (value instanceof Array) {
+      if (isArray(value)) {
         if (value.length === 0 && preserveNullAndEmptyArrays === true) {
           value = null; // reset unwind value
           removeValue(obj, field);

@@ -1,7 +1,7 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { AnyObject } from "../../types";
-import { assert, cloneDeep, isString } from "../../util";
+import { assert, cloneDeep, isArray, isString } from "../../util";
 
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
@@ -24,7 +24,7 @@ export const $out: PipelineOperator = (
   const outputColl: AnyObject[] = isString(expr)
     ? options?.collectionResolver(expr)
     : expr;
-  assert(outputColl instanceof Array, `expression must resolve to an array`);
+  assert(isArray(outputColl), `expression must resolve to an array`);
 
   return collection.map((o: AnyObject) => {
     outputColl.push(cloneDeep(o) as AnyObject);

@@ -3,7 +3,7 @@
 import { Options, ProjectionOperator } from "../../core";
 import { Query } from "../../query";
 import { Any, AnyObject } from "../../types";
-import { assert, resolve } from "../../util";
+import { assert, isArray, resolve } from "../../util";
 
 /**
  * Projects only the first element from an array that matches the specified $elemMatch condition.
@@ -22,7 +22,7 @@ export const $elemMatch: ProjectionOperator = (
   const arr = resolve(obj, field) as AnyObject[];
   const query = new Query(expr, options);
 
-  assert(arr instanceof Array, "$elemMatch: argument must resolve to array");
+  assert(isArray(arr), "$elemMatch: argument must resolve to array");
   const result: Any[] = [];
   for (let i = 0; i < (arr as Any[]).length; i++) {
     if (query.test(arr[i])) {

@@ -25,7 +25,7 @@ export const $slice: ProjectionOperator = (
 
   return __slice(
     obj,
-    expr instanceof Array ? [xs, ...exprAsArray] : [xs, expr],
+    isArray(expr) ? [xs, ...exprAsArray] : [xs, expr],
     options
   );
 };

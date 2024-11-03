@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject, ArrayOrObject } from "../../../types";
-import { assert, isObject, truthy } from "../../../util";
+import { assert, isArray, isObject, truthy } from "../../../util";
 
 /**
  * A ternary operator that evaluates one expression,
@@ -22,7 +22,7 @@ export const $cond: ExpressionOperator = (
   let thenExpr: Any;
   let elseExpr: Any;
   const errorMsg = "$cond: invalid arguments";
-  if (expr instanceof Array) {
+  if (isArray(expr)) {
     assert(expr.length === 3, errorMsg);
     ifExpr = expr[0];
     thenExpr = expr[1];
