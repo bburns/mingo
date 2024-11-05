@@ -47,7 +47,7 @@ export const $project: PipelineOperator = (
   if (isEmpty(expr)) return collection;
 
   // result collection
-  let expressionKeys = Object.keys(expr);
+  const expressionKeys = Object.keys(expr);
   let idOnlyExcluded = false;
 
   // validate inclusion and exclusion
@@ -57,10 +57,7 @@ export const $project: PipelineOperator = (
 
   if (inArray(expressionKeys, ID_KEY)) {
     const id = expr[ID_KEY];
-    if (id === 0 || id === false) {
-      expressionKeys = expressionKeys.filter(v => ID_KEY !== v);
-      idOnlyExcluded = expressionKeys.length == 0;
-    }
+    idOnlyExcluded = id === 0 && expressionKeys.length === 1;
   } else {
     // if not specified the add the ID field
     expressionKeys.push(ID_KEY);
@@ -68,13 +65,7 @@ export const $project: PipelineOperator = (
 
   const copts = ComputeOptions.init(options);
   return collection.map(((obj: AnyObject) =>
-    processObject(
-      obj,
-      expr,
-      copts.update(obj),
-      expressionKeys,
-      idOnlyExcluded
-    )) as Callback);
+    processObject(obj, expr, copts.update(obj), expressionKeys)) as Callback);
 };
 
 /**
@@ -83,18 +74,19 @@ export const $project: PipelineOperator = (
  * @param {Object} obj The object to use as options
  * @param {Object} expr The experssion object of $project operator
  * @param {Array} expressionKeys The key in the 'expr' object
- * @param {Boolean} idOnlyExcluded Boolean value indicating whether only the ID key is excluded
  */
 function processObject(
   obj: AnyObject,
   expr: AnyObject,
   options: ComputeOptions,
-  expressionKeys: string[],
-  idOnlyExcluded: boolean
+  expressionKeys: string[]
 ): AnyObject {
   let newObj = {};
   let foundSlice = false;
   let foundExclusion = false;
+  // flag indicating whether only the ID key is excluded
+  const idOnlyExcluded =
+    expr[options.idKey] === 0 && expressionKeys.length === 1;
   const dropKeys: string[] = [];
 
   if (idOnlyExcluded) {
@@ -160,7 +152,7 @@ function processObject(
         let target = obj[key];
         if (isArray(target)) {
           value = target.map((o: AnyObject) =>
-            processObject(o, subExprObj, options, subExprKeys, false)
+            processObject(o, subExprObj, options, subExprKeys)
           );
         } else {
           target = isObject(target) ? target : obj;
@@ -168,8 +160,7 @@ function processObject(
             target as AnyObject,
             subExprObj,
             options,
-            subExprKeys,
-            false
+            subExprKeys
           );
         }
       } else {
