@@ -693,23 +693,17 @@ export function into(
  * This implementation uses a cache independent of the function being memoized
  * to allow old values to be garbage collected when the memoized function goes out of scope.
  *
- * @param {*} fn The function object to memoize
+ * @param {Function} fn The function object to memoize
  */
 export function memoize(
   fn: Callback<Any>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
 ): Callback<Any> {
-  return ((memo: AnyObject) => {
-    return (...args: Any[]): Any => {
-      const key = hashCode(args, hashFunction) || "";
-      if (!has(memo, key)) {
-        memo[key] = fn.apply(this, args) as Any;
-      }
-      return memo[key];
-    };
-  })({
-    /* storage */
-  });
+  const memo = ValueMap.init(hashFunction);
+  return (...args: Any[]) => {
+    if (!memo.has(args)) memo.set(args, fn.apply(this, args));
+    return memo.get(args);
+  };
 }
 
 // mingo internal
