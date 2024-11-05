@@ -1,39 +1,36 @@
-import { Options, PipelineOperator } from "../../core";
-import { Iterator } from "../../lazy";
+import { Aggregator } from "../../aggregator";
+import {
+  ComputeOptions,
+  computeValue,
+  Options,
+  PipelineOperator
+} from "../../core";
+import { Iterator, Lazy } from "../../lazy";
 import { Any, AnyObject } from "../../types";
 import {
-  assert,
   ensureArray,
   flatten,
   isArray,
   isString,
   resolve,
-  unique,
   ValueMap
 } from "../../util";
 
-interface EqualityLookupExpr {
+// TODO: https://github.com/kofrasa/mingo/issues/471
+interface InputExpr {
   /** Specifies the collection in the same database to perform the join with. */
   from: string | AnyObject[];
   /** Specifies the field from the documents input to the $lookup stage. */
-  localField: string;
+  localField?: string;
   /** Specifies the field from the documents in the from collection. */
-  foreignField: string;
+  foreignField?: string;
+  /** Specifies the pipeline to run on the joined collection. The pipeline determines the resulting documents from the joined collection. */
+  pipeline?: Record<string, AnyObject>[];
   /** Specifies the name of the new array field to add to the input documents. */
   as: string;
+  /** Optional. Specifies variables to use in the pipeline stages. */
+  let?: AnyObject;
 }
-
-// TODO: https://github.com/kofrasa/mingo/issues/471
-// interface SubQueryLookupExpr {
-//   /** Specifies the collection in the same database to perform the join operation. */
-//   from: string | AnyObject[];
-//   /** Optional. Specifies variables to use in the pipeline stages. */
-//   let?: RawObject;
-//   /** Specifies the pipeline to run on the joined collection. The pipeline determines the resulting documents from the joined collection. */
-//   pipeline: Record<`$${string}`, AnyVal>[];
-//   /** Specifies the name of the new array field to add to the joined documents. */
-//   as: string;
-// }
 
 /**
  * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
@@ -42,37 +39,172 @@ interface EqualityLookupExpr {
  *
  * @param collection
  * @param expr
- * @param opt
+ * @param options
  */
 export const $lookup: PipelineOperator = (
   collection: Iterator,
-  expr: EqualityLookupExpr,
+  expr: InputExpr,
   options: Options
 ): Iterator => {
+  const joinColl = isString(expr.from)
+    ? Lazy(options?.collectionResolver(expr.from))
+    : Lazy(expr.from);
+
+  // assert(isArray(joinColl), "$lookup: 'from' must resolve to an array.");
+  const {
+    localField,
+    foreignField,
+    as: asField,
+    let: letExpr,
+    pipeline
+  } = expr;
+
+  // if (pipeline) {
+  return lookupWithPipeline(collection, expr, options);
+  // }
+
+  // const map = ValueMap.init<Any, Any[]>(options.hashFunction);
+
+  // for (const doc of joinColl) {
+  //   // add object for each value in the array.
+  //   ensureArray(resolve(doc as AnyObject, foreignField) ?? null).forEach(v => {
+  //     // minor optimization to minimize key hashing in value-map
+  //     const xs = map.get(v);
+  //     const arr = xs ?? [];
+  //     arr.push(doc);
+  //     if (arr !== xs) map.set(v, arr);
+  //   });
+  // }
+
+  // return collection.map((obj: AnyObject) => {
+  //   const local = resolve(obj, localField) ?? null;
+  //   // if array local field is an array, flatten and get unique values to avoid duplicates
+  //   // from storing an object for each array member from the join collection.
+  //   const asValue = isArray(local)
+  //     ? unique(flatten(local.map(v => map.get(v), options.hashFunction)))
+  //     : map.get(local);
+  //   return { ...obj, [asField]: asValue };
+  // });
+};
+
+function lookupWithPipeline(
+  collection: Iterator,
+  expr: InputExpr,
+  options: Options
+): Iterator {
   const joinColl = isString(expr.from)
     ? options?.collectionResolver(expr.from)
     : expr.from;
 
-  assert(isArray(joinColl), "$lookup: 'from' must resolve to an array.");
-  const { localField, foreignField, as: asField } = expr;
+  const { let: letExpr, pipeline, foreignField, localField } = expr;
 
-  const map = ValueMap.init<Any, Any[]>(options.hashFunction);
-  for (const obj of joinColl) {
-    // add object for each value in the array.
-    ensureArray(resolve(obj, foreignField) ?? null).forEach(v => {
-      const arr = map.get(v) ?? [];
-      arr.push(obj);
-      map.set(v, arr);
+  // cells in which to store [obj, variables] for the currently processing object in the main collection.
+  const cells = new Array<AnyObject>();
+
+  // rewrite pipeline to use a custom $match predicates.
+  let subQueryPipeline = pipeline || [];
+
+  // we default to a valid equality match
+  let lookupEq = (_: AnyObject): [boolean, Any[]] => [true, []];
+
+  // handle direct key fields
+  if (foreignField && localField) {
+    // compute hashtable for joined collection
+    const map = ValueMap.init<Any, Any[]>(options.hashFunction);
+    for (const doc of joinColl) {
+      // add object for each value in the array.
+      ensureArray(resolve(doc, foreignField) ?? null).forEach(v => {
+        // minor optimization to minimize key hashing in value-map
+        const xs = map.get(v);
+        const arr = xs ?? [];
+        arr.push(doc);
+        if (arr !== xs) map.set(v, arr);
+      });
+    }
+
+    // create lookup function to get matching items. optimized for when more predicates are specified by 'pipeline'.
+    lookupEq = (o: AnyObject) => {
+      const local = resolve(o, localField) ?? null;
+      if (isArray(local)) {
+        // only return the predicate result with no values since there is more to check.
+        if (subQueryPipeline.length) {
+          // check that matches exist for this object.
+          return [local.some(v => map.has(v)), null];
+        }
+        // return entire result set.
+        const result = Array.from(
+          new Set(flatten(local.map(v => map.get(v), options.hashFunction)))
+        );
+        return [result.length > 0, result];
+      }
+      const result = map.get(local) ?? null;
+      return [result !== null, result ?? []];
+    };
+
+    if (subQueryPipeline.length === 0) {
+      return collection.map((obj: AnyObject) => {
+        return {
+          ...obj,
+          [expr.as]: lookupEq(obj).pop()
+        };
+      });
+    }
+  }
+
+  // user defined variables for match expression
+  if (letExpr) {
+    // replace $match stages with custom dynamic predicate function.
+    const matchExprMap = new Map<number, AnyObject>();
+    // compute options to reuse for each predicate invocation
+    const copts = ComputeOptions.init(options);
+    // modify the pipeline
+    subQueryPipeline = subQueryPipeline.map((stage, i) => {
+      //   const stageExprs = Object.keys(stage)
+      //   assert(stageExprs.length === 1, "$lookup: invalid 'pipeline' specified.")
+      //   switch(stageExprs.pop()) {
+      //     case "$match":
+      //       return $match
+      //   }
+
+      /// WORKS
+      const matchExpr = stage["$match"];
+      if (!matchExpr || !matchExpr["$expr"]) return stage;
+      // store $match expression and stage index for lookup.
+      matchExprMap.set(i, matchExpr["$expr"] as AnyObject);
+      // replace implementation with custom predicate using $function.
+      return {
+        $match: {
+          $expr: {
+            $function: {
+              body: (obj: AnyObject, i: number) => {
+                return computeValue(
+                  obj,
+                  matchExprMap.get(i),
+                  null,
+                  // the current variable set will be set in cells[1] for each object being processed.
+                  copts.update(obj, { variables: cells[1] })
+                );
+              },
+              // send the object and the stage index in case of multiple $match stages.
+              args: ["$$this", i]
+            }
+          }
+        }
+      };
     });
   }
 
+  const agg = new Aggregator(subQueryPipeline, ComputeOptions.init(options));
+
   return collection.map((obj: AnyObject) => {
-    const local = resolve(obj, localField) ?? null;
-    // if array local field is an array, flatten and get unique values to avoid duplicates
-    // from storing an object for each array member from the join collection.
-    const asValue = isArray(local)
-      ? unique(flatten(local.map(v => map.get(v), options.hashFunction)))
-      : map.get(local);
-    return { ...obj, [asField]: asValue };
+    const variables = computeValue(obj, letExpr, null, options);
+    // clear cell and push new variables
+    cells.length = 0;
+    cells.push(obj, variables as AnyObject);
+    const [ok, res] = lookupEq(obj);
+    return {
+      ...obj,
+      [expr.as]: ok ? agg.run(joinColl) : res
+    };
   });
-};
+}
