@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isArray, unique } from "../../../util";
+import { assert, flatten, isArray, unique } from "../../../util";
 
 /**
  * Returns a set that holds all elements of the input sets.
@@ -16,10 +16,7 @@ export const $setUnion: ExpressionOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options) as Any[][];
-  assert(
-    isArray(args) && args.length == 2 && args.every(isArray),
-    "$setUnion: arguments must be arrays"
-  );
-  return unique(args[0].concat(args[1]), options?.hashFunction);
+  const args = computeValue(obj, expr, null, options) as Any[];
+  assert(isArray(args), "$setUnion: arguments must be arrays");
+  return unique(flatten(args), options?.hashFunction);
 };
