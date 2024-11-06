@@ -40,6 +40,8 @@ export const personData = person;
 
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
+export const ISODate = (s: string) => new Date(s);
+
 export const testPath = (filename: string): string =>
   filename.slice(filename.indexOf("test/operators"));
 
