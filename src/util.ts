@@ -306,38 +306,6 @@ const cloneInternal = (v: Any, refs: Set<Any>): Any => {
 export const cloneDeep = (obj: Any): Any => cloneInternal(obj, new Set());
 
 /**
- * Deep merge objects or arrays.
- * When the inputs have unmergeable types, the  right hand value is returned.
- * If inputs are arrays and options.flatten is set, elements in the same position are merged together.
- * Remaining elements are appended to the target object.
- * @param target {AnyObject|Array} the target to merge into
- * @param obj {AnyObject|Array} the source object
- */
-export function merge(target: Any, obj: Any): Any {
-  // take care of missing inputs
-  if (isMissing(target) || isNil(target)) return obj;
-  if (isMissing(obj) || isNil(obj)) return target;
-  if (isPrimitive(target) || isPrimitive(obj)) return obj;
-
-  if (isArray(target) && isArray(obj)) {
-    let i = 0;
-    let j = 0;
-    while (i < target.length && j < obj.length) {
-      target[i] = merge(target[i++], obj[j++]);
-    }
-    while (j < obj.length) {
-      target.push(obj[j++]);
-    }
-  } else {
-    for (const k in obj as AnyObject) {
-      target[k] = merge(target[k], obj[k]);
-    }
-  }
-
-  return target;
-}
-
-/**
  * Returns the intersection of multiple arrays.
  *
  * @param  {Array} input An array of arrays from which to find intersection.

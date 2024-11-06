@@ -18,12 +18,13 @@ import {
   into,
   isArray,
   isEmpty,
+  isMissing,
   isNil,
   isNumber,
   isObject,
   isOperator,
+  isPrimitive,
   isString,
-  merge,
   notInArray,
   removeValue,
   resolveGraph,
@@ -175,10 +176,10 @@ function processObject(
     // get value with object graph
     const objPathGraph = resolveGraph(obj, key, {
       preserveMissing: true
-    });
+    }) as AnyObject;
 
     // add the value at the path
-    if (objPathGraph !== undefined) {
+    if (isObject(objPathGraph)) {
       merge(newObj, objPathGraph);
     }
 
@@ -231,4 +232,29 @@ function validateExpression(expr: AnyObject, options: Options): void {
       "Projection cannot have a mix of inclusion and exclusion."
     );
   }
+}
+
+/**
+ * Deep merge objects or arrays. When the inputs have unmergeable types, the  right hand value is returned.
+ * If inputs are arrays and options.flatten is set, elements in the same position are merged together.
+ * Remaining elements are appended to the target object.
+ *
+ * @param target Target object to merge into.
+ * @param input  Source object to merge from.
+ */
+function merge(target: Any, input: Any): Any {
+  // take care of missing inputs
+  if (isMissing(target) || isNil(target)) return input;
+  if (isMissing(input) || isNil(input)) return target;
+  if (isPrimitive(target) || isPrimitive(input)) return input;
+  if (isArray(target) && isArray(input)) {
+    assert(
+      target.length === input.length,
+      "arrays must be of equal length to merge."
+    );
+  }
+  for (const k in input as AnyObject) {
+    target[k] = merge(target[k], input[k]);
+  }
+  return target;
 }

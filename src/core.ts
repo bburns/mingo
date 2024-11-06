@@ -128,7 +128,6 @@ export class ComputeOptions implements Options {
   #timestamp: number;
 
   private constructor(options: Options, root: Any, local?: LocalData) {
-    this.#timestamp = Date.now();
     this.#options = options;
     this.update(root, local);
   }
@@ -143,11 +142,16 @@ export class ComputeOptions implements Options {
    */
   static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
     return options instanceof ComputeOptions
-      ? new ComputeOptions(
-          options.#options,
-          isNil(options.root) ? root : options.root,
-          Object.assign({}, options.local, local)
-        )
+      ? new ComputeOptions(options.#options, options.root ?? root, {
+          ...options.#local,
+          ...local,
+          // retain existing variables
+          variables: Object.assign(
+            {},
+            options.#local?.variables,
+            local?.variables
+          )
+        })
       : new ComputeOptions(options, root, local);
   }
 
@@ -155,11 +159,11 @@ export class ComputeOptions implements Options {
   update(root?: Any, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
-    this.#local = local
-      ? Object.assign({}, local, {
-          variables: Object.assign({}, this.#local?.variables, local?.variables)
-        })
-      : local;
+    // retain existing variables
+    this.#local = {
+      ...local,
+      variables: Object.assign({}, this.#local?.variables, local?.variables)
+    };
 
     return this;
   }
