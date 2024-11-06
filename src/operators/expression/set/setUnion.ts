@@ -18,6 +18,7 @@ export const $setUnion: ExpressionOperator = (
 ): Any => {
   const args = computeValue(obj, expr, null, options) as Any[];
   if (isNil(args)) return null;
-  assert(isArray(args), "$setUnion: arguments must be arrays");
+  assert(isArray(args), "$setUnion operands must be arrays.");
+  if (args.some(isNil)) return null;
   return unique(flatten(args), options?.hashFunction);
 };

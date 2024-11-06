@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { intersection, unique } from "../../../util";
+import { assert, isArray, ValueMap } from "../../../util";
 
 /**
  * Returns true if two sets have the same elements.
@@ -17,10 +17,23 @@ export const $setEquals: ExpressionOperator = (
   options: Options
 ): Any => {
   const args = computeValue(obj, expr, null, options) as Any[][];
-  const xs = unique(args[0], options?.hashFunction);
-  const ys = unique(args[1], options?.hashFunction);
-  return (
-    xs.length === ys.length &&
-    xs.length === intersection([xs, ys], options?.hashFunction).length
+  assert(
+    isArray(args) && args.every(isArray),
+    "$setEquals operands must be arrays."
   );
+  // store a unique number for each unique item. repeated values may be overriden but that's okay.
+  const map = ValueMap.init<Any, number>();
+  args[0].every((v, i) => map.set(v, i));
+  // handle arbitrary number of arrays
+  for (let i = 1; i < args.length; i++) {
+    const arr = args[i];
+    const set = new Set<number>();
+    for (let j = 0; j < arr.length; j++) {
+      const n = map.get(arr[j]) ?? -1;
+      if (n === -1) return false;
+      set.add(n);
+    }
+    if (set.size !== map.size) return false;
+  }
+  return true;
 };

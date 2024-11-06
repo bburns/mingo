@@ -4,10 +4,12 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { intersection } from "../../../util";
+import { assert, isArray, ValueMap } from "../../../util";
 
 /**
- * Returns true if all elements of a set appear in a second set.
+ * Takes two arrays and returns true when the first array is a subset of the second,
+ * including when the first array equals the second array, and false otherwise.
+ *
  * @param obj
  * @param expr
  */
@@ -17,5 +19,21 @@ export const $setIsSubset: ExpressionOperator = (
   options: Options
 ): Any => {
   const args = computeValue(obj, expr, null, options) as Any[][];
-  return intersection(args, options?.hashFunction).length === args[0].length;
+  assert(
+    isArray(args) && args.every(isArray),
+    "$setIsSubset operands must be arrays."
+  );
+  const first = args[0];
+  const second = args[1];
+  const map = ValueMap.init<Any, number>();
+  const set = new Set<number>();
+
+  first.every((v, i) => map.set(v, i));
+  for (const v of second) {
+    set.add(map.get(v) ?? -1);
+    // check if we have seen all sub-items including one miss (-1)
+    if (set.size > map.size) return true;
+  }
+  set.delete(-1);
+  return set.size == map.size;
 };

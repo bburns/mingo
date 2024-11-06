@@ -319,7 +319,7 @@ export function intersection(
   const vmaps = [ValueMap.init(hashFunction), ValueMap.init(hashFunction)];
   if (input.length === 0) return [];
   if (input.some(arr => arr.length === 0)) return [];
-  if (input.length === 1) return cloneDeep(input) as Any[];
+  if (input.length === 1) return [...input];
   // start with last array to ensure stableness.
   input[input.length - 1].forEach(v => vmaps[0].set(v, true));
   // process collection backwards.

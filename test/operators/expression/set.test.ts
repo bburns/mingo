@@ -12,7 +12,7 @@ describe("operators/expression/set", () => {
     { _id: 6, A: ["red", "blue"], B: [["red"], ["blue"]] },
     { _id: 7, A: ["red", "blue"], B: [["red", "blue"]] },
     { _id: 8, A: [], B: [] },
-    { _id: 9, A: [], B: ["red"] },
+    { _id: 9, A: [], B: ["red"] }
   ];
 
   // equality
@@ -23,9 +23,9 @@ describe("operators/expression/set", () => {
           A: 1,
           B: 1,
           sameElements: { $setEquals: ["$A", "$B"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], sameElements: true },
@@ -36,7 +36,7 @@ describe("operators/expression/set", () => {
       { A: ["red", "blue"], B: [["red"], ["blue"]], sameElements: false },
       { A: ["red", "blue"], B: [["red", "blue"]], sameElements: false },
       { A: [], B: [], sameElements: true },
-      { A: [], B: ["red"], sameElements: false },
+      { A: [], B: ["red"], sameElements: false }
     ]);
   });
 
@@ -48,28 +48,28 @@ describe("operators/expression/set", () => {
           A: 1,
           B: 1,
           commonToBoth: { $setIntersection: ["$A", "$B"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], commonToBoth: ["red", "blue"] },
       {
         A: ["red", "blue"],
         B: ["blue", "red", "blue"],
-        commonToBoth: ["red", "blue"],
+        commonToBoth: ["red", "blue"]
       },
       {
         A: ["red", "blue"],
         B: ["red", "blue", "green"],
-        commonToBoth: ["red", "blue"],
+        commonToBoth: ["red", "blue"]
       },
       { A: ["red", "blue"], B: ["green", "red"], commonToBoth: ["red"] },
       { A: ["red", "blue"], B: [], commonToBoth: [] },
       { A: ["red", "blue"], B: [["red"], ["blue"]], commonToBoth: [] },
       { A: ["red", "blue"], B: [["red", "blue"]], commonToBoth: [] },
       { A: [], B: [], commonToBoth: [] },
-      { A: [], B: ["red"], commonToBoth: [] },
+      { A: [], B: ["red"], commonToBoth: [] }
     ]);
   });
 
@@ -81,40 +81,40 @@ describe("operators/expression/set", () => {
           A: 1,
           B: 1,
           allValues: { $setUnion: ["$A", "$B"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], allValues: ["red", "blue"] },
       {
         A: ["red", "blue"],
         B: ["blue", "red", "blue"],
-        allValues: ["red", "blue"],
+        allValues: ["red", "blue"]
       },
       {
         A: ["red", "blue"],
         B: ["red", "blue", "green"],
-        allValues: ["red", "blue", "green"],
+        allValues: ["red", "blue", "green"]
       },
       {
         A: ["red", "blue"],
         B: ["green", "red"],
-        allValues: ["red", "blue", "green"],
+        allValues: ["red", "blue", "green"]
       },
       { A: ["red", "blue"], B: [], allValues: ["red", "blue"] },
       {
         A: ["red", "blue"],
         B: [["red"], ["blue"]],
-        allValues: ["red", "blue", ["red"], ["blue"]],
+        allValues: ["red", "blue", ["red"], ["blue"]]
       },
       {
         A: ["red", "blue"],
         B: [["red", "blue"]],
-        allValues: ["red", "blue", ["red", "blue"]],
+        allValues: ["red", "blue", ["red", "blue"]]
       },
       { A: [], B: [], allValues: [] },
-      { A: [], B: ["red"], allValues: ["red"] },
+      { A: [], B: ["red"], allValues: ["red"] }
     ]);
   });
 
@@ -126,9 +126,9 @@ describe("operators/expression/set", () => {
           A: 1,
           B: 1,
           inBOnly: { $setDifference: ["$B", "$A"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], inBOnly: [] },
@@ -139,11 +139,11 @@ describe("operators/expression/set", () => {
       {
         A: ["red", "blue"],
         B: [["red"], ["blue"]],
-        inBOnly: [["red"], ["blue"]],
+        inBOnly: [["red"], ["blue"]]
       },
       { A: ["red", "blue"], B: [["red", "blue"]], inBOnly: [["red", "blue"]] },
       { A: [], B: [], inBOnly: [] },
-      { A: [], B: ["red"], inBOnly: ["red"] },
+      { A: [], B: ["red"], inBOnly: ["red"] }
     ]);
   });
 
@@ -155,9 +155,9 @@ describe("operators/expression/set", () => {
           A: 1,
           B: 1,
           AisSubset: { $setIsSubset: ["$A", "$B"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { A: ["red", "blue"], B: ["red", "blue"], AisSubset: true },
@@ -168,7 +168,7 @@ describe("operators/expression/set", () => {
       { A: ["red", "blue"], B: [["red"], ["blue"]], AisSubset: false },
       { A: ["red", "blue"], B: [["red", "blue"]], AisSubset: false },
       { A: [], B: [], AisSubset: true },
-      { A: [], B: ["red"], AisSubset: true },
+      { A: [], B: ["red"], AisSubset: true }
     ]);
   });
 
@@ -182,7 +182,7 @@ describe("operators/expression/set", () => {
     { _id: 7, responses: [[0]] },
     { _id: 8, responses: [[false]] },
     { _id: 9, responses: [null] },
-    { _id: 10, responses: [undefined] },
+    { _id: 10, responses: [undefined] }
   ];
 
   // any element true
@@ -192,9 +192,9 @@ describe("operators/expression/set", () => {
         $project: {
           responses: 1,
           isAnyTrue: { $anyElementTrue: ["$responses"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { responses: [true], isAnyTrue: true },
@@ -206,7 +206,7 @@ describe("operators/expression/set", () => {
       { responses: [[0]], isAnyTrue: true },
       { responses: [[false]], isAnyTrue: true },
       { responses: [null], isAnyTrue: false },
-      { responses: [undefined], isAnyTrue: false },
+      { responses: [undefined], isAnyTrue: false }
     ]);
   });
 
@@ -217,9 +217,9 @@ describe("operators/expression/set", () => {
         $project: {
           responses: 1,
           isAllTrue: { $allElementsTrue: ["$responses"] },
-          _id: 0,
-        },
-      },
+          _id: 0
+        }
+      }
     ]);
     expect(result).toEqual([
       { responses: [true], isAllTrue: true },
@@ -231,7 +231,7 @@ describe("operators/expression/set", () => {
       { responses: [[0]], isAllTrue: true },
       { responses: [[false]], isAllTrue: true },
       { responses: [null], isAllTrue: false },
-      { responses: [undefined], isAllTrue: false },
+      { responses: [undefined], isAllTrue: false }
     ]);
   });
 });
