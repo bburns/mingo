@@ -7,7 +7,7 @@ import {
   Options
 } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isArray, truthy } from "../../../util";
+import { assert, isArray, isNil, truthy } from "../../../util";
 
 /**
  * Selects a subset of the array to return an array with only the elements that match the filter condition.
@@ -22,6 +22,8 @@ export const $filter: ExpressionOperator = (
   options: Options
 ): Any[] => {
   const input = computeValue(obj, expr.input, null, options) as Any[];
+
+  if (isNil(input)) return null;
   assert(isArray(input), "$filter 'input' expression must resolve to an array");
 
   const copts = ComputeOptions.init(options, obj);

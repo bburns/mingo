@@ -22,6 +22,8 @@ export const $zip: ExpressionOperator = (
   const inputs = computeValue(obj, expr.inputs, null, options) as Any[][];
   const useLongestLength = expr.useLongestLength || false;
 
+  if (isNil(inputs)) return null;
+
   assert(isArray(inputs), "'inputs' expression must resolve to an array");
   assert(isBoolean(useLongestLength), "'useLongestLength' must be a boolean");
 
@@ -34,9 +36,7 @@ export const $zip: ExpressionOperator = (
 
   let zipCount = 0;
 
-  for (let i = 0, len = inputs.length; i < len; i++) {
-    const arr = inputs[i];
-
+  for (const arr of inputs) {
     if (isNil(arr)) return null;
 
     assert(

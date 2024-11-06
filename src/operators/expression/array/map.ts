@@ -7,7 +7,7 @@ import {
   Options
 } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isArray } from "../../../util";
+import { assert, isArray, isNil } from "../../../util";
 
 /**
  * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
@@ -22,7 +22,9 @@ export const $map: ExpressionOperator = (
   options: Options
 ): Any => {
   const input = computeValue(obj, expr.input, null, options) as Any[];
+  if (isNil(input)) return null;
   assert(isArray(input), `$map 'input' expression must resolve to an array`);
+
   const copts = ComputeOptions.init(options);
   const k = expr.as || "this";
   return input.map((o: Any) => {

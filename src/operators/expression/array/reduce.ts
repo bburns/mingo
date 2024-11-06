@@ -12,8 +12,8 @@ import { assert, isArray, isNil } from "../../../util";
 /**
  * Applies an expression to each element in an array and combines them into a single value.
  *
- * @param {AnyObject} obj
- * @param {*} expr
+ * @param obj
+ * @param expr
  */
 export const $reduce: ExpressionOperator = (
   obj: AnyObject,
