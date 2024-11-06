@@ -124,8 +124,6 @@ export class ComputeOptions implements Options {
   /** Reference to the root object when processing subgraphs of the object. */
   #root: Any;
   #local: LocalData;
-  /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
-  #timestamp: number;
 
   private constructor(options: Options, root: Any, local?: LocalData) {
     this.#options = options;
@@ -173,10 +171,6 @@ export class ComputeOptions implements Options {
       ...this.#options,
       context: Context.from(this.#options.context)
     }) as Options;
-  }
-
-  get timestamp() {
-    return this.#timestamp;
   }
 
   get root() {
@@ -490,7 +484,7 @@ const systemVariables: Record<string, typeof redact> = {
     return undefined;
   },
   $$NOW(_obj: Any, _expr: Any, options: ComputeOptions) {
-    return new Date(options.timestamp);
+    return new Date();
   }
 };
 
