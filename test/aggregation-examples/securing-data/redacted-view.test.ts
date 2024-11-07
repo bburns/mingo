@@ -104,8 +104,8 @@ describe("Redacted View", () => {
 
   const data = aggregate(persons, pipeline, DEFAULT_OPTS);
 
-  it("FIXME: returns all the adults", () => {
-    expect(find(data, {}, {}, DEFAULT_OPTS).all()).not.toEqual([
+  it("returns three documents, representing the three persons who are over 18 but not showing their social security numbers", () => {
+    expect(find(data, {}, {}, DEFAULT_OPTS).all()).toEqual([
       {
         person_id: "6392529400",
         firstname: "Elise",
@@ -140,26 +140,26 @@ describe("Redacted View", () => {
     ]);
   });
 
-  // it("returns only females adults", () => {
-  //   expect(find(data, { gender: "FEMALE" }, {}, DEFAULT_OPTS)).toEqual([
-  //     {
-  //       person_id: "6392529400",
-  //       firstname: "Elise",
-  //       lastname: "Smith",
-  //       dateofbirth: ISODate("1972-01-13T09:32:07.000Z"),
-  //       gender: "FEMALE",
-  //       email: "elise_smith@myemail.com",
-  //       address: { number: 5625, street: "Tipa Circle", city: "Wojzinmoj" }
-  //     },
-  //     {
-  //       person_id: "1723338115",
-  //       firstname: "Olive",
-  //       lastname: "Ranieri",
-  //       dateofbirth: ISODate("1985-05-12T23:14:30.000Z"),
-  //       gender: "FEMALE",
-  //       email: "oranieri@warmmail.com",
-  //       address: { number: 9303, street: "Mele Circle", city: "Tobihbo" }
-  //     }
-  //   ]);
-  // });
+  it("returns two females records only because the male record has been excluded", () => {
+    expect(find(data, { gender: "FEMALE" }, {}, DEFAULT_OPTS).all()).toEqual([
+      {
+        person_id: "6392529400",
+        firstname: "Elise",
+        lastname: "Smith",
+        dateofbirth: ISODate("1972-01-13T09:32:07.000Z"),
+        gender: "FEMALE",
+        email: "elise_smith@myemail.com",
+        address: { number: 5625, street: "Tipa Circle", city: "Wojzinmoj" }
+      },
+      {
+        person_id: "1723338115",
+        firstname: "Olive",
+        lastname: "Ranieri",
+        dateofbirth: ISODate("1985-05-12T23:14:30.000Z"),
+        gender: "FEMALE",
+        email: "oranieri@warmmail.com",
+        address: { number: 9303, street: "Mele Circle", city: "Tobihbo" }
+      }
+    ]);
+  });
 });
