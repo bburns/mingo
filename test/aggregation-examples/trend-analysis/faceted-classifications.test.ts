@@ -187,8 +187,8 @@ describe("Faceted Classification", () => {
   ];
   const processingMode = ProcessingMode.CLONE_INPUT;
 
-  // FIXME: $bucketAuto does not currently support 'granularity'.
-  it("returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
+  // $bucketAuto does not currently support 'granularity'.
+  it("FIXME: returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
     expect(
       aggregate(products, pipeline, { ...DEFAULT_OPTS, processingMode })
     ).not.toEqual([

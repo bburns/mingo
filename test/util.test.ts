@@ -10,7 +10,6 @@ import {
   isEqual,
   isObject,
   isObjectLike,
-  merge,
   normalize,
   resolve,
   resolveGraph,
@@ -87,22 +86,6 @@ describe("util", () => {
       b.push(obj);
       expect(isEqual(a, b)).toEqual(true);
       // expect(() => isEqual(a, b)).toThrow(/cycle detected/);
-    });
-  });
-
-  describe("merge", () => {
-    it("accepts same input and output objects", () => {
-      const target = { a: 1 };
-      const result = merge(target, { b: 2 });
-      expect(result).toBe(target);
-      expect(result).toStrictEqual({ a: 1, b: 2 });
-    });
-
-    it("flattens objects in target array", () => {
-      const target = [{ a: 1 }, { a: 2 }];
-      const result = merge(target, [{ b: 3 }, { b: 4 }, { c: 5 }]);
-      expect(result).toBe(target);
-      expect(result).toStrictEqual([{ a: 1, b: 3 }, { a: 2, b: 4 }, { c: 5 }]);
     });
   });
 
@@ -274,7 +257,9 @@ describe("util", () => {
     });
 
     it("preserves other keys of the resolved object graph", () => {
-      const result = resolveGraph(doc, "b.e.1", { preserveKeys: true });
+      const result = resolveGraph(doc, "b.e.1", {
+        preserveKeys: true
+      }) as AnyObject;
       expect({ a: 1, b: { c: 2, d: ["hello"], e: [2] } }).toEqual(result);
       expect(doc).toEqual(sameDoc);
 

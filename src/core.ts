@@ -158,10 +158,16 @@ export class ComputeOptions implements Options {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
     // retain existing variables
-    this.#local = {
-      ...local,
-      variables: Object.assign({}, this.#local?.variables, local?.variables)
-    };
+    const variables = Object.assign(
+      {},
+      this.#local?.variables,
+      local?.variables
+    );
+    if (Object.keys(variables).length) {
+      this.#local = { ...local, variables };
+    } else {
+      this.#local = local ?? {};
+    }
 
     return this;
   }

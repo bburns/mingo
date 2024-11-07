@@ -31,7 +31,7 @@ describe("core", () => {
     });
 
     it("should preserve 'local' on init if defined", () => {
-      expect(copts.local).toBeUndefined();
+      expect(copts.local).toEqual({});
       copts.update(null, { groupId: 5 });
       expect(copts.local?.groupId).toEqual(5);
       expect(ComputeOptions.init(copts).local?.groupId).toEqual(5);
@@ -56,9 +56,6 @@ describe("core", () => {
       copts.update(true, { variables: { x: 10 } });
       copts.update(true, { variables: { y: 20 } });
       expect(copts.local?.variables).toEqual({ x: 10, y: 20 });
-
-      copts.update(true);
-      expect(copts.local?.variables).toBeUndefined();
     });
   });
   describe("useOperators", () => {

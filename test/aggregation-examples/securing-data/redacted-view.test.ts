@@ -92,7 +92,7 @@ describe("Redacted View", () => {
         $expr: {
           $lt: [
             "$dateofbirth",
-            { $subtract: ["$$NOW", 5 /*18years - 568036800000 */] }
+            { $subtract: ["$$NOW", 568036800000 /*18years*/] }
           ]
         }
       }
