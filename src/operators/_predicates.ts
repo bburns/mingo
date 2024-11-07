@@ -21,7 +21,6 @@ import {
   compare as mingoCmp,
   ensureArray,
   flatten,
-  getType,
   inArray,
   intersection,
   isArray,
@@ -41,7 +40,8 @@ import {
   MIN_LONG,
   MingoError,
   resolve,
-  truthy
+  truthy,
+  typeOf
 } from "../util";
 
 type PredicateOptions = Options & { depth: number };
@@ -334,20 +334,14 @@ const isLong = (a: Any) =>
   a.toString().indexOf(".") === -1;
 
 /** Mapping of type to predicate */
-const compareFuncs: Record<ConversionType, Predicate<Any>> = {
+const compareFuncs: Record<number | string, Predicate<Any>> = {
   array: isArray as Predicate<Any>,
-  bool: isBoolean,
   boolean: isBoolean,
   date: isDate,
-  decimal: isNumber,
-  double: isNumber,
-  int: isInt,
-  long: isLong,
   number: isNumber,
   null: isNull,
   object: isObject,
   regex: isRegExp,
-  regexp: isRegExp,
   string: isString,
   // added for completeness
   undefined: isNil, // deprecated
@@ -364,8 +358,8 @@ const compareFuncs: Record<ConversionType, Predicate<Any>> = {
   9: isDate,
   10: isNull,
   11: isRegExp,
-  16: isInt,
-  18: isLong,
+  16: isNumber,
+  18: isNumber,
   19: isNumber //decimal
 };
 
@@ -393,11 +387,11 @@ export function $type(
   b: ConversionType | ConversionType[],
   options?: PredicateOptions
 ): boolean {
-  return Array.isArray(b)
+  return isArray(b)
     ? b.findIndex(t => compareType(a, t, options)) >= 0
     : compareType(a, b, options);
 }
 
 function compare(a: Any, b: Any, f: Predicate<Any>): boolean {
-  return ensureArray(a).some(x => getType(x) === getType(b) && f(x, b));
+  return ensureArray(a).some(x => typeOf(x) === typeOf(b) && f(x, b));
 }

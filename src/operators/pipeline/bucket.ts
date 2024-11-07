@@ -5,9 +5,9 @@ import {
   assert,
   compare,
   findInsertIndex,
-  getType,
   into,
-  isNil
+  isNil,
+  typeOf
 } from "../../util";
 
 /**
@@ -38,11 +38,11 @@ export const $bucket: PipelineOperator = (
     expr.boundaries.length > 2,
     "$bucket 'boundaries' expression must have at least 3 elements"
   );
-  const boundType = getType(lower);
+  const boundType = typeOf(lower);
 
   for (let i = 0, len = boundaries.length - 1; i < len; i++) {
     assert(
-      boundType === getType(boundaries[i + 1]),
+      boundType === typeOf(boundaries[i + 1]),
       "$bucket 'boundaries' must all be of the same type"
     );
     assert(
@@ -52,7 +52,7 @@ export const $bucket: PipelineOperator = (
   }
 
   !isNil(defaultKey) &&
-    getType(expr.default) === getType(lower) &&
+    typeOf(expr.default) === typeOf(lower) &&
     assert(
       compare(expr.default, upper) >= 0 || compare(expr.default, lower) < 0,
       "$bucket 'default' expression must be out of boundaries range"

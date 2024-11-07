@@ -9,8 +9,7 @@ import {
   Callback,
   Comparator,
   GroupByOutput,
-  HashFunction,
-  JsType
+  HashFunction
 } from "./types";
 
 /** Represents an error reported by the mingo library. */
@@ -60,18 +59,18 @@ interface ResolveOptions {
 }
 
 // no array, object, or function types
-const JS_SIMPLE_TYPES = new Set<JsType>([
+const JS_SIMPLE_TYPES = new Set<string>([
   "null",
   "undefined",
   "boolean",
   "number",
   "string",
   "date",
-  "regexp"
+  "regex"
 ]);
 
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
-const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
+const SORT_ORDER_BY_TYPE: Record<string, number> = {
   null: 0,
   undefined: 0,
   number: 1,
@@ -80,7 +79,7 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
   array: 4,
   boolean: 5,
   date: 6,
-  regexp: 7,
+  regex: 7,
   function: 8
 };
 
@@ -94,9 +93,7 @@ const SORT_ORDER_BY_TYPE: Record<JsType, number> = {
 export const compare = <T = Any>(a: T, b: T): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const [u, v] = [a, b].map(
-    n => SORT_ORDER_BY_TYPE[getType(n).toLowerCase() as JsType]
-  );
+  const [u, v] = [a, b].map(n => SORT_ORDER_BY_TYPE[typeOf(n)]);
   if (u !== v) return u - v;
   // number | string | date
   if (u === 1 || u === 2 || u === 6) {
@@ -224,18 +221,23 @@ export function assert(condition: boolean, message: string): void {
 }
 
 /**
- * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
+ * Returns the name of type.
  * @param v A value
  */
-export const getType = (v: Any): string =>
-  OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v) as string)[1];
+export const typeOf = (v: Any): string => {
+  if (v === null) return "null";
+  const n = typeof v;
+  if (n !== "object") return n;
+  if (isDate(v)) return "date";
+  if (isArray(v)) return "array";
+  if (isRegExp(v)) return "regex";
+  return n;
+};
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
 export const isString = (v: Any): v is string => typeof v === "string";
 export const isSymbol = (v: Any): boolean => typeof v === "symbol";
 export const isNumber = (v: Any): v is number =>
   !isNaN(v as number) && typeof v === "number";
-export const isBigInt = (v: Any): v is bigint =>
-  !isNaN(v as number) && typeof v === "bigint";
 export const isNotNaN = (v: Any) =>
   !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
@@ -741,7 +743,7 @@ export function resolve(
     return value;
   }
 
-  const result = JS_SIMPLE_TYPES.has(getType(obj).toLowerCase() as JsType)
+  const result = JS_SIMPLE_TYPES.has(typeOf(obj))
     ? obj
     : resolve2(obj, selector.split("."));
 
@@ -961,7 +963,7 @@ export function isOperator(name: string): boolean {
  */
 export function normalize(expr: Any): Any {
   // normalized primitives
-  if (JS_SIMPLE_TYPES.has(getType(expr).toLowerCase() as JsType)) {
+  if (JS_SIMPLE_TYPES.has(typeOf(expr))) {
     return isRegExp(expr) ? { $regex: expr } : { $eq: expr };
   }
 

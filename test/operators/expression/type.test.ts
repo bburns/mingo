@@ -6,7 +6,7 @@ runTest("operators/expression/type", {
     [true, "true"],
     [false, "false"],
     [2.5, "2.5"],
-    [new Date("2018-03-27T16:58:51.538Z"), "2018-03-27T16:58:51.538Z"],
+    [new Date("2018-03-27T16:58:51.538Z"), "2018-03-27T16:58:51.538Z"]
   ],
 
   $toBool: [
@@ -18,13 +18,13 @@ runTest("operators/expression/type", {
     [new Date("2018-03-26T04:38:28.044Z"), true],
     ["false", true],
     ["", true],
-    [null, null],
+    [null, null]
   ],
 
   $toLong: [
     [null, null],
     ["100", 100],
-    [20, 20],
+    [20, 20]
   ],
 
   $toDate: [
@@ -36,7 +36,7 @@ runTest("operators/expression/type", {
     [1100000000000, new Date("2004-11-09T11:33:20Z")],
     [-1100000000000, new Date("1935-02-22T12:26:40Z")],
     ["2018-03-20", new Date("2018-03-20T00:00:00Z")],
-    ["2018-03-20 11:00:06 +0500", new Date("2018-03-20T06:00:06Z")],
+    ["2018-03-20 11:00:06 +0500", new Date("2018-03-20T06:00:06Z")]
   ],
 
   $convert: [
@@ -64,9 +64,9 @@ runTest("operators/expression/type", {
       {
         input: 9223372036000.0,
         to: "int",
-        onError: "Could not convert to type integer.",
+        onError: "Could not convert to type integer."
       },
-      "Could not convert to type integer.",
+      "Could not convert to type integer."
     ],
     [{ input: 5000, to: 16 }, 5000],
     [{ input: 922337203600, to: "int" }, "error", { err: true }],
@@ -84,16 +84,16 @@ runTest("operators/expression/type", {
     [{ input: "-5.5", to: "decimal" }, -5.5],
     [
       { input: new Date("2018-03-27T05:04:47.890Z"), to: "decimal" },
-      1522127087890,
+      1522127087890
     ],
     [{ input: "5e10", to: "double" }, 50000000000],
     [
       {
         input: "hello",
         to: "double",
-        onError: "Could not convert to type double.",
+        onError: "Could not convert to type double."
       },
-      "Could not convert to type double.",
+      "Could not convert to type double."
     ],
 
     // date
@@ -104,16 +104,16 @@ runTest("operators/expression/type", {
     [{ input: "2018-03-03", to: "date" }, new Date("2018-03-03T00:00:00Z")],
     [
       { input: "2018-03-20 11:00:06 +0500", to: "date" },
-      new Date("2018-03-20T06:00:06Z"),
+      new Date("2018-03-20T06:00:06Z")
     ],
     [{ input: "Friday", to: "date" }, "error", { err: true }],
     [
       {
         input: "Friday",
         to: "date",
-        onError: "Could not convert to type date.",
+        onError: "Could not convert to type date."
       },
-      "Could not convert to type date.",
+      "Could not convert to type date."
     ],
 
     // string
@@ -124,8 +124,8 @@ runTest("operators/expression/type", {
     [{ input: 1000, to: "string" }, "1000"],
     [
       { input: new Date("2018-03-27T16:58:51.538Z"), to: "string" },
-      "2018-03-27T16:58:51.538Z",
-    ],
+      "2018-03-27T16:58:51.538Z"
+    ]
   ],
 
   $isNumber: [
@@ -136,19 +136,19 @@ runTest("operators/expression/type", {
     ["0", false],
     [NaN, false],
     [null, false],
-    [undefined, false],
+    [undefined, false]
   ],
 
   $type: [
     ["a", "string"],
     [/a/, "regex"],
-    [1.2, "double"],
-    [627, "int"],
-    [true, "bool"],
+    [1.2, "number"],
+    [627, "number"],
+    [true, "boolean"],
     [{ x: 1 }, "object"],
     [[1, 2, 3], "array"],
     [new Date(), "date"],
     [null, "null"],
-    [undefined, "undefined"],
-  ],
+    [undefined, "undefined"]
+  ]
 });

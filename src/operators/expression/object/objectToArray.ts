@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, getType, isNil, isObject } from "../../../util";
+import { assert, isNil, isObject, typeOf } from "../../../util";
 
 /**
  * Converts a document to an array of documents representing key-value pairs.
@@ -20,7 +20,7 @@ export const $objectToArray: ExpressionOperator = (
   if (isNil(val)) return null;
   assert(
     isObject(val),
-    `$objectToArray requires a document input, found: ${getType(val)}`
+    `$objectToArray requires a document input, found: ${typeOf(val)}`
   );
   const entries = Object.entries(val);
   const result = new Array<Any>(entries.length);
