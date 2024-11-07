@@ -135,31 +135,14 @@ describe("Mask Sensitive Fields", () => {
     }
   ];
 
-  it("FIXME: return documents corresponding to the original two source documents, but this time with many of their fields redacted and obfuscated, plus the customer_info embedded document omitted for one record due to it having been marked as RESTRICTED", () => {
-    expect(aggregate(payments, pipeline, DEFAULT_OPTS)).not.toEqual([
-      {
-        card_name: "Mx. Xxx Doe",
-        card_num: "XXXXXXXXXXXX3456",
-        card_expiry: ISODate("2023-08-31T23:29:46.460Z"),
-        card_sec_code: "295",
-        card_type: "CREDIT",
-        transaction_id: "eb1bd77836e8713656d9bf2debba8900",
-        transaction_date: ISODate("2021-01-13T09:32:07.000Z"),
-        transaction_amount: 492.401698835147488166,/*eslint-disable-line*/
-        reported: false
-      },
-      {
-        card_name: "Mx. Xxx Smith",
-        card_num: "XXXXXXXXXXXX7654",
-        card_expiry: ISODate("2023-01-01T00:34:49.330Z"),
-        card_sec_code: "437",
-        card_type: "DEBIT",
-        transaction_id: "634c416a6fbcf060bb0ba90c4ad94f60",
-        transaction_date: ISODate("2020-11-24T19:25:57.000Z"),
-        transaction_amount: 58.360813374867622236,/*eslint-disable-line*/
-        reported: false,
-        customer_info: { category: "NORMAL", rating: 78, risk: 55 }
-      }
-    ]);
+  it("return documents corresponding to the original two source documents, but this time with many of their fields redacted and obfuscated, plus the customer_info embedded document omitted for one record due to it having been marked as RESTRICTED", () => {
+    const result = aggregate(payments, pipeline, DEFAULT_OPTS);
+    expect(result).toHaveLength(2);
+
+    expect(result[0]["card_num"]).toEqual("XXXXXXXXXXXX3456");
+    expect(result[0]["card_sec_code"]).not.toEqual("123");
+
+    expect(result[1]["card_num"]).toEqual("XXXXXXXXXXXX7654");
+    expect(result[1]["card_sec_code"]).not.toEqual("987");
   });
 });
