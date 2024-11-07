@@ -157,7 +157,7 @@ describe("State Change Boundaries", () => {
               },
               // Use end timestamp from what was same end record as start record
               {
-                case: { $ne: [{ $type: "$endMarkerDate" }, "missing"] },
+                case: { $ne: [{ $type: "$endMarkerDate" }, "undefined"] },
                 then: "$endMarkerDate"
               }
             ],
@@ -182,9 +182,9 @@ describe("State Change Boundaries", () => {
     { $sort: { deviceID: 1 } }
   ];
 
-  // FIXME: endTimestamp not working for some return values
   it("captures the duration between two state change boundaries (on→off or off→on) for each device", () => {
-    expect(aggregate(device_status, pipeline, DEFAULT_OPTS)).toEqual([
+    const result = aggregate(device_status, pipeline, DEFAULT_OPTS);
+    expect(result).toEqual([
       {
         deviceID: "DEHUMIDIFIER-555",
         state: "on",
@@ -206,14 +206,14 @@ describe("State Change Boundaries", () => {
       {
         deviceID: "HEATER-111",
         state: "on",
-        startTimestamp: ISODate("2021-07-03T11:09:00.000Z")
-        // endTimestamp: ISODate("2021-07-03T11:29:00.000Z")
+        startTimestamp: ISODate("2021-07-03T11:09:00.000Z"),
+        endTimestamp: ISODate("2021-07-03T11:29:00.000Z")
       },
       {
         deviceID: "HEATER-111",
         state: "off",
-        startTimestamp: ISODate("2021-07-03T11:39:00.000Z")
-        // endTimestamp: ISODate("2021-07-03T11:49:00.000Z")
+        startTimestamp: ISODate("2021-07-03T11:39:00.000Z"),
+        endTimestamp: ISODate("2021-07-03T11:49:00.000Z")
       },
       {
         deviceID: "HEATER-111",
