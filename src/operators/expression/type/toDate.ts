@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil } from "../../../util";
+import { isDate, isNil } from "../../../util";
 import { TypeConvertError } from "./_internal";
 
 /**
@@ -20,7 +20,7 @@ export const $toDate: ExpressionOperator = (
 ): Date | null => {
   const val = computeValue(obj, expr, null, options) as string | number | Date;
 
-  if (val instanceof Date) return val;
+  if (isDate(val)) return val;
   if (isNil(val)) return null;
 
   const d = new Date(val);

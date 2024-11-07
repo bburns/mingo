@@ -1,5 +1,4 @@
 import { aggregate } from "../../../src";
-import { ProcessingMode } from "../../../src/core";
 import { DEFAULT_OPTS } from "../../support";
 
 /**
@@ -185,13 +184,11 @@ describe("Faceted Classification", () => {
       }
     }
   ];
-  const processingMode = ProcessingMode.CLONE_INPUT;
 
   // $bucketAuto does not currently support 'granularity'.
   it("FIXME: returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
-    expect(
-      aggregate(products, pipeline, { ...DEFAULT_OPTS, processingMode })
-    ).not.toEqual([
+    const result = aggregate(products, pipeline, DEFAULT_OPTS);
+    expect(result).not.toEqual([
       {
         by_price: [
           {

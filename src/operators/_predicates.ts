@@ -258,7 +258,7 @@ export function $all(
     if (!matched) break;
     if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
       matched = $elemMatch(values, query["$elemMatch"] as AnyObject, options);
-    } else if (query instanceof RegExp) {
+    } else if (isRegExp(query)) {
       matched = values.some(s => typeof s === "string" && query.test(s));
     } else {
       matched = values.some(v => isEqual(query, v));

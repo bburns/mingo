@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil, isNumber, isString } from "../../../util";
+import { isDate, isNil, isNumber, isString } from "../../../util";
 
 export class TypeConvertError extends Error {
   constructor(message: string) {
@@ -22,10 +22,10 @@ export function toInteger(
     | boolean
     | Date;
 
-  if (isNil(val)) return null;
-  if (val instanceof Date) return val.getTime();
   if (val === true) return 1;
   if (val === false) return 0;
+  if (isNil(val)) return null;
+  if (isDate(val)) return val.getTime();
 
   const n = Number(val);
 

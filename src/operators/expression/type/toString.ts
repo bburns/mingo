@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil } from "../../../util";
+import { isDate, isNil } from "../../../util";
 import { $dateToString } from "../date/dateToString";
 
 export const $toString: ExpressionOperator = (
@@ -15,7 +15,7 @@ export const $toString: ExpressionOperator = (
   const val = computeValue(obj, expr, null, options);
   if (isNil(val)) return null;
 
-  if (val instanceof Date) {
+  if (isDate(val)) {
     return $dateToString(
       obj,
       {

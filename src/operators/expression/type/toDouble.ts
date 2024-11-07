@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil, isNumber } from "../../../util";
+import { isDate, isNil, isNumber } from "../../../util";
 import { TypeConvertError } from "./_internal";
 
 /**
@@ -25,7 +25,7 @@ export const $toDouble: ExpressionOperator = (
     | Date;
 
   if (isNil(val)) return null;
-  if (val instanceof Date) return val.getTime();
+  if (isDate(val)) return val.getTime();
   if (val === true) return 1;
   if (val === false) return 0;
 

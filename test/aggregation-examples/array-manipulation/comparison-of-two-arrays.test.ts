@@ -1,5 +1,4 @@
 import { aggregate } from "../../../src";
-import { ProcessingMode } from "../../../src/core";
 import { DEFAULT_OPTS, ISODate } from "../../support";
 
 /**
@@ -265,11 +264,8 @@ describe("Comparison Of Two Arrays", () => {
   ];
 
   it("FIXME: returns five documents showing whether anyone added, removed or modified a deployment or left it unchanged, with the deployment's changes shown if modified", () => {
-    const result = aggregate(deployments, pipeline, {
-      ...DEFAULT_OPTS,
-      processingMode: ProcessingMode.CLONE_INPUT
-    });
-    expect(result).not.toEqual([
+    const result = aggregate(deployments, pipeline, DEFAULT_OPTS);
+    expect(result).toEqual([
       {
         name: "ProdServer",
         status: "MODIFIED",
