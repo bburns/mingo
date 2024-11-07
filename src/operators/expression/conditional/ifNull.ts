@@ -18,6 +18,6 @@ export const $ifNull: ExpressionOperator = (
   expr: Any[],
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options) as Any[][];
-  return args.find(arg => !isNil(arg));
+  const args = computeValue(obj, expr, null, options) as Any[];
+  return args.find(arg => !isNil(arg)) ?? args[args.length - 1];
 };
