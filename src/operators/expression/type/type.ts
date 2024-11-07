@@ -10,4 +10,7 @@ export const $type: ExpressionOperator = (
   obj: AnyObject,
   expr: Any,
   options: Options
-): string => typeOf(computeValue(obj, expr, null, options));
+): string => {
+  const n = typeOf(computeValue(obj, expr, null, options));
+  return n === "undefined" && options.useStrictMode ? "missing" : n;
+};

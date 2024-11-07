@@ -149,6 +149,6 @@ runTest("operators/expression/type", {
     [[1, 2, 3], "array"],
     [new Date(), "date"],
     [null, "null"],
-    [undefined, "undefined"]
+    [undefined, "missing"]
   ]
 });

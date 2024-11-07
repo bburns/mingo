@@ -157,7 +157,7 @@ describe("State Change Boundaries", () => {
               },
               // Use end timestamp from what was same end record as start record
               {
-                case: { $ne: [{ $type: "$endMarkerDate" }, "undefined"] },
+                case: { $ne: [{ $type: "$endMarkerDate" }, "missing"] },
                 then: "$endMarkerDate"
               }
             ],
