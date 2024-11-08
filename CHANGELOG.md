@@ -7,23 +7,19 @@
 - Add support for `$lookup` by array and sub-queries with nested pipeline.
 
 **Improvements**
-- Use type name `"number"` to represent all numeric types in non-strict mode, or `int`,`long`, and `double` otherwise.
-- Use type name `"booelan"` to represent boolean types in non-strict mode, or `"bool"` otherwise.
-- Use type name `"undefined"` to represent undefined or missing field values in non-strict mode, or `"missing"` otherwise.
+- Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
 - Add `ValueMap` to store keys by value and reimplement dependent operations with it for efficiency.
-- Update common type names to be more descriptive.
-- Cleanup unused utility functions.
-- Switch to hash names for private variables.
+- Types cleanup. Rename `AnyVal` to `Any`, and `RawObject` to `AnyObject`.
 - Updated test suite with examples from https://www.practical-mongodb-aggregations.com.
 
 **Fixes**
 - Implement `$dateDiff` to be consistent with MongoDB.
-- Optimze `$group` implementation and use precedence selection for accumulator and expression operators.
-- Properly handle null inputs to `$objectToArray`,`$setUnion`,`$map`,`$zip`, and `$filter`.
-- Retain parent variables in sub expressions.
+- Handle accumulator and expression operator precedence for `$group`.
+- Handle null inputs to `$objectToArray`,`$setUnion`,`$map`,`$zip`, and `$filter`.
+- Retain parent variables to pass down into nested expressions.
 - Include `idKey` for `$project` when no other fields are selected.
 - Removed caching of current timestamp for `$$NOW` variable in options.
-- Handle date inputs for `$subtract` operator.
+- Handle date inputs for `$subtract` expression operator.
 - Improve input validations for `$first`,`$last`, and `$ifNull`.
 
 ## 6.4.15 / 2024-04-16
