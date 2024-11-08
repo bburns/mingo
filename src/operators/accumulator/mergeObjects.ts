@@ -1,4 +1,4 @@
-import { AccumulatorOperator, Options } from "../../core";
+import { AccumulatorOperator, computeValue, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
 import { $mergeObjects as __mergeObjects } from "../expression/object/mergeObjects";
 
@@ -12,6 +12,9 @@ import { $mergeObjects as __mergeObjects } from "../expression/object/mergeObjec
  */
 export const $mergeObjects: AccumulatorOperator = (
   collection: AnyObject[],
-  _: Any,
+  expr: Any,
   options: Options
-): AnyObject => __mergeObjects({ docs: collection }, "$docs", options);
+): AnyObject => {
+  const arr = computeValue(collection, expr, null, options);
+  return __mergeObjects(null, arr, options);
+};

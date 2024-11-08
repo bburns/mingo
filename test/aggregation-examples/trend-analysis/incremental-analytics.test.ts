@@ -1,5 +1,4 @@
 import { aggregate } from "../../../src";
-import { ProcessingMode } from "../../../src/core";
 import { Any, AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS, ISODate } from "../../support";
 
@@ -55,8 +54,7 @@ describe("Incremental Analytics", () => {
 
   const daily_orders_summary = new Array<Any>();
   const options = {
-    ...DEFAULT_OPTS,
-    processingMode: ProcessingMode.CLONE_INPUT
+    ...DEFAULT_OPTS
   };
 
   function getDayAggPipeline(startDay: string, endDay: string): AnyObject[] {
