@@ -1,4 +1,5 @@
-import { runTest } from "../../support";
+import { find } from "../../../src";
+import { DEFAULT_OPTS, runTest } from "../../support";
 
 runTest("operators/expression/type", {
   $toString: [
@@ -142,13 +143,41 @@ runTest("operators/expression/type", {
   $type: [
     ["a", "string"],
     [/a/, "regex"],
-    [1.2, "number"],
-    [627, "number"],
-    [true, "boolean"],
+    [1.2, "double"],
+    [627, "int"],
+    [Number.MAX_SAFE_INTEGER, "long"],
+    [true, "bool"],
     [{ x: 1 }, "object"],
     [[1, 2, 3], "array"],
     [new Date(), "date"],
     [null, "null"],
     [undefined, "missing"]
   ]
+});
+
+describe("Non-strict Mode", () => {
+  it("returns native JS type names", () => {
+    const res = find(
+      [{ b: true, n: 1, d: 4.5, m: Number.MAX_SAFE_INTEGER }],
+      {},
+      {
+        b: { $type: "$b" },
+        n: { $type: "$n" },
+        d: { $type: "$d" },
+        m: { $type: "$m" },
+        x: { $type: "$x" }
+      },
+      { ...DEFAULT_OPTS, useStrictMode: false }
+    )
+      .all()
+      .pop();
+
+    expect(res).toEqual({
+      b: "boolean",
+      n: "number",
+      d: "number",
+      m: "number",
+      x: "undefined"
+    });
+  });
 });
