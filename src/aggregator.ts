@@ -18,23 +18,25 @@ import { assert, cloneDeep, intersection, isEmpty } from "./util";
  * @constructor
  */
 export class Aggregator {
-  private readonly options: Options;
-  constructor(
-    private readonly pipeline: AnyObject[],
-    options?: Partial<Options>
-  ) {
-    this.options = initOptions(options);
+  #pipeline: AnyObject[];
+  #options: Options;
+
+  constructor(pipeline: AnyObject[], options?: Partial<Options>) {
+    this.#pipeline = pipeline;
+    this.#options = initOptions(options);
   }
 
   /**
-   * Returns an `Lazy` iterator for processing results of pipeline
+   * Returns an {@link Iterator} for lazy evaluation of the pipeline.
    *
    * @param {*} collection An array or iterator object
    * @returns {Iterator} an iterator object
    */
-  stream(collection: Source): Iterator {
+  stream(collection: Source, options?: Options): Iterator {
     let iterator: Iterator = Lazy(collection);
-    const mode = this.options.processingMode;
+    const opts = options ?? this.#options;
+    const mode = opts.processingMode;
+
     if (
       mode == ProcessingMode.CLONE_ALL ||
       mode == ProcessingMode.CLONE_INPUT
@@ -42,25 +44,26 @@ export class Aggregator {
       iterator.map(cloneDeep);
     }
 
-    const pipelineOperators = new Array<string>();
-    if (!isEmpty(this.pipeline)) {
+    const stages = new Array<string>();
+
+    if (!isEmpty(this.#pipeline)) {
       // run aggregation pipeline
-      for (const operator of this.pipeline) {
+      for (const operator of this.#pipeline) {
         const operatorKeys = Object.keys(operator);
         const opName = operatorKeys[0];
         const call = getOperator(
           OperatorType.PIPELINE,
           opName,
-          this.options
+          opts
         ) as PipelineOperator;
 
         assert(
           operatorKeys.length === 1 && !!call,
           `invalid pipeline operator ${opName}`
         );
-        pipelineOperators.push(opName);
+        stages.push(opName);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        iterator = call(iterator, operator[opName], this.options);
+        iterator = call(iterator, operator[opName], opts);
       }
     }
 
@@ -69,7 +72,7 @@ export class Aggregator {
     if (
       mode == ProcessingMode.CLONE_OUTPUT ||
       (mode == ProcessingMode.CLONE_ALL &&
-        !!intersection([["$group", "$unwind"], pipelineOperators]).length)
+        !!intersection([["$group", "$unwind"], stages]).length)
     ) {
       iterator.map(cloneDeep);
     }
@@ -80,10 +83,9 @@ export class Aggregator {
   /**
    * Return the results of the aggregation as an array.
    *
-   * @param {*} collection
-   * @param {*} query
+   * @param collection
    */
-  run<T extends AnyObject>(collection: Source): T[] {
-    return this.stream(collection).value();
+  run<T extends AnyObject>(collection: Source, options?: Options): T[] {
+    return this.stream(collection, options).value();
   }
 }
