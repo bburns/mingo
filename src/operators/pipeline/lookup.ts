@@ -1,10 +1,5 @@
 import { Aggregator } from "../../aggregator";
-import {
-  ComputeOptions,
-  computeValue,
-  Options,
-  PipelineOperator
-} from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any, AnyObject } from "../../types";
 import {
@@ -53,7 +48,7 @@ export const $lookup: PipelineOperator = (
   const { let: letExpr, pipeline, foreignField, localField } = expr;
 
   // rewrite pipeline to use a custom $match predicates.
-  let subQueryPipeline = pipeline || [];
+  const subQueryPipeline = pipeline || [];
 
   // we default to a valid equality match.
   // returns [match_found:boolean, matched_items:array]
@@ -104,60 +99,17 @@ export const $lookup: PipelineOperator = (
   }
 
   // options to use for processing each stage.
-  const copts = ComputeOptions.init(options);
-
-  // user defined variables for match expression
-  if (letExpr) {
-    // replace $match stages with custom dynamic predicate function.
-    const matchExprMap = new Map<number, AnyObject>();
-    // compute options to reuse for each predicate invocation
-    // modify the pipeline.
-    subQueryPipeline = subQueryPipeline.map((stage, i) => {
-      // TODO: pass the variables through all the stages.
-      //   const stageExprs = Object.keys(stage);
-      //   assert(stageExprs.length === 1, "$lookup: invalid 'pipeline' specified.");
-      //   switch (stageExprs.pop()) {
-      //     case "$match":
-      //       return $match();
-      //   }
-
-      /// WORKS
-      const matchExpr = stage["$match"];
-      if (!matchExpr || !matchExpr["$expr"]) return stage;
-      // store $match expression and stage index for lookup.
-      matchExprMap.set(i, matchExpr["$expr"] as AnyObject);
-      // replace implementation with custom predicate using $function.
-      return {
-        $match: {
-          $expr: {
-            $function: {
-              body: (obj: AnyObject, i: number) => {
-                return computeValue(
-                  obj,
-                  matchExprMap.get(i),
-                  null,
-                  // the current variable are set on each options refresh before the processing happens.
-                  copts.update(obj)
-                );
-              },
-              // send the object and the stage index in case of multiple $match stages.
-              args: ["$$this", i]
-            }
-          }
-        }
-      };
-    });
-  }
-
-  const agg = new Aggregator(subQueryPipeline, copts);
-
+  const agg = new Aggregator(subQueryPipeline, options);
+  // const opts = { ...copts.getOptions() } as Options;
   return collection.map((obj: AnyObject) => {
     const variables = computeValue(obj, letExpr, null, options) as AnyObject;
-    copts.update(null, { variables });
+    const opts = Object.assign({}, options, {
+      variables: { ...options.variables, ...variables }
+    }) as Options;
     const [ok, res] = lookupEq(obj);
     return {
       ...obj,
-      [expr.as]: ok ? agg.run(joinColl) : res
+      [expr.as]: ok ? agg.run(joinColl, opts) : res
     };
   });
 };
