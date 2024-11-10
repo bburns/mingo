@@ -153,7 +153,13 @@ export class ComputeOptions implements Options {
       : new ComputeOptions(options, root, local);
   }
 
-  /** Updates the internal mutable state. */
+  /**
+   * Updates the internal state.
+   *
+   * @param root The new root context for this object.
+   * @param local The new local state to merge into current if it exists.
+   * @returns
+   */
   update(root?: Any, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
@@ -168,7 +174,6 @@ export class ComputeOptions implements Options {
     } else {
       this.#local = local ?? {};
     }
-
     return this;
   }
 
@@ -545,12 +550,6 @@ const redactVariables: Record<string, typeof redact> = {
     return obj;
   }
 };
-/* eslint-enable unused-imports/no-unused-vars-ts */
-
-const AGGREGATION_OPS = [
-  OperatorType.EXPRESSION,
-  OperatorType.ACCUMULATOR
-] as const;
 
 /**
  * Computes the value of the expression on the object for the given operator
@@ -567,49 +566,15 @@ export function computeValue(
   operator: string | null,
   options?: Options
 ): Any {
-  // ensure valid options exist on first invocation
   const copts = ComputeOptions.init(options, obj);
-  operator = operator || "";
+  // ensure valid options exist on first invocation
+  return !!operator && isOperator(operator)
+    ? computeOperator(obj, expr, operator, copts)
+    : computeExpression(obj, expr, copts);
+}
 
-  if (isOperator(operator)) {
-    // if the field of the object is a valid operator
-    const callExpression = getOperator(
-      OperatorType.EXPRESSION,
-      operator,
-      options
-    ) as ExpressionOperator;
-
-    if (callExpression) return callExpression(obj as AnyObject, expr, copts);
-
-    // we also handle $group accumulator operators
-    const callAccumulator = getOperator(
-      OperatorType.ACCUMULATOR,
-      operator,
-      options
-    ) as AccumulatorOperator;
-
-    // operator was not found
-    assert(!!callAccumulator, `Operator '${operator}' is not registered.`);
-
-    // if object is not an array, first try to compute using the expression
-    if (!isArray(obj)) {
-      obj = computeValue(obj, expr, null, copts);
-      expr = null;
-    }
-
-    assert(
-      isArray(obj),
-      `The expression for operator '${operator}' must resolve to an array.`
-    );
-
-    // for accumulators, we use the global options since the root is specific to each element within array.
-    return callAccumulator(
-      obj as Any[],
-      expr,
-      copts.update(null, copts.local) // reset the root object.
-    );
-  }
-
+/** Computes the value of the expr given for the object. */
+function computeExpression(obj: Any, expr: Any, options: ComputeOptions): Any {
   // if expr is a string and begins with "$$", then we have a variable.
   //  this can be one of; redact variable, system variable, user-defined variable.
   //  we check and process them in that order.
@@ -620,7 +585,7 @@ export function computeValue(
     if (has(redactVariables, expr)) return expr;
 
     // default to root for resolving path.
-    let ctx = copts.root;
+    let ctx = options.root;
 
     // handle selectors with explicit prefix
     const arr = expr.split(".");
@@ -630,21 +595,22 @@ export function computeValue(
       ctx = systemVariables[arr[0]](
         obj as AnyObject,
         null,
-        copts
+        options
       ) as ArrayOrObject;
       expr = expr.slice(arr[0].length + 1); //  +1 for '.'
     } else if (arr[0].slice(0, 2) === "$$") {
       // handle user-defined variables
       ctx = Object.assign(
         {},
-        copts.variables, // global vars
+        // global vars
+        options.variables,
         // current item is added before local variables because the binding may be changed.
         { this: obj },
-        copts.local?.variables // local vars
+        // local vars
+        options?.local?.variables
       );
       // the variable name
       const name = arr[0].slice(2);
-
       assert(has(ctx as AnyObject, name), `Use of undefined variable: ${name}`);
       expr = expr.slice(2);
     } else {
@@ -657,29 +623,64 @@ export function computeValue(
 
   // check and return value if already in a resolved state
   if (isArray(expr)) {
-    return expr.map((item: Any) => computeValue(obj, item, null, copts));
+    return expr.map(item => computeExpression(obj, item, options));
   }
 
   if (isObject(expr)) {
     const result: AnyObject = {};
-    for (const [key, val] of Object.entries(expr as AnyObject)) {
-      result[key] = computeValue(obj, val, key, copts);
-      // must run ONLY one aggregate operator per expression
-      // if so, return result of the computed value
-      if (AGGREGATION_OPS.some(t => !!getOperator(t, key, options))) {
-        // there should be only one operator
-        assert(
-          Object.keys(expr).length === 1,
-          "Invalid aggregation expression '" + JSON.stringify(expr) + "'"
-        );
-
-        return result[key];
+    const elems = Object.entries(expr as AnyObject);
+    for (const [key, val] of elems) {
+      // if object represents an operator expression, there should only be a single key
+      if (isOperator(key)) {
+        assert(elems.length == 1, "expression must have single operator.");
+        return computeOperator(obj, val, key, options);
       }
+      result[key] = computeExpression(obj, val, options);
     }
     return result;
   }
 
   return expr;
+}
+
+function computeOperator(
+  obj: Any,
+  expr: Any,
+  operator: string,
+  options: ComputeOptions
+): Any {
+  // if the field of the object is a valid operator
+  const callExpression = getOperator(
+    OperatorType.EXPRESSION,
+    operator,
+    options
+  ) as ExpressionOperator;
+  if (callExpression) return callExpression(obj as AnyObject, expr, options);
+
+  // handle accumulators
+  const callAccumulator = getOperator(
+    OperatorType.ACCUMULATOR,
+    operator,
+    options
+  ) as AccumulatorOperator;
+
+  // operator was not found
+  assert(!!callAccumulator, `accumulator '${operator}' is not registered.`);
+
+  // if object is not an array, attempt to resolve to array.
+  if (!isArray(obj)) {
+    obj = computeExpression(obj, expr, options);
+    expr = null;
+  }
+
+  assert(isArray(obj), `arguments must resolve to array for ${operator}.`);
+
+  // for accumulators, we use the global options since the root is specific to each element within array.
+  return callAccumulator(
+    obj as Any[],
+    expr,
+    options.update(null, options.local) // reset the root object.
+  );
 }
 
 /**
@@ -694,7 +695,7 @@ export function redact(
   expr: Any,
   options: ComputeOptions
 ): Any {
-  const result = computeValue(obj, expr, null, options) as string;
+  const result = computeExpression(obj, expr, options) as string;
   return has(redactVariables, result)
     ? redactVariables[result](obj, expr, options)
     : result;

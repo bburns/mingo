@@ -52,9 +52,6 @@ export const $lookup: PipelineOperator = (
 
   const { let: letExpr, pipeline, foreignField, localField } = expr;
 
-  // cells in which to store [obj, variables] for the currently processing object in the main collection.
-  // const cells = new Array<AnyObject>();
-
   // rewrite pipeline to use a custom $match predicates.
   let subQueryPipeline = pipeline || [];
 
