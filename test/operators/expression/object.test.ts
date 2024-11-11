@@ -155,12 +155,10 @@ describe("operators/expression/object", () => {
         [
           {
             $replaceWith: {
-              newRoot: {
-                $setField: {
-                  field: "price.usd",
-                  input: "$$ROOT",
-                  value: "$price"
-                }
+              $setField: {
+                field: "price.usd",
+                input: "$$ROOT",
+                value: "$price"
               }
             }
           },
@@ -183,7 +181,7 @@ describe("operators/expression/object", () => {
         data,
         [
           {
-            $replaceWith: {
+            $replaceRoot: {
               newRoot: {
                 $setField: {
                   field: { $literal: "$price" },
@@ -213,7 +211,7 @@ describe("operators/expression/object", () => {
         [
           { $match: { _id: 1 } },
           {
-            $replaceWith: {
+            $replaceRoot: {
               newRoot: {
                 $setField: {
                   field: "price.usd",
@@ -245,7 +243,7 @@ describe("operators/expression/object", () => {
         [
           { $match: { _id: 1 } },
           {
-            $replaceWith: {
+            $replaceRoot: {
               newRoot: {
                 $setField: {
                   field: { $literal: "$price" },
@@ -276,12 +274,10 @@ describe("operators/expression/object", () => {
         [
           {
             $replaceWith: {
-              newRoot: {
-                $setField: {
-                  field: "price.usd",
-                  input: "$$ROOT",
-                  value: "$$REMOVE"
-                }
+              $setField: {
+                field: "price.usd",
+                input: "$$ROOT",
+                value: "$$REMOVE"
               }
             }
           }
@@ -310,11 +306,9 @@ describe("operators/expression/object", () => {
         [
           {
             $replaceWith: {
-              newRoot: {
-                $unsetField: {
-                  field: { $literal: "$price" },
-                  input: "$$ROOT"
-                }
+              $unsetField: {
+                field: { $literal: "$price" },
+                input: "$$ROOT"
               }
             }
           }
