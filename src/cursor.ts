@@ -15,42 +15,51 @@ import { isObject } from "./util";
  * @constructor
  */
 export class Cursor<T> {
-  private readonly operators: AnyObject[] = [];
-  private result: Iterator | null = null;
-  private buffer: T[] = [];
+  #source: Source;
+  #predicate: Predicate<Any>;
+  #projection: AnyObject;
+  #options?: Options;
+  #operators: AnyObject[] = [];
+  #result: Iterator | null = null;
+  #buffer: T[] = [];
 
   constructor(
-    readonly source: Source,
-    readonly predicate: Predicate<Any>,
-    readonly projection: AnyObject,
-    private options?: Options
-  ) {}
+    source: Source,
+    predicate: Predicate<Any>,
+    projection: AnyObject,
+    options?: Options
+  ) {
+    this.#source = source;
+    this.#predicate = predicate;
+    this.#projection = projection;
+    this.#options = options;
+  }
 
   /** Returns the iterator from running the query */
   private fetch(): Iterator {
-    if (this.result) return this.result;
+    if (this.#result) return this.#result;
 
     // add projection operator
-    if (isObject(this.projection)) {
-      this.operators.push({ $project: this.projection });
+    if (isObject(this.#projection)) {
+      this.#operators.push({ $project: this.#projection });
     }
 
     // filter collection
-    this.result = Lazy(this.source).filter(this.predicate);
+    this.#result = Lazy(this.#source).filter(this.#predicate);
 
-    if (this.operators.length > 0) {
-      this.result = new Aggregator(this.operators, this.options).stream(
-        this.result
+    if (this.#operators.length > 0) {
+      this.#result = new Aggregator(this.#operators, this.#options).stream(
+        this.#result
       );
     }
 
-    return this.result;
+    return this.#result;
   }
 
   /** Returns an iterator with the buffered data included */
   private fetchAll(): Iterator {
-    const buffered = Lazy([...this.buffer]);
-    this.buffer = [];
+    const buffered = Lazy([...this.#buffer]);
+    this.#buffer = [];
     return concat(buffered, this.fetch());
   }
 
@@ -76,7 +85,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   skip(n: number): Cursor<T> {
-    this.operators.push({ $skip: n });
+    this.#operators.push({ $skip: n });
     return this;
   }
 
@@ -86,7 +95,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   limit(n: number): Cursor<T> {
-    this.operators.push({ $limit: n });
+    this.#operators.push({ $limit: n });
     return this;
   }
 
@@ -96,7 +105,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   sort(modifier: AnyObject): Cursor<T> {
-    this.operators.push({ $sort: modifier });
+    this.#operators.push({ $sort: modifier });
     return this;
   }
 
@@ -105,7 +114,7 @@ export class Cursor<T> {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor<T> {
-    this.options = { ...this.options, collation: spec };
+    this.#options = { ...this.#options, collation: spec };
     return this;
   }
 
@@ -115,8 +124,8 @@ export class Cursor<T> {
    */
   next(): T {
     // yield value obtains in hasNext()
-    if (this.buffer.length > 0) {
-      return this.buffer.pop();
+    if (this.#buffer.length > 0) {
+      return this.#buffer.pop();
     }
     const o = this.fetch().next();
     if (o.done) return;
@@ -129,12 +138,12 @@ export class Cursor<T> {
    */
   hasNext(): boolean {
     // there is a value in the buffer
-    if (this.buffer.length > 0) return true;
+    if (this.#buffer.length > 0) return true;
 
     const o = this.fetch().next();
     if (o.done) return false;
 
-    this.buffer.push(o.value as T);
+    this.#buffer.push(o.value as T);
     return true;
   }
 

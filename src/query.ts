@@ -25,27 +25,26 @@ import {
  * @constructor
  */
 export class Query {
-  private readonly compiled: Callback<Any>[];
-  private readonly options: Options;
+  #compiled: Callback<Any>[];
+  #options: Options;
+  #condition: AnyObject;
 
-  constructor(
-    private readonly condition: AnyObject,
-    options?: Partial<Options>
-  ) {
-    this.options = initOptions(options);
-    this.compiled = [];
+  constructor(condition: AnyObject, options?: Partial<Options>) {
+    this.#condition = condition;
+    this.#options = initOptions(options);
+    this.#compiled = [];
     this.compile();
   }
 
   private compile(): void {
     assert(
-      isObject(this.condition),
-      `query criteria must be an object: ${JSON.stringify(this.condition)}`
+      isObject(this.#condition),
+      `query criteria must be an object: ${JSON.stringify(this.#condition)}`
     );
 
     const whereOperator: { field?: string; expr?: Any } = {};
 
-    for (const [field, expr] of Object.entries(this.condition)) {
+    for (const [field, expr] of Object.entries(this.#condition)) {
       if ("$where" === field) {
         Object.assign(whereOperator, { field: field, expr: expr });
       } else if (
@@ -76,13 +75,16 @@ export class Query {
     const call = getOperator(
       OperatorType.QUERY,
       operator,
-      this.options
+      this.#options
     ) as QueryOperator;
     if (!call) {
       throw new MingoError(`unknown query operator ${operator}`);
     }
-    const fn = call(field, value, this.options) as Callback<boolean, AnyObject>;
-    this.compiled.push(fn);
+    const fn = call(field, value, this.#options) as Callback<
+      boolean,
+      AnyObject
+    >;
+    this.#compiled.push(fn);
   }
 
   /**
@@ -92,8 +94,8 @@ export class Query {
    * @returns {boolean} True or false
    */
   test<T>(obj: T): boolean {
-    for (let i = 0, len = this.compiled.length; i < len; i++) {
-      if (!this.compiled[i](obj)) {
+    for (let i = 0, len = this.#compiled.length; i < len; i++) {
+      if (!this.#compiled[i](obj)) {
         return false;
       }
     }
@@ -112,7 +114,7 @@ export class Query {
       collection,
       ((x: AnyObject) => this.test(x)) as Predicate<Any>,
       projection || {},
-      this.options
+      this.#options
     );
   }
 
