@@ -6,9 +6,11 @@ import { $push } from "./push";
 /**
  * Returns the sum of all the values in a group.
  *
- * @param {Array} collection The input array
- * @param {AnyObject} expr The right-hand side expression value of the operator
- * @returns {Number}
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sum/ usage.}
+ *
+ * @param collection The input array
+ * @param expr The right-hand side expression value of the operator
+ * @returns
  */
 export const $sum: AccumulatorOperator<number> = (
   collection: AnyObject[],

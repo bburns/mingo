@@ -1,11 +1,16 @@
-import { AccumulatorOperator, computeValue, Options } from "../../core";
+import {
+  AccumulatorOperator,
+  ComputeOptions,
+  computeValue,
+  Options
+} from "../../core";
 import { Any, AnyObject } from "../../types";
 
 /**
  * Returns the first value in a group.
  *
- * @param {Array} collection The input array
- * @param {AnyObject} expr The right-hand side expression value of the operator
+ * @param collection The input array
+ * @param expr The right-hand side expression value of the operator
  * @returns {*}
  */
 export const $first: AccumulatorOperator = (
@@ -13,7 +18,7 @@ export const $first: AccumulatorOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  return collection.length > 0
-    ? computeValue(collection[0], expr, null, options)
-    : undefined;
+  if (collection.length === 0) return undefined;
+  const copts = ComputeOptions.init(options).update(collection[0]);
+  return computeValue(collection[0], expr, null, copts);
 };
