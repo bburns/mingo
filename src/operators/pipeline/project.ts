@@ -32,13 +32,14 @@ import {
 } from "../../util";
 
 /**
- * Reshapes a document stream.
- * $project can rename, add, or remove fields as well as create computed values and sub-documents.
+ * Reshapes each document in the stream, such as by adding new fields or removing existing fields. For each input document, outputs one document.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project usage}.
  *
  * @param collection
  * @param expr
  * @param opt
- * @returns {Array}
+ * @returns
  */
 export const $project: PipelineOperator = (
   collection: Iterator,
@@ -70,11 +71,12 @@ export const $project: PipelineOperator = (
 };
 
 /**
- * Process the expression value for $project operators
- *
- * @param {Object} obj The object to use as options
- * @param {Object} expr The experssion object of $project operator
- * @param {Array} expressionKeys The key in the 'expr' object
+ *Process the expression value for $project operators
+ * @param obj The object to use as options
+ * @param expr  The experssion object of $project operator
+ * @param options The options
+ * @param expressionKeys The key in the 'expr' object
+ * @returns
  */
 function processObject(
   obj: AnyObject,

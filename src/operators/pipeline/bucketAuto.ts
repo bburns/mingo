@@ -8,26 +8,29 @@ interface Boundary extends AnyObject {
   max?: number;
 }
 
+interface InoutExpr {
+  groupBy: Any;
+  buckets: number;
+  output?: AnyObject;
+  granularity: string;
+}
+
 const ID_KEY = "_id";
 
 /**
- * Categorizes incoming documents into a specific number of groups, called buckets,
- * based on a specified expression. Bucket boundaries are automatically determined
- * in an attempt to evenly distribute the documents into the specified number of buckets.
- * https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/
+ * Categorizes incoming documents into a specific number of groups, called buckets, based on a specified expression.
+ * Bucket boundaries are automatically determined in an attempt to evenly distribute the documents into the specified number of buckets.
  *
- * @param {*} collection
- * @param {*} expr
- * @param {*} options
+ * See {@link https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $bucketAuto: PipelineOperator = (
   collection: Iterator,
-  expr: {
-    groupBy: Any;
-    buckets: number;
-    output?: AnyObject;
-    granularity: string;
-  },
+  expr: InoutExpr,
   options: Options
 ): Iterator => {
   const outputExpr = expr.output || { count: { $sum: 1 } };

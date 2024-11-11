@@ -1,23 +1,25 @@
 // $sample operator -  https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
 
 import { Options, PipelineOperator } from "../../core";
-import { Iterator, Source } from "../../lazy";
-import { Any, Callback } from "../../types";
+import { Iterator } from "../../lazy";
+import { Any } from "../../types";
 
 /**
- * Randomly selects the specified number of documents from its input. The given iterator must have finite values
+ * Randomly selects the specified number of documents from its input.
  *
- * @param  {Iterator} collection
- * @param  {Object} expr
- * @param  {Options} _options
- * @return {*}
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param _options
+ * @returns
  */
 export const $sample: PipelineOperator = (
   collection: Iterator,
   expr: { size: number },
   _options: Options
 ): Iterator => {
-  return collection.transform(((xs: Any[]) => {
+  return collection.transform((xs: Any[]) => {
     const len = xs.length;
     let i = -1;
     return () => {
@@ -25,5 +27,5 @@ export const $sample: PipelineOperator = (
       const n = Math.floor(Math.random() * len);
       return { value: xs[n], done: false };
     };
-  }) as Callback<Source>);
+  });
 };

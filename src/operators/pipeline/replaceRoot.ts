@@ -7,16 +7,16 @@ import { assert, isObject } from "../../util";
  * Replaces a document with the specified embedded document or new one.
  * The replacement document can be any valid expression that resolves to a document.
  *
- * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
+ * See {@link https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/ usage}.
  *
- * @param  {Iterator} collection
- * @param  {AnyObject} expr
- * @param  {AnyObject} options
- * @return {*}
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $replaceRoot: PipelineOperator = (
   collection: Iterator,
-  expr: AnyObject,
+  expr: { newRoot: AnyObject },
   options: Options
 ): Iterator => {
   return collection.map(obj => {

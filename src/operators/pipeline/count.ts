@@ -1,23 +1,25 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { assert, isString } from "../../util";
+import { assert, isEmpty, isString } from "../../util";
 
 /**
- * Returns a document that contains a count of the number of documents input to the stage.
+ * Returns a count of the number of documents at this stage of the aggregation pipeline.
  *
- * @param {Array} collection
- * @param {String} expr
- * @param {Options} options
- * @return {Object}
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/count usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param _options
+ * @returns
  */
 export const $count: PipelineOperator = (
   collection: Iterator,
   expr: string,
-  _: Options
+  _options: Options
 ): Iterator => {
   assert(
     isString(expr) &&
-      expr.trim() !== "" &&
+      !isEmpty(expr) &&
       expr.indexOf(".") === -1 &&
       expr.trim()[0] !== "$",
     "Invalid expression value for $count"

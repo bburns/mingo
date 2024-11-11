@@ -3,22 +3,27 @@ import { Iterator, Lazy } from "../../lazy";
 import { Any, AnyObject } from "../../types";
 import { assert, compare, findInsertIndex, isNil, typeOf } from "../../util";
 
+interface InputExpr {
+  groupBy: Any;
+  boundaries: Any[];
+  default: Any;
+  output?: AnyObject;
+}
+
 /**
- * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
- * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
+ * Categorizes incoming documents into groups, called buckets, based on a specified
+ * expression and bucket boundaries and outputs a document per each bucket.
  *
- * @param {*} collection
- * @param {*} expr
- * @param {Options} opt Pipeline options
+ * See {@link https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $bucket: PipelineOperator = (
   collection: Iterator,
-  expr: {
-    groupBy: Any;
-    boundaries: Any[];
-    default: Any;
-    output?: AnyObject;
-  },
+  expr: InputExpr,
   options: Options
 ): Iterator => {
   const bounds = [...expr.boundaries];

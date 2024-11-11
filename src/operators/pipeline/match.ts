@@ -4,13 +4,14 @@ import { Query } from "../../query";
 import { AnyObject } from "../../types";
 
 /**
- * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
- * $match uses standard MongoDB queries.
+ * Filters the document stream to allow only matching documents to pass unmodified into the next pipeline stage.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/match usage}.
  *
  * @param collection
  * @param expr
  * @param options
- * @returns {Array|*}
+ * @returns
  */
 export const $match: PipelineOperator = (
   collection: Iterator,

@@ -33,16 +33,14 @@ interface InputExpr {
 /**
  * Writes the resulting documents of the aggregation pipeline to a collection.
  *
- * The stage can incorporate (insert new documents, merge documents, replace documents,
- * keep existing documents, fail the operation, process documents with a custom update pipeline)
- * the results into an output collection. To use the $merge stage, it must be the last stage in the pipeline.
+ * NB: Object are deep cloned for outputing regardless of the ProcessingMode.
  *
- * Note: Object are deep cloned for outputing regardless of the ProcessingMode.
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/merge/ usage}.
  *
  * @param collection
  * @param expr
  * @param options
- * @returns {*}
+ * @returns
  */
 export const $merge: PipelineOperator = (
   collection: Iterator,

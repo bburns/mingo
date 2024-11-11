@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.x.x / 2024-11-xx
+## 7.x.x / 2024-11-xx
 **New**
 - Add support for `$densify` pipeline stage operator.
 - Add support for `$dateTrunc` expression operator.

@@ -12,12 +12,14 @@ import {
 } from "../../util";
 
 /**
- * Takes all input documents and returns them in a stream of sorted documents.
+ * Sorts all input documents and returns them to the pipeline in sorted order.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/ usage}.
  *
  * @param collection
  * @param sortKeys
- * @param  {AnyObject} options
- * @returns {*}
+ * @param options
+ * @returns
  */
 export const $sort: PipelineOperator = (
   collection: Iterator,

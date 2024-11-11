@@ -48,12 +48,14 @@ const WINDOW_UNBOUNDED_OPS = new Set([
 ]);
 
 /**
- * Randomly selects the specified number of documents from its input. The given iterator must have finite values
+ * Groups documents into windows and applies one or more operators to the documents in each window.
  *
- * @param  {Iterator} collection
- * @param  {AnyObject} expr
- * @param  {Options} options
- * @return {*}
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/setWindowFields/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $setWindowFields: PipelineOperator = (
   collection: Iterator,

@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { inArray } from "../../../util";
+import { assert, isNil, isString } from "../../../util";
 
 /**
  * Concatenates two strings.
@@ -19,7 +19,10 @@ export const $concat: ExpressionOperator = (
   options: Options
 ): Any => {
   const args = computeValue(obj, expr, null, options) as Any[];
-  // does not allow concatenation with nulls
-  if (([null, undefined] as Any[]).some(v => inArray(args, v))) return null;
+  assert(
+    args.every(v => isString(v) || isNil(v)),
+    "$concat only supports strings."
+  );
+  if (args.some(isNil)) return null;
   return args.join("");
 };

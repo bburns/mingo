@@ -11,20 +11,26 @@ import { assert, groupBy, has } from "../../util";
 // lookup key for grouping
 const ID_KEY = "_id";
 
+interface InputExpr extends AnyObject {
+  [ID_KEY]: Any;
+}
+
 /**
- * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
+ * Separates documents into groups according to a "group key" and output one document for each unique group key.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/group usage}.
  *
  * @param collection
  * @param expr
  * @param options
- * @returns {Any[]}
+ * @returns
  */
 export const $group: PipelineOperator = (
   collection: Iterator,
-  expr: AnyObject,
+  expr: InputExpr,
   options: Options
 ): Iterator => {
-  assert(has(expr, ID_KEY), "a group specification must include an _id");
+  assert(has(expr, ID_KEY), "$group specification must include an '_id'");
   const idExpr = expr[ID_KEY];
   const copts = ComputeOptions.init(options);
 

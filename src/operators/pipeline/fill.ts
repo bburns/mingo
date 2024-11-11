@@ -23,9 +23,12 @@ const FILL_METHODS: Record<string, string> = {
 /**
  * Populates null and missing field values within documents.
  *
- * @param {Iterator} collection
- * @param {Object} expr
- * @param {Options} options
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/fill/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $fill: PipelineOperator = (
   collection: Iterator,

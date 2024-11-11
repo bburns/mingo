@@ -6,15 +6,17 @@ import { assert, cloneDeep, isArray, isString } from "../../util";
 /**
  * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
  *
- * Unlike the $out operator in MongoDB, this operator can appear in any position in the pipeline and is
+ * Unlike in MongoDB, this operator can appear in any position in the pipeline and is
  * useful for collecting intermediate results of an aggregation operation.
  *
- * Note: Object are deep cloned for outputing regardless of the ProcessingMode.
+ * Note: Object are deep cloned for output regardless of the {@link ProcessingMode}.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/out/ usage}.
  *
  * @param collection
  * @param expr
  * @param options
- * @returns {*}
+ * @returns
  */
 export const $out: PipelineOperator = (
   collection: Iterator,

@@ -10,7 +10,9 @@ interface InputExpr {
 }
 
 /**
- * Performs a union of two collections.
+ * Combines two aggregations into a single result set.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/unionWith usage}.
  *
  * @param collection
  * @param expr

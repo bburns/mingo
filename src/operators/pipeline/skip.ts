@@ -2,17 +2,19 @@ import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 
 /**
- * Skips over a specified number of documents from the pipeline and returns the rest.
+ * Skips the first n documents where n is the specified skip number and passes the remaining documents unmodified to the pipeline.
  *
- * @param collection An iterator
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/skip usage}.
+ *
+ * @param collection
  * @param expr
- * @param  {Options} options
- * @returns {*}
+ * @param _options
+ * @returns
  */
 export const $skip: PipelineOperator = (
   collection: Iterator,
   expr: number,
-  options: Options
+  _options: Options
 ): Iterator => {
   return collection.drop(expr);
 };

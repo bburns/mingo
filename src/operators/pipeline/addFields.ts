@@ -4,12 +4,15 @@ import { AnyObject, Callback } from "../../types";
 import { removeValue, setValue } from "../../util";
 
 /**
- * Adds new fields to documents.
- * Outputs documents that contain all existing fields from the input documents and newly added fields.
+ * Adds new fields to documents. $addFields outputs documents that contain
+ * all existing fields from the input documents and newly added fields.
  *
- * @param {Iterator} collection
- * @param {AnyObject} expr
- * @param {Options} options
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/addFields/ usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $addFields: PipelineOperator = (
   collection: Iterator,

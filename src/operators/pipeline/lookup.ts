@@ -11,7 +11,6 @@ import {
   ValueMap
 } from "../../util";
 
-// TODO: https://github.com/kofrasa/mingo/issues/471
 interface InputExpr {
   /** Specifies the collection in the same database to perform the join with. */
   from: string | AnyObject[];
@@ -28,9 +27,9 @@ interface InputExpr {
 }
 
 /**
- * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
+ * Performs a left outer join to another collection to filter in documents from the "joined" collection for processing.
  *
- * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/}
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/lookup/ usage}
  *
  * @param collection
  * @param expr
@@ -100,7 +99,6 @@ export const $lookup: PipelineOperator = (
 
   // options to use for processing each stage.
   const agg = new Aggregator(subQueryPipeline, options);
-  // const opts = { ...copts.getOptions() } as Options;
   return collection.map((obj: AnyObject) => {
     const variables = computeValue(obj, letExpr, null, options) as AnyObject;
     const opts = Object.assign({}, options, {

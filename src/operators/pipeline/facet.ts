@@ -5,7 +5,13 @@ import { AnyObject, Callback } from "../../types";
 
 /**
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
- * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
+ *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/facet usage}.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $facet: PipelineOperator = (
   collection: Iterator,

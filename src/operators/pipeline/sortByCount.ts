@@ -1,6 +1,6 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { Any, AnyObject } from "../../types";
+import { Any } from "../../types";
 import { $group } from "./group";
 import { $sort } from "./sort";
 
@@ -8,21 +8,21 @@ import { $sort } from "./sort";
  * Groups incoming documents based on the value of a specified expression,
  * then computes the count of documents in each distinct group.
  *
- * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
+ * {@link https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/ usage}.
  *
- * @param  {Array} collection
- * @param  {AnyObject} expr
- * @param  {AnyObject} options
- * @return {*}
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns
  */
 export const $sortByCount: PipelineOperator = (
   collection: Iterator,
   expr: Any,
   options: Options
 ): Iterator => {
-  const newExpr: AnyObject = { count: { $sum: 1 } };
-
-  newExpr["_id"] = expr;
-
-  return $sort($group(collection, newExpr, options), { count: -1 }, options);
+  return $sort(
+    $group(collection, { _id: expr, count: { $sum: 1 } }, options),
+    { count: -1 },
+    options
+  );
 };

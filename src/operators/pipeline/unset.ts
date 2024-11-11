@@ -6,6 +6,8 @@ import { $project } from "./project";
 /**
  * Removes/excludes fields from documents.
  *
+ * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/unset usage}.
+ *
  * @param collection
  * @param expr
  * @param options
@@ -16,7 +18,7 @@ export const $unset: PipelineOperator = (
   expr: string | string[],
   options?: ComputeOptions
 ): Iterator => {
-  expr = ensureArray(expr) as string[];
+  expr = ensureArray(expr);
   const doc: Record<string, number> = {};
   for (const k of expr) doc[k] = 0;
   return $project(collection, doc, options);
