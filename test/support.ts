@@ -1,6 +1,6 @@
 // load all operators
 // import "../src/init/system";
-import { aggregate } from "../src";
+import { aggregate as srcAggregate, find as srcFind } from "../src";
 import {
   computeValue,
   Context,
@@ -9,6 +9,7 @@ import {
   Options,
   ProcessingMode
 } from "../src/core";
+import { Source } from "../src/lazy";
 import * as accumulatorOperators from "../src/operators/accumulator";
 import * as expressionOperators from "../src/operators/expression";
 import * as pipelineOperators from "../src/operators/pipeline";
@@ -56,6 +57,19 @@ export class ObjectId {
     return this._id;
   }
 }
+
+export const aggregate = (
+  coll: Source,
+  pipeline: AnyObject[],
+  options?: Options
+) => srcAggregate(coll, pipeline, options ?? DEFAULT_OPTS);
+
+export const find = (
+  collection: Source,
+  criteria: AnyObject,
+  projection?: AnyObject,
+  options?: Partial<Options>
+) => srcFind(collection, criteria, projection ?? {}, options ?? DEFAULT_OPTS);
 
 export const groupByObjectsData = [
   {

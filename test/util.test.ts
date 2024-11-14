@@ -13,7 +13,6 @@ import {
   normalize,
   resolve,
   resolveGraph,
-  sortBy,
   stringify,
   truthy,
   unique,
@@ -131,14 +130,6 @@ describe("util", () => {
       a.push(c);
 
       expect(() => stringify(c)).toThrow(/cycle detected/);
-    });
-  });
-
-  describe("sortBy", () => {
-    it("can sortBy hash key", () => {
-      expect(
-        sortBy(["cat", "ant", "function", "ant", "constructor"], k => k)
-      ).toEqual(["ant", "ant", "cat", "constructor", "function"]);
     });
   });
 

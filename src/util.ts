@@ -7,7 +7,6 @@ import {
   AnyObject,
   ArrayOrObject,
   Callback,
-  Comparator,
   GroupByOutput,
   HashFunction
 } from "./types";
@@ -28,7 +27,6 @@ const CYCLE_FOUND_ERROR = Object.freeze(
 ) as Error;
 
 const OBJECT_TAG = "[object Object]";
-const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 
 type Constructor = new (...args: Any[]) => Any;
 
@@ -522,45 +520,6 @@ export function hashCode(
 }
 
 /**
- * Returns a (stably) sorted copy of list, ranked in ascending order by the results of running each value through iteratee
- *
- * This implementation treats null/undefined sort keys as less than every other type
- *
- * @param {Array}   collection
- * @param {Function} keyFn The sort key function used to resolve sort keys
- * @param {Function} comparator The comparator function to use for comparing keys. Defaults to standard comparison via `compare(...)`
- * @return {Array} Returns a new sorted array by the given key and comparator function
- */
-export function sortBy<T = Any>(
-  collection: Any[],
-  keyFn: Callback<T>,
-  comparator: Comparator<T> = compare
-): Any[] {
-  if (isEmpty(collection)) return [];
-
-  type Pair = [T, Any];
-  const sorted = new Array<Pair>();
-  const result = new Array<Any>();
-
-  for (let i = 0; i < collection.length; i++) {
-    const obj = collection[i];
-    const key = keyFn(obj, i);
-    if (isNil(key)) {
-      result.push(obj);
-    } else {
-      sorted.push([key, obj]);
-    }
-  }
-
-  // use native array sorting but enforce stableness
-  sorted.sort((a, b) => comparator(a[0], b[0]));
-  return into(
-    result,
-    sorted.map((o: Any[]) => o[1])
-  ) as Any[];
-}
-
-/**
  * Groups the collection into sets by the returned key
  *
  * @param collection
@@ -768,7 +727,7 @@ export function resolveGraph(
   const key = names[0];
   // get the next part of the selector
   const next = names.slice(1).join(".");
-  const isIndex = /^\d+$/.exec(key) !== null;
+  const isIndex = /^\d+$/.test(key);
   const hasNext = names.length > 1;
   let result: Any;
   let value: Any;
