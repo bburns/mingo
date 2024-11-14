@@ -185,21 +185,126 @@ describe(testPath(__filename), () => {
     ]);
   });
 
-  it("Equal Parititons without Granularity", () => {
-    const result = aggregate(things, [
+  it.each([
+    [
+      "",
       {
-        $bucketAuto: {
-          groupBy: "$_id",
-          buckets: 5
-        }
+        buckets: 1,
+        output: [{ _id: { min: 0, max: 99 }, count: 100 }]
       }
-    ]);
-    expect(result).toEqual([
-      { _id: { min: 0, max: 20 }, count: 20 },
-      { _id: { min: 20, max: 40 }, count: 20 },
-      { _id: { min: 40, max: 60 }, count: 20 },
-      { _id: { min: 60, max: 80 }, count: 20 },
-      { _id: { min: 80, max: 99 }, count: 20 }
-    ]);
-  });
+    ],
+    [
+      "",
+      {
+        buckets: 5,
+        output: [
+          { _id: { min: 0, max: 20 }, count: 20 },
+          { _id: { min: 20, max: 40 }, count: 20 },
+          { _id: { min: 40, max: 60 }, count: 20 },
+          { _id: { min: 60, max: 80 }, count: 20 },
+          { _id: { min: 80, max: 99 }, count: 20 }
+        ]
+      }
+    ],
+    [
+      "",
+      {
+        buckets: 7,
+        output: [
+          { _id: { max: 14, min: 0 }, count: 14 },
+          { _id: { max: 28, min: 14 }, count: 14 },
+          { _id: { max: 42, min: 28 }, count: 14 },
+          { _id: { max: 56, min: 42 }, count: 14 },
+          { _id: { max: 70, min: 56 }, count: 14 },
+          { _id: { max: 84, min: 70 }, count: 14 },
+          { _id: { max: 99, min: 84 }, count: 16 }
+        ]
+      }
+    ],
+    // [
+    //   "R20",
+    //   [
+    //     { _id: { min: 0, max: 20 }, count: 20 },
+    //     { _id: { min: 20, max: 40 }, count: 20 },
+    //     { _id: { min: 40, max: 63 }, count: 23 },
+    //     { _id: { min: 63, max: 90 }, count: 27 },
+    //     { _id: { min: 90, max: 100 }, count: 10 }
+    //   ]
+    // ],
+    // [
+    //   "E24",
+    //   [
+    //     { _id: { min: 0, max: 20 }, count: 20 },
+    //     { _id: { min: 20, max: 43 }, count: 23 },
+    //     { _id: { min: 43, max: 68 }, count: 25 },
+    //     { _id: { min: 68, max: 91 }, count: 23 },
+    //     { _id: { min: 91, max: 100 }, count: 9 }
+    //   ]
+    // ],
+    // [
+    //   "1-2-5",
+    //   [
+    //     { _id: { min: 0, max: 20 }, count: 20 },
+    //     { _id: { min: 20, max: 50 }, count: 30 },
+    //     { _id: { min: 50, max: 100 }, count: 50 }
+    //   ]
+    // ],
+    [
+      "POWERSOF2",
+      {
+        buckets: 1,
+        output: [{ _id: { min: 0, max: 128 }, count: 100 }]
+      }
+    ],
+    [
+      "POWERSOF2",
+      {
+        buckets: 5,
+        output: [
+          { _id: { min: 0, max: 32 }, count: 32 },
+          { _id: { min: 32, max: 64 }, count: 32 },
+          { _id: { min: 64, max: 128 }, count: 36 }
+        ]
+      }
+    ],
+    [
+      "POWERSOF2",
+      {
+        buckets: 7,
+        output: [
+          { _id: { max: 16, min: 0 }, count: 16 },
+          { _id: { max: 32, min: 16 }, count: 16 },
+          { _id: { max: 64, min: 32 }, count: 32 },
+          { _id: { max: 128, min: 64 }, count: 36 }
+        ]
+      }
+    ],
+    [
+      "POWERSOF2",
+      {
+        buckets: 12,
+        output: [
+          { _id: { max: 8, min: 0 }, count: 8 },
+          { _id: { max: 16, min: 8 }, count: 8 },
+          { _id: { max: 32, min: 16 }, count: 16 },
+          { _id: { max: 64, min: 32 }, count: 32 },
+          { _id: { max: 128, min: 64 }, count: 36 }
+        ]
+      }
+    ]
+  ])(
+    "Comparing Different Granularities - %p, buckets: %p",
+    (granularity, { buckets, output }) => {
+      const actual = aggregate(things, [
+        {
+          $bucketAuto: {
+            groupBy: "$_id",
+            buckets,
+            granularity
+          }
+        }
+      ]);
+      expect(actual).toEqual(output);
+    }
+  );
 });

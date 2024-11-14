@@ -1,6 +1,6 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { Any, AnyObject } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import {
   assert,
   compare,
@@ -25,15 +25,6 @@ type Granularity =
   | "R80"
   | "POWERSOF2"
   | "1-2-5";
-
-// const GranularityRounder = {
-//   POWEROFTWO: {
-//     min: 0,
-//     max: Math.log2(Number.MAX_SAFE_INTEGER),
-//     up: (n: number) => Math.floor(Math.log2(n)) + 1,
-//     down: (n: number) => Math.floor(Math.log2(n)) - 1
-//   }
-// };
 
 interface InputExpr {
   /** An expression to group documents by. */
@@ -79,7 +70,7 @@ export const $bucketAuto: PipelineOperator = (
 
   if (granularity) {
     assert(
-      /^POWEROF2|1-2-5|E(6|12|24|48|96|192)|R(5|10|20|40|80)$/.test(
+      /^POWERSOF2|1-2-5|E(6|12|24|48|96|192)|R(5|10|20|40|80)$/.test(
         granularity
       ),
       `$bucketAuto: invalid granularity '${granularity}'.`
@@ -88,7 +79,7 @@ export const $bucketAuto: PipelineOperator = (
 
   const getKey = memoize(computeValue, options?.hashFunction);
   const sorted = collection
-    .map((o: Any) => {
+    .map((o: AnyObject) => {
       const k = getKey(o, groupByExpr, null, options) ?? null;
       assert(
         !granularity || isNumber(k),
@@ -104,81 +95,28 @@ export const $bucketAuto: PipelineOperator = (
     return compare(x[0], y[0]);
   });
 
-  // const getNextBucketSize = (min: number, max: number): number => {
-  //   if (!granularity) {
-  //     return Math.max(1, Math.round(sorted.length / bucketCount));
-  //   }
-  //   if (granularity == "POWERSOF2") return Math.pow(2, bucketCount);
-  //   if (granularity == "1-2-5") {
-  //   }
-  //   if (granularity[0] == "R") {
-  //   }
-  //   if (granularity[0] == "E") {
-  //   }
-  // };
+  const getNext =
+    granularity == "POWERSOF2"
+      ? granularityPowerOfTwo(sorted as Array<[number, AnyObject]>, bucketCount)
+      : granularityDefault(
+          sorted as Array<[number, AnyObject]>,
+          bucketCount,
+          groupByExpr,
+          getKey,
+          options
+        );
 
-  // const getNextBounds = (min: number, max: number): number => {
-  //   if (granularity == "POWERSOF2") {
-  //     if (max == 0) {
-  //       min = 0;
-  //       max = Math.pow(2, bucketCount);
-  //     } else {
-  //       min = max;
-  //       max = max * 2;
-  //     }
-  //   }
-  //   if (granularity == "1-2-5") {
-  //   }
-  //   if (granularity[0] == "R") {
-  //   }
-  //   if (granularity[0] == "E") {
-  //   }
-  //   return 0;
-  // };
+  let terminate = false;
 
-  const result = new Array<AnyObject>();
-  // we will loop over to avoid copying arrays around to get nil values at the bottom.
-  const size = sorted.length;
-  // counter for sorted collection. seek to skip over nils.
-  let index = 0;
+  return Lazy(() => {
+    if (terminate) return { done: true };
 
-  const approxBucketSize = Math.max(1, Math.round(sorted.length / bucketCount));
+    const { min, max, bucket, done } = getNext();
 
-  for (let i = 0; i < bucketCount && index < size; i++) {
-    const currentBucket = new Array<Any>();
-
-    for (let j = 0; j < approxBucketSize && index < size; j++) {
-      currentBucket.push(sorted[index++][1]);
-    }
-
-    // add items with the same key into the same bucket.
-    while (index < size && isEqual(sorted[index - 1][0], sorted[index][0])) {
-      currentBucket.push(sorted[index++][1]);
-    }
-
-    const min = getKey(currentBucket[0], groupByExpr, null, options) ?? null;
-    let max: Any;
-    // The _id.max field specifies the upper bound for the bucket.
-    // This bound is exclusive for all buckets except the final bucket in the series, where it is inclusive.
-    if (index < size) {
-      // the min of next bucket.
-      max = sorted[index][0] as Any;
-    } else {
-      max = getKey(
-        currentBucket[currentBucket.length - 1],
-        groupByExpr,
-        null,
-        options
-      );
-    }
-
-    assert(
-      isNil(max) || isNil(min) || min <= max,
-      `error: $bucketAuto boundary must be in order.`
-    );
+    terminate = done;
 
     const outFields = computeValue(
-      currentBucket,
+      bucket,
       outputExpr,
       null,
       options
@@ -189,11 +127,110 @@ export const $bucketAuto: PipelineOperator = (
       if (isArray(v)) outFields[k] = v.filter(v => v !== undefined);
     }
 
-    result.push({
-      ...outFields,
-      _id: { min, max }
-    });
-  }
-
-  return Lazy(result);
+    return {
+      done: false,
+      value: {
+        ...outFields,
+        _id: { min, max }
+      }
+    };
+  });
 };
+
+function granularityDefault(
+  sorted: Array<[Any, AnyObject]>,
+  bucketCount: number,
+  groupByExpr: Any,
+  getKey: (o: Any, _expr: Any, _op: string, _opts: Options) => Any,
+  options: Options
+): Callback<{ min: Any; max: Any; bucket: AnyObject[]; done: boolean }> {
+  const size = sorted.length;
+  const approxBucketSize = Math.max(1, Math.round(sorted.length / bucketCount));
+  let index = 0;
+  let nBuckets = 0;
+
+  return () => {
+    const isLastBucket = ++nBuckets == bucketCount;
+    const bucket = new Array<AnyObject>();
+
+    for (let j = 0; j < approxBucketSize && index < size; j++) {
+      bucket.push(sorted[index++][1]);
+    }
+
+    // add items with the same key into the same bucket OR
+    // all remaining items if this is the last bucket.
+    while (
+      index < size &&
+      (isLastBucket || isEqual(sorted[index - 1][0], sorted[index][0]))
+    ) {
+      bucket.push(sorted[index++][1]);
+    }
+
+    const min = getKey(bucket[0], groupByExpr, null, options) ?? null;
+    let max: Any;
+    // The _id.max field specifies the upper bound for the bucket.
+    // This bound is exclusive for all buckets except the final bucket in the series, where it is inclusive.
+    if (index < size) {
+      // the min of next bucket.
+      max = sorted[index][0];
+    } else {
+      max = getKey(bucket[bucket.length - 1], groupByExpr, null, options);
+    }
+
+    assert(
+      isNil(max) || isNil(min) || min <= max,
+      `error: $bucketAuto boundary must be in order.`
+    );
+
+    return {
+      min,
+      max,
+      bucket,
+      done: index >= size
+    };
+  };
+}
+
+function granularityPowerOfTwo(
+  sorted: Array<[number, AnyObject]>,
+  bucketCount: number
+): Callback<{ min: number; max: number; bucket: AnyObject[]; done: boolean }> {
+  const size = sorted.length;
+  const approxBucketSize = Math.max(1, Math.round(sorted.length / bucketCount));
+  // round up to the next power of 2 in the series.
+  const roundUp = (n: number) =>
+    n === 0 ? 0 : 2 ** (Math.floor(Math.log2(n)) + 1);
+
+  let index = 0;
+  let min = 0;
+  let max = 0;
+
+  return () => {
+    const bucket = new Array<AnyObject>();
+    const boundValue = roundUp(max);
+    min = index > 0 ? max : 0;
+
+    while (
+      bucket.length < approxBucketSize &&
+      index < size &&
+      (max === 0 || sorted[index][0] < boundValue)
+    ) {
+      bucket.push(sorted[index++][1]);
+    }
+
+    // round up the last value of the current bucket if it is the first, otherwise use the boundValue
+    max = max == 0 ? roundUp(sorted[index - 1][0]) : boundValue;
+
+    // after adjusting the max, we could still have items that fall below it. add those items here.
+    while (index < size && sorted[index][0] < max) {
+      bucket.push(sorted[index++][1]);
+    }
+
+    return {
+      min,
+      max,
+      bucket,
+      done: index >= size
+    };
+  };
+}

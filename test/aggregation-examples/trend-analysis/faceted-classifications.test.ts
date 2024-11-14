@@ -1,5 +1,4 @@
-import { aggregate } from "../../../src";
-import { DEFAULT_OPTS } from "../../support";
+import { aggregate } from "../../support";
 
 /**
  * You want to provide a {@link https://en.wikipedia.org/wiki/Faceted_search | faceted search} capability on your retail website to enable customers to refine their product search by selecting specific characteristics against the product results listed in the web page.
@@ -186,8 +185,8 @@ describe("Faceted Classification", () => {
   ];
 
   // $bucketAuto does not currently support 'granularity'.
-  it("FIXME: returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
-    const result = aggregate(products, pipeline, DEFAULT_OPTS);
+  xit("returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
+    const result = aggregate(products, pipeline);
     expect(result).not.toEqual([
       {
         by_price: [
