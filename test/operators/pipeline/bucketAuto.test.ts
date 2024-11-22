@@ -221,34 +221,144 @@ describe(testPath(__filename), () => {
         ]
       }
     ],
-    // [
-    //   "R20",
-    //   [
-    //     { _id: { min: 0, max: 20 }, count: 20 },
-    //     { _id: { min: 20, max: 40 }, count: 20 },
-    //     { _id: { min: 40, max: 63 }, count: 23 },
-    //     { _id: { min: 63, max: 90 }, count: 27 },
-    //     { _id: { min: 90, max: 100 }, count: 10 }
-    //   ]
-    // ],
-    // [
-    //   "E24",
-    //   [
-    //     { _id: { min: 0, max: 20 }, count: 20 },
-    //     { _id: { min: 20, max: 43 }, count: 23 },
-    //     { _id: { min: 43, max: 68 }, count: 25 },
-    //     { _id: { min: 68, max: 91 }, count: 23 },
-    //     { _id: { min: 91, max: 100 }, count: 9 }
-    //   ]
-    // ],
-    // [
-    //   "1-2-5",
-    //   [
-    //     { _id: { min: 0, max: 20 }, count: 20 },
-    //     { _id: { min: 20, max: 50 }, count: 30 },
-    //     { _id: { min: 50, max: 100 }, count: 50 }
-    //   ]
-    // ],
+    [
+      "R5",
+      {
+        buckets: 1,
+        output: [{ _id: { max: 100, min: 0 }, count: 100 }]
+      }
+    ],
+    [
+      "R5",
+      {
+        buckets: 5,
+        output: [
+          { _id: { max: 25, min: 0 }, count: 25 },
+          { _id: { max: 63, min: 25 }, count: 38 },
+          { _id: { max: 100, min: 63 }, count: 37 }
+        ]
+      }
+    ],
+    [
+      "R5",
+      {
+        buckets: 7,
+        output: [
+          { _id: { max: 16, min: 0 }, count: 16 },
+          { _id: { max: 40, min: 16 }, count: 24 },
+          { _id: { max: 63, min: 40 }, count: 23 },
+          { _id: { max: 100, min: 63 }, count: 37 }
+        ]
+      }
+    ],
+    [
+      "R5",
+      {
+        buckets: 12,
+        output: [
+          { _id: { max: 10, min: 0 }, count: 10 },
+          { _id: { max: 25, min: 10 }, count: 15 },
+          { _id: { max: 40, min: 25 }, count: 15 },
+          { _id: { max: 63, min: 40 }, count: 23 },
+          { _id: { max: 100, min: 63 }, count: 37 }
+        ]
+      }
+    ],
+    [
+      "R20",
+      {
+        buckets: 5,
+        output: [
+          { _id: { min: 0, max: 20 }, count: 20 },
+          { _id: { min: 20, max: 40 }, count: 20 },
+          { _id: { min: 40, max: 63 }, count: 23 },
+          { _id: { min: 63, max: 90 }, count: 27 },
+          { _id: { min: 90, max: 100 }, count: 10 }
+        ]
+      }
+    ],
+    [
+      "E24",
+      {
+        buckets: 5,
+        output: [
+          { _id: { min: 0, max: 20 }, count: 20 },
+          { _id: { min: 20, max: 43 }, count: 23 },
+          { _id: { min: 43, max: 68 }, count: 25 },
+          { _id: { min: 68, max: 91 }, count: 23 },
+          { _id: { min: 91, max: 100 }, count: 9 }
+        ]
+      }
+    ],
+    [
+      "E192",
+      {
+        buckets: 5,
+        output: [
+          {
+            _id: { max: 19.1, min: 0 },
+            count: 20
+          },
+          {
+            _id: { max: 39.2, min: 19.1 },
+            count: 20
+          },
+          {
+            _id: { max: 59.7, min: 39.2 },
+            count: 20
+          },
+          {
+            _id: { max: 79.60000000000001, min: 59.7 },
+            count: 20
+          },
+          {
+            _id: { max: 100, min: 79.60000000000001 },
+            count: 20
+          }
+        ]
+      }
+    ],
+    [
+      "1-2-5",
+      {
+        buckets: 1,
+        output: [{ _id: { max: 100, min: 0 }, count: 100 }]
+      }
+    ],
+    [
+      "1-2-5",
+      {
+        buckets: 5,
+        output: [
+          { _id: { max: 20, min: 0 }, count: 20 },
+          { _id: { max: 50, min: 20 }, count: 30 },
+          { _id: { max: 100, min: 50 }, count: 50 }
+        ]
+      }
+    ],
+    [
+      "1-2-5",
+      {
+        buckets: 7,
+        output: [
+          { _id: { min: 0, max: 20 }, count: 20 },
+          { _id: { min: 20, max: 50 }, count: 30 },
+          { _id: { min: 50, max: 100 }, count: 50 }
+        ]
+      }
+    ],
+    [
+      "1-2-5",
+      {
+        buckets: 12,
+        output: [
+          { _id: { max: 10, min: 0 }, count: 10 },
+          { _id: { max: 20, min: 10 }, count: 10 },
+          { _id: { max: 50, min: 20 }, count: 30 },
+          { _id: { max: 100, min: 50 }, count: 50 }
+        ]
+      }
+    ],
     [
       "POWERSOF2",
       {

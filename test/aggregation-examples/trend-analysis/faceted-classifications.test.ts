@@ -184,8 +184,7 @@ describe("Faceted Classification", () => {
     }
   ];
 
-  // $bucketAuto does not currently support 'granularity'.
-  xit("returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
+  it("returns a document which contains 2 facets (keyed off by_price and by_rating respectively), where each facet shows its sub-ranges of values and the products belonging to each sub-range", () => {
     const result = aggregate(products, pipeline);
     expect(result).not.toEqual([
       {

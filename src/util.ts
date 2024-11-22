@@ -7,6 +7,7 @@ import {
   AnyObject,
   ArrayOrObject,
   Callback,
+  Comparator,
   GroupByOutput,
   HashFunction
 } from "./types";
@@ -952,18 +953,23 @@ export function normalize(expr: Any): Any {
 /**
  * Find the insert index for the given key in a sorted array.
  *
- * @param {*} sorted The sorted array to search
- * @param {*} item The search key
+ * @param sorted The sorted array to search
+ * @param item The search key
+ * @param comparator Optional custom compare function
  */
-export function findInsertIndex(sorted: Any[], item: Any): number {
+export function findInsertIndex(
+  sorted: Any[],
+  item: Any,
+  comparator: Comparator = compare
+): number {
   // uses binary search
   let lo = 0;
   let hi = sorted.length - 1;
   while (lo <= hi) {
     const mid = Math.round(lo + (hi - lo) / 2);
-    if (compare(item, sorted[mid]) < 0) {
+    if (comparator(item, sorted[mid]) < 0) {
       hi = mid - 1;
-    } else if (compare(item, sorted[mid]) > 0) {
+    } else if (comparator(item, sorted[mid]) > 0) {
       lo = mid + 1;
     } else {
       return mid;
