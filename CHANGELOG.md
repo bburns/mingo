@@ -5,6 +5,7 @@
 - Add support for `$densify` pipeline stage operator.
 - Add support for `$dateTrunc` expression operator.
 - Add support for `$lookup` by array and sub-queries with nested pipeline.
+- Add support for `granularity` option in `$bucketAuto`.
 
 **Improvements**
 - Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
