@@ -51,7 +51,11 @@ export default [
       "no-restricted-imports": [
         "error",
         {
-          patterns: ["^[a-zA-Z\\@-]"]
+          patterns: [
+            {
+              regex: "^[a-zA-Z\@-]+"
+            }
+          ]
         }
       ],
 

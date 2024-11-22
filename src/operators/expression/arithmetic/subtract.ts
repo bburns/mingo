@@ -1,10 +1,8 @@
 // Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
 
-import { isDate } from "util/types";
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isNumber } from "../../../util";
+import { assert, isDate, isNumber } from "../../../util";
 
 /**
  * Takes an array that contains two numbers or two dates and subtracts the second value from the first.

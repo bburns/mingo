@@ -2,11 +2,9 @@
  * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
  */
 
-import { assert } from "console";
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isArray, isNil, ValueMap } from "../../../util";
+import { assert, isArray, isNil, ValueMap } from "../../../util";
 
 /**
  * Returns elements of a set that do not appear in a second set.
