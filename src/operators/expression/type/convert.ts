@@ -67,7 +67,7 @@ export const $convert: ExpressionOperator = (
       case "long":
         return $toLong(obj, args.input, options);
     }
-  } catch (e) {
+  } catch {
     /*nothing to do*/
   }
 

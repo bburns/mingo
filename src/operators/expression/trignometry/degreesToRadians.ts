@@ -9,6 +9,6 @@ export const $degreesToRadians = createTrignometryOperator(
   (n: number) => n * RADIANS_FACTOR,
   {
     Infinity: Infinity,
-    "-Infinity": Infinity,
+    "-Infinity": Infinity
   }
 );

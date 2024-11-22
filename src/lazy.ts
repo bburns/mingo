@@ -324,7 +324,6 @@ export class Iterator {
   }
 
   [Symbol.iterator](): Iterator {
-    /* eslint-disable @typescript-eslint/no-unsafe-return */
     return this;
   }
 }

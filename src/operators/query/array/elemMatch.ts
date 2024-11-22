@@ -2,7 +2,7 @@
 
 import {
   $elemMatch as __elemMatch,
-  createQueryOperator,
+  createQueryOperator
 } from "../../_predicates";
 
 /**

@@ -43,12 +43,12 @@ export const $bucket: PipelineOperator = (
     `$bucket: bounds must be of same type and in ascending order`
   );
 
-  !isNil(defaultKey) &&
-    typeOf(defaultKey) === typeOf(lower) &&
+  if (!isNil(defaultKey) && typeOf(defaultKey) === typeOf(lower)) {
     assert(
       compare(defaultKey, upper) >= 0 || compare(defaultKey, lower) < 0,
       "$bucket 'default' expression must be out of boundaries range"
     );
+  }
 
   const createBuckets = () => {
     const buckets = new Map<Any, Any[]>();

@@ -34,10 +34,6 @@ import {
   isOperator,
   isRegExp,
   isString,
-  MAX_INT,
-  MAX_LONG,
-  MIN_INT,
-  MIN_LONG,
   MingoError,
   resolve,
   truthy,
@@ -322,16 +318,6 @@ export function $elemMatch(
 
 // helper functions
 const isNull = (a: Any) => a === null;
-const isInt = (a: Any) =>
-  isNumber(a) &&
-  a >= MIN_INT &&
-  a <= MAX_INT &&
-  a.toString().indexOf(".") === -1;
-const isLong = (a: Any) =>
-  isNumber(a) &&
-  a >= MIN_LONG &&
-  a <= MAX_LONG &&
-  a.toString().indexOf(".") === -1;
 
 /** Mapping of type to predicate */
 const compareFuncs: Record<number | string, Predicate<Any>> = {

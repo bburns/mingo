@@ -64,7 +64,6 @@ export const $accumulator: AccumulatorOperator = (
       copts.update(doc)
     ) as Any[];
     // update the state with each documents value
-    // eslint-disable-next-line
     state = expr.accumulate.call(null, ...[state, ...args]) as Any;
   }
 

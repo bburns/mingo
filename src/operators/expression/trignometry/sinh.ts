@@ -5,5 +5,5 @@ import { createTrignometryOperator } from "./_internal";
 /** Returns the hyperbolic sine of a value that is measured in radians. */
 export const $sinh = createTrignometryOperator(Math.sinh, {
   "-Infinity": -Infinity,
-  Infinity: Infinity,
+  Infinity: Infinity
 });

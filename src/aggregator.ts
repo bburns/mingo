@@ -62,7 +62,6 @@ export class Aggregator {
           `invalid pipeline operator ${opName}`
         );
         stages.push(opName);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         iterator = call(iterator, operator[opName], opts);
       }
     }

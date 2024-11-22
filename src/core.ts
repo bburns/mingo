@@ -478,7 +478,7 @@ export function getOperator(
   return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, operator) : fn;
 }
 
-/* eslint-disable unused-imports/no-unused-vars-ts */
+/* eslint-disable unused-imports/no-unused-vars */
 
 /**
  * Implementation of system variables

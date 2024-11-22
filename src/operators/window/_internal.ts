@@ -55,7 +55,7 @@ export function withMemo<T = Any, R = Any>(
   let failed = false;
   try {
     return fn(data[expr.field] as T);
-  } catch (e) {
+  } catch {
     failed = true;
   } finally {
     // cleanup on failure or last element in collection.
