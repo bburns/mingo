@@ -19,6 +19,12 @@
   ],
   "plugins": ["simple-import-sort", "import", "unused-imports"],
   "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["^[a-zA-Z\\@-]"]
+      }
+    ],
     "no-console": "error",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
