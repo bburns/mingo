@@ -11,6 +11,7 @@
 - Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
 - Add `ValueMap` to store keys by value and reimplement dependent operations with it for efficiency.
 - Types cleanup. Rename `AnyVal` to `Any`, and `RawObject` to `AnyObject`.
+- Add Olson timezone support for date operators.
 - Updated test suite with examples from https://www.practical-mongodb-aggregations.com.
 
 **Fixes**
