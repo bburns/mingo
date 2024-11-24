@@ -307,10 +307,10 @@ Below is a description of how this library differs from the full MongoDB query e
 
 1. There is no concept of a collection. Input is an array, generator or iterable of objects.
 1. Support a single numeric type `number`.
-1. Uses JS native type names replaceing MongoDB [types](https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/#available-types) as follows;
+1. When `useStrictMode` is `false`, replace MongoDB [types](https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/#available-types) with JS native types as follows;
    - `"bool"` -> `"boolean"`.
    - `"int"|"long"|"double"|"decimal"` -> `"number"`.
-   - `"missing"` -> `"undefined"` except when `options.useStrictMode` is `true`.
+   - `"missing"` -> `"undefined"`.
 1. Does not support [types](https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/#available-types) `"minKey"`, `"maxKey"`, `"timestamp"`, or `"binData"`.
 1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
 1. Does not support geometry query operators.
@@ -337,9 +337,9 @@ Below is a description of how this library differs from the full MongoDB query e
 - Run `npm test` to build and run unit tests.
 - Submit pull request.
 
-To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/). _Credit to the [author](https://github.com/feliixx)_.
+To validate correct behaviour and semantics of operators, you may also test against [mongoplayground.net](https://mongoplayground.net/). Credit to the author _[@feliix](https://github.com/feliixx)_.
 
-_A big thank you to all users and [CONTRIBUTORS](https://github.com/kofrasa/mingo/graphs/contributors) of this library._
+A big thank you to all users and [CONTRIBUTORS](https://github.com/kofrasa/mingo/graphs/contributors) of this library.
 
 ## License
 
