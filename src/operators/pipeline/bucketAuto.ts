@@ -157,6 +157,9 @@ function granularityDefault(
     const isLastBucket = ++nBuckets == bucketCount;
     const bucket = new Array<AnyObject>();
 
+    // add as many items that will fill the bucket OR
+    // items that have the same key OR
+    // all remaining items if this is the last bucket.
     while (
       index < size &&
       (isLastBucket ||
@@ -165,15 +168,6 @@ function granularityDefault(
     ) {
       bucket.push(sorted[index++][1]);
     }
-
-    // add items with the same key into the same bucket OR
-    // all remaining items if this is the last bucket.
-    // while (
-    //   index < size &&
-    //   (isLastBucket || isEqual(sorted[index - 1][0], sorted[index][0]))
-    // ) {
-    //   bucket.push(sorted[index++][1]);
-    // }
 
     const min = getKey(bucket[0], groupByExpr, null, options) ?? null;
     let max: Any;
