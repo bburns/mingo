@@ -75,7 +75,9 @@ export const $dateTrunc: ExpressionOperator<Date> = (
   // if any of the required input fields except startOfWeek is missing or set to null
   if (isNil(date) || isNil(unit)) return null;
 
-  const startOfWeek = (optStartOfWeek ?? "sun").toLowerCase() as DayOfWeek;
+  const startOfWeek = (optStartOfWeek ?? "sun")
+    .toLowerCase()
+    .substring(0, 3) as DayOfWeek;
 
   assert(
     isDate(date),
@@ -111,9 +113,6 @@ export const $dateTrunc: ExpressionOperator<Date> = (
       assert(binSize <= 100000000000, "dateTrunc unsupported binSize value");
 
       const d = new Date(date);
-      const minuteOffset = parseTimezone(timezone);
-      adjustDate(d, minuteOffset);
-
       const refPointDate = new Date(REF_DATE_MILLIS);
       let distanceFromRefPoint = 0;
 
@@ -141,7 +140,15 @@ export const $dateTrunc: ExpressionOperator<Date> = (
         distanceFromRefPoint -
         distanceToBinLowerBound(distanceFromRefPoint, binSize);
 
-      return dateAdd(refPointDate, unit, binLowerBoundFromRefPoint, timezone);
+      const newDate = dateAdd(
+        refPointDate,
+        unit,
+        binLowerBoundFromRefPoint,
+        timezone
+      );
+      const minuteOffset = parseTimezone(timezone);
+      adjustDate(newDate, -minuteOffset);
+      return newDate;
     }
   }
 };

@@ -149,12 +149,21 @@ export const DATE_SYM_TABLE = Object.freeze({
   // "%%": "%",
 }) as Record<string, DatePartFormatter>;
 
+const TIMEZONE_RE = /^[a-zA-Z_]+\/[a-zA-Z_]+$/;
+
 /**
  * Parse and return the timezone string as a number
- * @param tzstr Timezone string matching '+/-hh[:][mm]'
+ * @param tzstr Timezone string matching '+/-hh[:][mm]' or Olson name.
  */
 export function parseTimezone(tzstr?: string): number {
   if (isNil(tzstr)) return 0;
+
+  if (TIMEZONE_RE.test(tzstr)) {
+    const date = new Date();
+    const utcDate = new Date(date.toLocaleString("en-US", { timeZone: "UTC" }));
+    const tzDate = new Date(date.toLocaleString("en-US", { timeZone: tzstr }));
+    return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+  }
 
   const m = DATE_SYM_TABLE["%z"].re.exec(tzstr);
   if (!m) {

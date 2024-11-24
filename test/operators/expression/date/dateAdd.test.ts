@@ -31,9 +31,22 @@ const fixtures: [string, string, string, number, string?][] = [
   ["1820-02-28T10:30:50.9Z", "2020-02-28T10:30:50.900Z", "year", -200],
   // extra
   ["2020-02-29T10:30:50Z", "2020-02-28T10:30:50Z", "day", 1], //leap year
-  ["2021-03-01T10:30:50Z", "2021-02-28T10:30:50Z", "day", 1] //normal
+  ["2021-03-01T10:30:50Z", "2021-02-28T10:30:50Z", "day", 1], //normal
   // timezone
-  // All operations performed in UTC.
+  [
+    "2021-03-14T15:00:00Z",
+    "2021-03-13T10:00:00-0500",
+    "day",
+    1,
+    "America/Buenos_Aires"
+  ],
+  [
+    "2021-03-14T10:00:00Z",
+    "2021-03-13T10:00:00-00:00",
+    "day",
+    1,
+    "America/Mexico_City"
+  ]
 ];
 
 runTest(testPath(__filename), {
