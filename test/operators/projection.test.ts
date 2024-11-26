@@ -6,7 +6,7 @@ import { Any, AnyObject } from "../../src/types";
 import { ObjectId, personData } from "../support";
 
 const idStr = "123456789abe";
-const obj = Object.assign({}, personData, { _id: new ObjectId(idStr) });
+const obj = Object.assign({}, personData, { _id: ObjectId(idStr) });
 
 describe("operators/projection", () => {
   const data = [

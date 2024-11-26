@@ -72,7 +72,7 @@ describe("util", () => {
       ],
       [() => void {}, () => void {}, false],
       [RegExp, RegExp, true],
-      [new ObjectId("100"), new ObjectId("100"), true]
+      [ObjectId("100"), ObjectId("100"), true]
     ])("should check: %p == %p", (a, b, c) => {
       expect(isEqual(a, b)).toEqual(c);
     });
@@ -109,7 +109,7 @@ describe("util", () => {
       [[a, a], "[[1,2,3],[1,2,3]]"],
       [[a, b], "[[1,2,3],[4,5,6]]"],
       [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"],
-      [new ObjectId("1234567890"), 'ObjectId("1234567890")']
+      [ObjectId("1234567890"), 'objectId("1234567890")']
     ])("should pass: %p => %p", (input, output) => {
       expect(stringify(input)).toEqual(output);
     });
@@ -135,8 +135,8 @@ describe("util", () => {
 
   describe("groupBy", () => {
     it("should group by user-defined object", () => {
-      const a = new ObjectId("100");
-      const b = new ObjectId("200");
+      const a = ObjectId("100");
+      const b = ObjectId("200");
       const collection = [
         { userId: a, ix: 1 },
         { userId: a, ix: 2 },

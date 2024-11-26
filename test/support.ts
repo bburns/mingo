@@ -39,24 +39,21 @@ export const simpleGradesData = simpleGrades;
 export const studentsData = students;
 export const personData = person;
 
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-
 export const ISODate = (s: string) => new Date(s);
 
 export const testPath = (filename: string): string =>
   filename.slice(filename.indexOf("test/operators"));
 
-export class ObjectId {
+class objectId {
   constructor(readonly _id: string) {}
-
   toString() {
     return this._id;
   }
-
   toJSON(): string {
     return this._id;
   }
 }
+export const ObjectId = (id: string) => new objectId(id);
 
 export const aggregate = (
   coll: Source,

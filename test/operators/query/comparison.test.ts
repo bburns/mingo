@@ -8,7 +8,7 @@ import { ObjectId, personData } from "../../support";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-const objectId = new ObjectId("123456789abe");
+const objectId = ObjectId("123456789abe");
 const obj = Object.assign({}, personData, { _id: objectId });
 
 useOperators(OperatorType.QUERY, { $where });

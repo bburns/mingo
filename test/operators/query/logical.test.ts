@@ -5,7 +5,7 @@ import { Any } from "../../../src/types";
 import { ObjectId, personData } from "../../support";
 
 const idStr = "123456789abe";
-const obj = Object.assign({}, personData, { _id: new ObjectId(idStr) });
+const obj = Object.assign({}, personData, { _id: ObjectId(idStr) });
 
 describe("operators/query/logical", () => {
   const fixtures: Record<string, Array<Any[]>> = {
