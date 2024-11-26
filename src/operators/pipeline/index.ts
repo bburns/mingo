@@ -9,6 +9,7 @@ export * from "./count";
 export * from "./densify";
 export * from "./facet";
 export * from "./fill";
+export * from "./graphLookup";
 export * from "./group";
 export * from "./limit";
 export * from "./lookup";

@@ -3,6 +3,7 @@
 ## 7.x.x / 2024-11-xx
 **New**
 - Add support for `$densify` pipeline stage operator.
+- Add support for `$graphLookup` pipeline stage operator.
 - Add support for `$dateTrunc` expression operator.
 - Add support for `$lookup` by array and sub-queries with nested pipeline.
 - Add support for `granularity` option in `$bucketAuto`.
