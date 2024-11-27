@@ -9,7 +9,7 @@ import { assert, isDate } from "../../../util";
  *
  * @param obj
  * @param expr
- * @returns {AnyObject}
+ * @param options
  */
 export const $add: ExpressionOperator = (
   obj: AnyObject,
@@ -17,16 +17,14 @@ export const $add: ExpressionOperator = (
   options: Options
 ): number | Date => {
   const args = computeValue(obj, expr, null, options) as Any[];
-  let foundDate = false;
-  const result = args.reduce((acc: number, val: Any) => {
-    if (isDate(val)) {
-      assert(!foundDate, "'$add' can only have one date value");
-      foundDate = true;
-      val = val.getTime();
+  let hasDate = false;
+  let sum = 0;
+  for (const n of args) {
+    if (isDate(n)) {
+      assert(!hasDate, "'$add' can only have one date value");
+      hasDate = true;
     }
-    // assume val is a number
-    acc += val as number;
-    return acc;
-  }, 0) as number;
-  return foundDate ? new Date(result) : result;
+    sum += +n;
+  }
+  return hasDate ? new Date(sum) : sum;
 };

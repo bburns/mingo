@@ -9,6 +9,7 @@ import { assert, isDate, isNumber } from "../../../util";
  *
  * @param obj
  * @param expr
+ * @param options
  * @returns {number}
  */
 export const $subtract: ExpressionOperator = (
@@ -16,12 +17,8 @@ export const $subtract: ExpressionOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options) as Any[];
-  assert(
-    args.every(n => isNumber(n) || isDate(n)),
-    "$substrat operands must resolve to number or date."
-  );
-  const foundDate = args.some(isDate);
-  const [a, b] = args;
-  return foundDate ? new Date(+a - +b) : +a - +b;
+  const [a, b] = computeValue(obj, expr, null, options) as (number | Date)[];
+  if ((isNumber(a) && isNumber(b)) || (isDate(a) && isDate(b))) return +a - +b;
+  if (isDate(a) && isNumber(b)) return new Date(+a - b);
+  assert(false, "$subtract: must resolve to number/date.");
 };
