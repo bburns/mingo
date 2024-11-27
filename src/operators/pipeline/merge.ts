@@ -18,15 +18,23 @@ import {
 import { $mergeObjects } from "../expression";
 
 interface InputExpr {
+  /** The output collection. */
   readonly into: string | AnyObject[];
-  readonly on?: string | [string];
+  /** Field or fields that act as a unique identifier for a document. */
+  readonly on?: string | string[];
+  /** Specifies variables for use in the whenMatched pipeline. */
   readonly let?: AnyObject;
+  /**
+   * The behavior of $merge if a result document and an existing document
+   * in the collection have the same value for the specified on field(s).
+   */
   readonly whenMatched?:
     | "replace"
     | "keepExisting"
     | "merge"
     | "fail"
     | AnyObject[];
+  /** The behavior of $merge if a result document does not match an existing document in the out collection. */
   readonly whenNotMatched?: "insert" | "discard" | "fail";
 }
 
@@ -55,12 +63,10 @@ export const $merge: PipelineOperator = (
 
   const onField = expr.on || options.idKey;
 
-  const getHash = (o: AnyObject) => {
-    const val = isString(onField)
-      ? resolve(o, onField)
-      : onField.map(s => resolve(o, s));
-    return hashCode(val, options.hashFunction);
-  };
+  const getHash = isString(onField)
+    ? (o: AnyObject) => hashCode(resolve(o, onField), options.hashFunction)
+    : (o: AnyObject) =>
+        hashCode(onField.map(s => resolve(o, s), options.hashFunction));
 
   const hash: Record<string, [AnyObject, number]> = {};
 

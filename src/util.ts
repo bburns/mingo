@@ -118,7 +118,7 @@ export class ValueMap<K, V> extends Map<K, V> {
   // The hash function
   #hashFn = DEFAULT_HASH_FUNCTION;
   // maps the hashcode to key set
-  #keyMap = new Map<number, Array<K>>();
+  #keyMap = new Map<number, K[]>();
   // returns a tuple of [<masterKey>, <hash>]. Expects an object key.
   #unpack = (key: K): [K, number] => {
     const hash = this.#hashFn(key);
@@ -504,20 +504,17 @@ const toString = (v: Any, cycle: Set<Any>): string => {
 export const stringify = (value: Any): string => toString(value, new Set());
 
 /**
- * Generate hash code
+ * Generate hash code.
  * This selected function is the result of benchmarking various hash functions.
  * This version performs well and can hash 10^6 documents in ~3s with on average 100 collisions.
  *
  * @param value
  * @returns {number|null}
  */
-export function hashCode(
-  value: Any,
-  hashFunction?: HashFunction
-): string | null {
-  hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
+export function hashCode(value: Any, hashFunction?: HashFunction): number {
   if (isNil(value)) return null;
-  return hashFunction(value).toString();
+  hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
+  return hashFunction(value);
 }
 
 /**
@@ -535,9 +532,9 @@ export function groupBy(
   if (collection.length < 1) return new Map();
 
   // map of hash to collided values
-  const lookup = new Map<string, Array<Any>>();
+  const lookup = new Map<number, Any[]>();
   // map of raw key values to objects.
-  const result = new Map<Any, Array<Any>>();
+  const result = new Map<Any, Any[]>();
 
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
