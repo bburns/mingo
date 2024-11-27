@@ -1,25 +1,27 @@
 import { AccumulatorOperator, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
-import { compare, isNotNaN } from "../../util";
+import { assert, compare, isArray, isEmpty, isNil } from "../../util";
 import { $push } from "./push";
 
 /**
- * Returns the highest value in a group.
+ * Returns the maximum value
  *
- * @param {Array} collection The input array
- * @param {AnyObject} expr The right-hand side expression value of the operator
- * @param {Options} options The options to use for this operation
- * @returns {*}
+ * @param collection The input array
+ * @param expr The right-hand side expression value of the operator
+ * @param options to use for this operator
  */
 export const $max: AccumulatorOperator = (
   collection: AnyObject[],
   expr: Any,
   options: Options
 ): Any => {
-  const nums = $push(collection, expr, options).filter(isNotNaN) as number[];
-  const n = nums.reduce(
-    (acc, n) => (compare(n, acc) >= 0 ? n : acc),
-    -Infinity
-  );
-  return n === -Infinity ? undefined : n;
+  const items = $push(collection, expr, options);
+  if (isEmpty(items)) return null;
+  assert(isArray(items), "$max: input must resolve to array");
+  let max = items[0];
+  for (const n of items) {
+    if (isNil(n) || isNaN(n as number)) continue;
+    if (compare(n, max) >= 0) max = n;
+  }
+  return max;
 };
