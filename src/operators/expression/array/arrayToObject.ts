@@ -13,7 +13,7 @@ export const $arrayToObject: ExpressionOperator = (
   options: Options
 ): AnyObject => {
   const arr = computeValue(obj, expr, null, options) as Any[][];
-  assert(isArray(arr), "$arrayToObject expression must resolve to an array");
+  assert(isArray(arr), "$arrayToObject: expression must resolve to an array");
 
   return arr.reduce((newObj: AnyObject, val: Any) => {
     // flatten
