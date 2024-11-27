@@ -1,6 +1,6 @@
 # Changelog
 
-## 7.x.x / 2024-11-xx
+## 6.5.0 / 2024-11-xx
 
 **New**
 
@@ -13,8 +13,8 @@
 **Improvements**
 
 - Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
-- Types cleanup. Rename `AnyVal` to `Any`, and `RawObject` to `AnyObject`.
 - Add Olson timezone support for date operators.
+- Renamed `AnyVal` -> `Any` and `RawObject` -> `AnyObject`.
 
 **Fixes**
 
@@ -25,7 +25,7 @@
 - Removed caching of current timestamp for `$$NOW` variable in options.
 - Handle date inputs for `$subtract` operator.
 - Improve input validations for `$first`, `$last`, and `$ifNull`.
-- Update implementation of `$min` and `$max` to be consistent with changed behaviour MongoDB.
+- Update implementation of `$min` and `$max` to be consistent with new behaviour in latest MongoDB.
 
 ## 6.4.15 / 2024-04-16
 
