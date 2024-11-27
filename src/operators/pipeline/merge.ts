@@ -13,7 +13,8 @@ import {
   isArray,
   isString,
   MingoError,
-  resolve
+  resolve,
+  ValueMap
 } from "../../util";
 import { $mergeObjects } from "../expression";
 
@@ -68,25 +69,25 @@ export const $merge: PipelineOperator = (
     : (o: AnyObject) =>
         hashCode(onField.map(s => resolve(o, s), options.hashFunction));
 
-  const hash: Record<string, [AnyObject, number]> = {};
+  const map = ValueMap.init<number, [AnyObject, number]>();
 
   // we assuming the lookup expressions are unique
   for (let i = 0; i < output.length; i++) {
     const obj = output[i];
     const k = getHash(obj);
     assert(
-      !hash[k],
+      !map.has(k),
       "$merge: 'into' collection must have unique entries for the 'on' field."
     );
-    hash[k] = [obj, i];
+    map.set(k, [obj, i]);
   }
 
   const copts = ComputeOptions.init(options);
 
   return collection.map((o: AnyObject) => {
     const k = getHash(o);
-    if (hash[k]) {
-      const [target, i] = hash[k];
+    if (map.has(k)) {
+      const [target, i] = map.get(k);
 
       // compute variables
       const variables = computeValue(
