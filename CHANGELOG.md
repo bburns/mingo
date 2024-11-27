@@ -1,7 +1,9 @@
 # Changelog
 
 ## 7.x.x / 2024-11-xx
+
 **New**
+
 - Add support for `$densify` pipeline stage operator.
 - Add support for `$graphLookup` pipeline stage operator.
 - Add support for `$dateTrunc` expression operator.
@@ -9,135 +11,178 @@
 - Add support for `granularity` option in `$bucketAuto`.
 
 **Improvements**
+
 - Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
-- Add `ValueMap` to store keys by value and reimplement dependent operations with it for efficiency.
 - Types cleanup. Rename `AnyVal` to `Any`, and `RawObject` to `AnyObject`.
 - Add Olson timezone support for date operators.
-- Updated test suite with examples from https://www.practical-mongodb-aggregations.com.
 
 **Fixes**
+
 - Implement `$dateDiff` to be consistent with MongoDB.
-- Handle accumulator and expression operator precedence for `$group`.
-- Handle null inputs to `$objectToArray`,`$setUnion`,`$map`,`$zip`, and `$filter`.
-- Retain parent variables to pass down into nested expressions.
+- Handle `null` inputs to `$objectToArray`,`$setUnion`,`$map`,`$zip`, and `$filter`.
+- Pass parent variables down to nested expressions.
 - Include `idKey` for `$project` when no other fields are selected.
 - Removed caching of current timestamp for `$$NOW` variable in options.
-- Handle date inputs for `$subtract` expression operator.
-- Improve input validations for `$first`,`$last`, and `$ifNull`.
-- Update implementation of `$min` and `$max` to current MongoDB behaviour.
+- Handle date inputs for `$subtract` operator.
+- Improve input validations for `$first`, `$last`, and `$ifNull`.
+- Update implementation of `$min` and `$max` to be consistent with changed behaviour MongoDB.
 
 ## 6.4.15 / 2024-04-16
+
 **New**
+
 - Support custom type comparison using `toString` when defined on the type.
 
 ## 6.4.14 / 2024-04-12 (deprecated)
+
 - ESM import broken. See #437
 
 ## 6.4.13 / 2024-03-22
+
 **Update**
+
 - Add support for `Query` condition to updater function.
 
 ## 6.4.12 / 2024-02-26
+
 **New**
+
 - Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
 - Add explicit `MingoError` type to represent errors caught by the library.
 
 **Fixes**
+
 - Revert "add import field to built package.json file to ensure proper vitest resolution (#420)
 
 ## 6.4.11 / 2024-02-24 (deprecated)
+
 **New**
+
 - Autoload basic query operators and expression operators for boolean and comparison for use with `Updater`. [#413](https://github.com/kofrasa/mingo/issues/413)
 - Add explicit `MingoError` type to represent errors caught by the library.
 
 **Fixes**
+
 - Add fix for Vitest. [#420](https://github.com/kofrasa/mingo/pull/420)
 
 ## 6.4.10 / 2023-12-20
+
 **Fixes**
+
 - Support BigInt only when available on platform [#407](https://github.com/kofrasa/mingo/issues/407)
 
 ## 6.4.9 / 2023-11-12
+
 **New**
+
 - Add support for accumulator and expression operators; `$percentile`, `$median`.
 
 ## 6.4.8 / 2023-10-21
+
 **Fixes**
+
 - Minor refactoring improvements to fix build issues in some web frameworks.
 
 ## 6.4.7 / 2023-10-06
+
 **New**
+
 - Add support for bitwise aggregation operators. `$bitAnd`, `$bitOr`,`$bitXor`,`$bitNot`.
 - Add support for typed arrays in `isEqual`, `cloneDeep`, and `stringify`.
 
 **Fixes**
+
 - Build object graph for relevant update operators `$inc`,`$mul`,`$max`,`$min`,`$push`,`$bit`.
 - Compare user-defined types with referential equality only with `isEqual`.
 - Process user-defined types correctly with `stringify`.
 - Properly handle cycles in `stringify` operation.
 
 ## 6.4.6 / 2023-10-02
+
 **Fixes**
+
 - Support nested object query expressions for `$pull`. [373](https://github.com/kofrasa/mingo/issues/373)
 
 ## 6.4.5 / 2023-09-26
+
 **Fixes**
+
 - Allow specifying only field expression for `$getField` operator.
 - Make place argument optional for `$trunc` and `$round`. [347](https://github.com/kofrasa/mingo/issues/347)
 - Add and default to new clone mode `copy` for UpdateOptions.
 - Remove clone mode `structured` for UpdateOptions.
 
 ## 6.4.4 / 2023-08-13
+
 **Fixes**
+
 - Fixed incorrect query normalization when a regex condition is specified as an object literal. [355](https://github.com/kofrasa/mingo/issues/355)
 - Restore generic type annotations for top-level classes. [357](https://github.com/kofrasa/mingo/issues/357)
 
 ## 6.4.3 / 2023-06-28
+
 **Fixes**
+
 - Fix rounding of even whole numbers. [347](https://github.com/kofrasa/mingo/issues/347)
 
 ## 6.4.2 / 2023-06-23
+
 **New**
+
 - Add `Context` to enable isolated configurations of usable operators in the same runtime context.
 
 ## 6.4.1 / 2023-06-08
+
 **New**
+
 - Add options support for `updateObject`.
 - Add `createUpdater` for creating updater functions with default options.
 - Default to no cloning of inputs to update operators.
 - Provide clone method configuration via `cloneMode` option.
 
 ## 6.4.0 / 2023-06-06
+
 **New**
+
 - Added support for update operators accessible via `updateObject` from `mingo/updater`. Includes;
   - Field Update Operators: `$currentDate`, `$inc`, `$max`, `$min`, `$mul`, `$set`, `$unset`, `$rename`.
   - Array Update Operators: `$[]`, `$[<identifier>]`, `$addToSet`, `$pop`, `$push`, `$pull`, `$pushAll`.
   - Bitwise Update Operators: `$bit`.
 
 ## 6.3.4 / 2023-05-26
+
 **Fixes**
+
 - Fixed hash collision resolution for `$sort` and `$group`. Closes [332](https://github.com/kofrasa/mingo/issues/332).
 - Support MongoDB compatibility truth check for `$where` operator.
 
 **Minor**
+
 - Export `walk` util function.
 - Flatten module exports to expose only `index` roots.
 - Update dependencies.
 
 ## 6.3.3 / 2023-05-26 (deprecated)
-* Deprecated due to invalid operator imports.
+
+- Deprecated due to invalid operator imports.
 
 ## 6.3.2 / 2023-03-29
+
 **Fixes**
+
 - Coerce empty string `""` to `true` for applicable operators when using strict MongoDB compatibility mode. [321](https://github.com/kofrasa/mingo/issues/321)
 
 ## 6.3.1 / 2023-03-28
+
 **Fixes**
+
 - Fix `$filter` to properly handle truthy values. [320](https://github.com/kofrasa/mingo/issues/320)
 - Fix `$arrayToObject` to flatten array before converting to objects.
 
 ## 6.3.0 / 2023-03-27
+
 **Fixes**
+
 - Fix `$size` predicate failing when applied to undefined array. [313](https://github.com/kofrasa/mingo/issues/313)
 - Fix `$min` and `$max` operators to consider type sorting order.
 - Fix `$group` operator to enforce `_id` in spec.
@@ -145,10 +190,10 @@
 - Fix missing validations for `$setWindowFields` operator.
 
 **New**
+
 - Add support for `$locf` window operator.
 - Add support for `$linearFill` window operator.
 - Add support for `$fill` pipeline operator.
-
 
 ## 6.2.7 / 2023-01-12
 
