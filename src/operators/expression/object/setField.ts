@@ -22,20 +22,26 @@ export const $setField: ExpressionOperator = (
   expr: InputExpr,
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options) as InputExpr;
-  if (isNil(args.input)) return null;
+  const { input, field, value } = computeValue(
+    obj,
+    expr,
+    null,
+    options
+  ) as InputExpr;
+  if (isNil(input)) return null;
   assert(
-    isObject(args.input),
+    isObject(input),
     "$setField expression 'input' must evaluate to an object"
   );
   assert(
-    isString(args.field),
+    isString(field),
     "$setField expression 'field' must evaluate to a string"
   );
+
   if (expr.value == "$$REMOVE") {
-    delete obj[args.field];
+    delete obj[field];
   } else {
-    obj[args.field] = args.value;
+    obj[field] = value;
   }
 
   return obj;
