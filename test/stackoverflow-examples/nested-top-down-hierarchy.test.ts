@@ -1,7 +1,7 @@
 import { aggregate } from "../support";
 
 // https://stackoverflow.com/a/79174521
-describe("create nested top-down hierarchy using aggregation", () => {
+describe("nested top-down hierarchy", () => {
   it("passes", () => {
     const relations = [
       {
