@@ -2,6 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
+import { assert, compare, isArray } from "../../../util";
 
 /**
  * Compares two values and returns the result of the comparison as an integer.
@@ -15,8 +16,10 @@ export const $cmp: ExpressionOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options);
-  if (args[0] > args[1]) return 1;
-  if (args[0] < args[1]) return -1;
-  return 0;
+  const args = computeValue(obj, expr, null, options) as Any[];
+  assert(
+    isArray(args) && args.length == 2,
+    "$cmp: expression must resolve to array of size 2."
+  );
+  return compare(args[0], args[1]);
 };
