@@ -4,16 +4,15 @@
 
 **New**
 
-- Add support for `$densify` pipeline stage operator.
-- Add support for `$graphLookup` pipeline stage operator.
-- Add support for `$dateTrunc` expression operator.
-- Add support for `$lookup` by array and sub-queries with nested pipeline.
-- Add support for `granularity` option in `$bucketAuto`.
-
-**Improvements**
-
-- Use native type names `"undefined"`,`"boolean"`, and `"number"` in non-strict mode, or `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"` otherwise.
+- Added `$densify` pipeline stage operator.
+- Added `$graphLookup` pipeline stage operator.
+- Added `$dateTrunc` expression operator.
+- Support `$lookup` by array and sub-queries with nested pipeline.
+- Support `granularity` option in `$bucketAuto`.
 - Add Olson timezone support for date operators.
+- Expression operator `$type` uses JS type names when `useStrictMode`=`false` or `MongoDB` type names otherwise.
+  - Types in non-strict mode: `"undefined"`,`"boolean"`, and `"number"`.
+  - Types in strict mode: `"missing"`, `"bool"`, `"int"`, `"long"`, and `"double"`.
 - Renamed `AnyVal` -> `Any` and `RawObject` -> `AnyObject`.
 
 **Fixes**
