@@ -229,7 +229,7 @@ export class ComputeOptions implements Options {
  * Creates an Option from another where required keys are initialized.
  * @param options Options
  */
-export function initOptions(options: Partial<Options>): Options {
+export function initOptions(options?: Partial<Options>): Options {
   return options instanceof ComputeOptions
     ? options.getOptions()
     : Object.freeze({
@@ -241,7 +241,7 @@ export function initOptions(options: Partial<Options>): Options {
         ...options,
         context: options?.context
           ? Context.from(options?.context)
-          : Context.init({})
+          : Context.init()
       });
 }
 
@@ -326,18 +326,6 @@ export type Operator =
   | QueryOperator
   | WindowOperator;
 
-/** Map of operator functions */
-export type OperatorMap = Record<string, Operator>;
-
-type ContextMap = Partial<{
-  [OperatorType.ACCUMULATOR]: Record<string, AccumulatorOperator>;
-  [OperatorType.EXPRESSION]: Record<string, ExpressionOperator>;
-  [OperatorType.PIPELINE]: Record<string, PipelineOperator>;
-  [OperatorType.PROJECTION]: Record<string, ProjectionOperator>;
-  [OperatorType.QUERY]: Record<string, QueryOperator>;
-  [OperatorType.WINDOW]: Record<string, WindowOperator>;
-}>;
-
 type AccumulatorOps = Record<string, AccumulatorOperator>;
 type ExpressionOps = Record<string, ExpressionOperator>;
 type ProjectionOps = Record<string, ProjectionOperator>;
@@ -346,39 +334,38 @@ type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
 export class Context {
-  private readonly operators: ContextMap = {
-    [OperatorType.ACCUMULATOR]: {},
-    [OperatorType.EXPRESSION]: {},
-    [OperatorType.PIPELINE]: {},
-    [OperatorType.PROJECTION]: {},
-    [OperatorType.QUERY]: {},
-    [OperatorType.WINDOW]: {}
-  };
+  #operators = new Map<OperatorType, Record<string, Operator>>();
 
-  private constructor(ops: ContextMap) {
-    for (const [type, operators] of Object.entries(ops)) {
-      this.addOperators(type as OperatorType, operators as OperatorMap);
-    }
+  private constructor() {}
+
+  static init(): Context {
+    return new Context();
   }
 
-  static init(ops: ContextMap = {}): Context {
-    return new Context(ops);
+  static from(ctx?: Context): Context {
+    const instance = Context.init();
+    if (isNil(ctx)) return instance;
+    ctx.#operators.forEach((v, k) => instance.addOperators(k, v));
+    return instance;
   }
 
-  static from(ctx: Context): Context {
-    return new Context(ctx.operators);
-  }
-
-  private addOperators(type: OperatorType, ops: OperatorMap): Context {
-    for (const [name, fn] of Object.entries(ops)) {
+  private addOperators(
+    type: OperatorType,
+    operators: Record<string, Operator>
+  ): Context {
+    if (!this.#operators.has(type)) this.#operators.set(type, {});
+    for (const [name, fn] of Object.entries(operators)) {
       if (!this.getOperator(type, name)) {
-        (this.operators[type] as OperatorMap)[name] = fn;
+        this.#operators.get(type)[name] = fn;
       }
     }
     return this;
   }
 
-  // register
+  getOperator(type: OperatorType, name: string): Callback | null {
+    const ops = this.#operators.get(type) ?? {};
+    return ops[name] ?? null;
+  }
 
   addAccumulatorOps(ops: AccumulatorOps) {
     return this.addOperators(OperatorType.ACCUMULATOR, ops);
@@ -403,23 +390,21 @@ export class Context {
   addWindowOps(ops: WindowOps) {
     return this.addOperators(OperatorType.WINDOW, ops);
   }
-
-  // getters
-  getOperator(type: OperatorType, name: string): Callback | null {
-    return type in this.operators ? this.operators[type][name] || null : null;
-  }
 }
 
 // global context
 const GLOBAL_CONTEXT = Context.init();
 
 /**
- * Register fully specified operators for the given operator class.
+ * Register global operators that are available when {@link Options.useGlobalContext} is enabled.
  *
- * @param type The operator type
- * @param operators Map of the operators
+ * @param type Operator type
+ * @param operators Map of operator name to functions
  */
-export function useOperators(type: OperatorType, operators: OperatorMap): void {
+export function useOperators(
+  type: OperatorType,
+  operators: Record<string, Operator>
+): void {
   for (const [name, fn] of Object.entries(operators)) {
     assert(
       isFunction(fn) && isOperator(name),
@@ -455,27 +440,19 @@ export function useOperators(type: OperatorType, operators: OperatorMap): void {
 }
 
 /**
- * Overrides the current global context with this new one.
- *
- * @param context The new context to override the global one with.
- */
-// export const setGlobalContext = (context: Context): void => {
-//   GLOBAL_CONTEXT = context;
-// };
-
-/**
  * Returns the operator function or undefined if it is not found
  * @param type Type of operator
- * @param operator Name of the operator
+ * @param name Name of the operator
+ * @param options
  */
 export function getOperator(
   type: OperatorType,
-  operator: string,
+  name: string,
   options: Pick<Options, "useGlobalContext" | "context">
 ): Operator {
   const { context: ctx, useGlobalContext: fallback } = options || {};
-  const fn = ctx ? (ctx.getOperator(type, operator) as Operator) : null;
-  return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, operator) : fn;
+  const fn = ctx ? (ctx.getOperator(type, name) as Operator) : null;
+  return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, name) : fn;
 }
 
 /* eslint-disable unused-imports/no-unused-vars */

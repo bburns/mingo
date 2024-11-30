@@ -5,7 +5,6 @@ import {
   computeValue,
   Context,
   initOptions,
-  OperatorType,
   Options,
   ProcessingMode
 } from "../src/core";
@@ -23,14 +22,13 @@ import person from "./data/person";
 import students from "./data/students";
 
 /** The full context of all operators defined in the library. */
-const FULL_CONTEXT = Context.init({
-  [OperatorType.ACCUMULATOR]: accumulatorOperators,
-  [OperatorType.EXPRESSION]: expressionOperators,
-  [OperatorType.PIPELINE]: pipelineOperators,
-  [OperatorType.PROJECTION]: projectionOperators,
-  [OperatorType.QUERY]: queryOperators,
-  [OperatorType.WINDOW]: windowOperators
-});
+const FULL_CONTEXT = Context.init()
+  .addAccumulatorOps(accumulatorOperators)
+  .addExpressionOps(expressionOperators)
+  .addPipelineOps(pipelineOperators)
+  .addProjectionOps(projectionOperators)
+  .addQueryOps(queryOperators)
+  .addWindowOps(windowOperators);
 
 export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
 
