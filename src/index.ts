@@ -7,9 +7,7 @@ import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
 import { AnyObject } from "./types";
-
-export { Aggregator } from "./aggregator";
-export { Query } from "./query";
+import { createUpdater, update } from "./updater";
 
 /**
  * Performs a query on a collection and returns a cursor object.
@@ -68,6 +66,8 @@ export default {
   Aggregator,
   Query,
   aggregate,
+  createUpdater,
   find,
-  remove
+  remove,
+  update
 };
