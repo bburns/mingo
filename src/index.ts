@@ -9,6 +9,10 @@ import { Query } from "./query";
 import { AnyObject } from "./types";
 import { createUpdater, update } from "./updater";
 
+export { Aggregator } from "./aggregator";
+export { Query } from "./query";
+export { createUpdater, update } from "./updater";
+
 /**
  * Performs a query on a collection and returns a cursor object.
  * Shorthand for `Query(criteria).find(collection, projection)`
