@@ -9,7 +9,8 @@ import { assert, has } from "./util";
 
 // https://stackoverflow.com/questions/60872063/enforce-typescript-object-has-exactly-one-key-from-a-set
 /** Define maps to enforce a single key from a union. */
-type OneKey<K extends keyof any, V, KK extends keyof any = K> = { // eslint-disable-line
+// eslint-disable-next-line
+type OneKey<K extends keyof any, V, KK extends keyof any = K> = {
   [P in K]: { [Q in P]: V } & { [Q in Exclude<KK, P>]?: never } extends infer O
     ? { [Q in keyof O]: O[Q] }
     : never;
@@ -106,4 +107,8 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
  * @param options Update options to override defaults.
  * @returns {string[]} A list of modified field paths in the object.
  */
-export const updateObject = createUpdater({});
+export const update = createUpdater({});
+/**
+ * @deprecated Alias to {@link update}
+ */
+export const updateObject = update;
