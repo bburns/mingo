@@ -8,8 +8,7 @@ import {
   isArray,
   isEqual,
   isNil,
-  isNumber,
-  ValueMap
+  isNumber
 } from "../../util";
 
 interface InputExpr {
@@ -70,7 +69,7 @@ export const $bucketAuto: PipelineOperator = (
     );
   }
 
-  const keyMap = ValueMap.init<AnyObject, Any>();
+  const keyMap = new Map<AnyObject, Any>();
   const setKey = !granularity
     ? (o: AnyObject, k: Any) => keyMap.set(o, k)
     : (_: AnyObject, _2: Any) => {};
