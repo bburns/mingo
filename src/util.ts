@@ -38,7 +38,7 @@ type Constructor = new (...args: Any[]) => Any;
  * @returns {number}
  */
 const DEFAULT_HASH_FUNCTION: HashFunction = (value: Any): number => {
-  const s = stringify(value);
+  const s = toString(value, new Set());
   let hash = 0;
   let i = s.length;
   while (i) hash = ((hash << 5) - hash) ^ s.charCodeAt(--i);
@@ -441,7 +441,15 @@ export function unique(
   return Array.from(m.keys());
 }
 
-const toString = (v: Any, cycle: Set<Any>): string => {
+/**
+ * Encode value to string using a simple non-colliding stable scheme.
+ * Handles user-defined types by processing keys on first non-empty prototype.
+ * If a user-defined type provides a "toJSON" function, it is used.
+ *
+ * @param value The value to convert to a string representation.
+ * @returns {String}
+ */
+export const toString = (v: Any, cycle = new Set<Any>()): string => {
   if (v === null) return "null";
   if (v === undefined) return "undefined";
   const ctor = v.constructor;
@@ -492,16 +500,6 @@ const toString = (v: Any, cycle: Set<Any>): string => {
     cycle.delete(v);
   }
 };
-
-/**
- * Encode value to string using a simple non-colliding stable scheme.
- * Handles user-defined types by processing keys on first non-empty prototype.
- * If a user-defined type provides a "toJSON" function, it is used.
- *
- * @param value The value to convert to a string representation.
- * @returns {String}
- */
-export const stringify = (value: Any): string => toString(value, new Set());
 
 /**
  * Generate hash code.
@@ -613,27 +611,6 @@ export function into(
     }, target);
   }
 }
-
-/**
- * This is a generic memoization function
- *
- * This implementation uses a cache independent of the function being memoized
- * to allow old values to be garbage collected when the memoized function goes out of scope.
- *
- * @param {Function} fn The function object to memoize
- */
-export function memoize(
-  fn: Callback<Any>,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): Callback<Any> {
-  const memo = ValueMap.init(hashFunction);
-  return (...args: Any[]) => {
-    if (!memo.has(args)) memo.set(args, fn.apply(this, args));
-    return memo.get(args);
-  };
-}
-
-// mingo internal
 
 /**
  * Retrieve the value of a given key on an object

@@ -13,7 +13,7 @@ import {
   normalize,
   resolve,
   resolveGraph,
-  stringify,
+  toString,
   truthy,
   unique,
   ValueMap,
@@ -88,7 +88,7 @@ describe("util", () => {
     });
   });
 
-  describe("stringify", () => {
+  describe("toString", () => {
     const a: Any[] = [1, 2, 3];
     const b: Any[] = [4, 5, 6];
 
@@ -111,7 +111,7 @@ describe("util", () => {
       [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"],
       [ObjectId("1234567890"), 'objectId("1234567890")']
     ])("should pass: %p => %p", (input, output) => {
-      expect(stringify(input)).toEqual(output);
+      expect(toString(input)).toEqual(output);
     });
 
     it("should check for cycles in object", () => {
@@ -120,7 +120,7 @@ describe("util", () => {
       const obj = { a, b };
       b.push(obj);
 
-      expect(() => stringify(obj)).toThrow(/cycle detected/);
+      expect(() => toString(obj)).toThrow(/cycle detected/);
     });
 
     it("should check for cycles in array", () => {
@@ -129,7 +129,7 @@ describe("util", () => {
       const c = [a, b];
       a.push(c);
 
-      expect(() => stringify(c)).toThrow(/cycle detected/);
+      expect(() => toString(c)).toThrow(/cycle detected/);
     });
   });
 
