@@ -9,7 +9,7 @@ import {
   isEqual,
   isNil,
   isNumber,
-  memoize
+  ValueMap
 } from "../../util";
 
 interface InputExpr {
@@ -70,14 +70,18 @@ export const $bucketAuto: PipelineOperator = (
     );
   }
 
-  const getKey = memoize(computeValue, options?.hashFunction);
+  const keyMap = ValueMap.init<AnyObject, Any>();
+  const setKey = !granularity
+    ? (o: AnyObject, k: Any) => keyMap.set(o, k)
+    : (_: AnyObject, _2: Any) => {};
   const sorted: Array<[Any, AnyObject]> = collection
     .map((o: AnyObject) => {
-      const k = getKey(o, groupByExpr, null, options) ?? null;
+      const k = computeValue(o, groupByExpr, null, options) ?? null;
       assert(
         !granularity || isNumber(k),
         "$bucketAuto: groupBy values must be numeric when granularity is specified."
       );
+      setKey(o, k ?? null);
       return [k ?? null, o];
     })
     .value();
@@ -90,13 +94,7 @@ export const $bucketAuto: PipelineOperator = (
 
   let getNext: GetNextBucket;
   if (!granularity) {
-    getNext = granularityDefault(
-      sorted,
-      bucketCount,
-      groupByExpr,
-      getKey,
-      options
-    );
+    getNext = granularityDefault(sorted, bucketCount, keyMap);
   } else if (granularity == "POWERSOF2") {
     getNext = granularityPowerOfTwo(
       sorted as Array<[number, AnyObject]>,
@@ -144,9 +142,7 @@ export const $bucketAuto: PipelineOperator = (
 function granularityDefault(
   sorted: Array<[Any, AnyObject]>,
   bucketCount: number,
-  groupByExpr: Any,
-  getKey: (o: Any, _expr: Any, _op: string, _opts: Options) => Any,
-  options: Options
+  keyMap: Map<AnyObject, Any>
 ): Callback<{ min: Any; max: Any; bucket: AnyObject[]; done: boolean }> {
   const size = sorted.length;
   const approxBucketSize = Math.max(1, Math.round(sorted.length / bucketCount));
@@ -169,7 +165,7 @@ function granularityDefault(
       bucket.push(sorted[index++][1]);
     }
 
-    const min = getKey(bucket[0], groupByExpr, null, options) ?? null;
+    const min = keyMap.get(bucket[0]);
     let max: Any;
     // The _id.max field specifies the upper bound for the bucket.
     // This bound is exclusive for all buckets except the final bucket in the series, where it is inclusive.
@@ -177,7 +173,7 @@ function granularityDefault(
       // the min of next bucket.
       max = sorted[index][0];
     } else {
-      max = getKey(bucket[bucket.length - 1], groupByExpr, null, options);
+      max = keyMap.get(bucket[bucket.length - 1]);
     }
 
     assert(
