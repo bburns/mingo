@@ -450,40 +450,33 @@ export function unique(
  * @returns {String}
  */
 export const toString = (v: Any, cycle = new Set<Any>()): string => {
-  if (v === null) return "null";
-  if (v === undefined) return "undefined";
-  const ctor = v.constructor;
-  switch (ctor) {
-    case RegExp:
-    case Number:
-    case Boolean:
-    case Function:
-    case Symbol:
-      return (v as Stringer).toString();
-    case String:
+  const kind = typeOf(v);
+  switch (kind) {
+    case "boolean":
+    case "string":
+    case "number":
       return JSON.stringify(v);
-    case Date:
+    case "date":
       return (v as Date).toISOString();
+    case "undefined":
+    case "null":
+      return kind;
+    case "symbol":
+    case "function":
+    case "regex":
+      return (v as Stringer).toString();
   }
+  const ctor = v.constructor;
   if (isTypedArray(v))
     return ctor.name + "[" + (v as Stringer).toString() + "]";
   if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
   try {
     cycle.add(v);
-    if (isArray(v)) {
-      return "[" + v.map(s => toString(s, cycle)).join(",") + "]";
+    if (isArray(v)) return "[" + v.map(s => toString(s, cycle)).join(",") + "]";
+    if (isObject(v)) {
+      const keys = Object.keys(v).sort();
+      return "{" + keys.map(k => `${k}:${toString(v[k], cycle)}`).join() + "}";
     }
-    if (ctor === Object) {
-      return (
-        "{" +
-        Object.keys(v)
-          .sort()
-          .map(k => k + ":" + toString(v[k], cycle))
-          .join(",") +
-        "}"
-      );
-    }
-
     // use toString represenation of custom-type
     const proto = Object.getPrototypeOf(v) as object;
     if (
@@ -493,9 +486,9 @@ export const toString = (v: Any, cycle = new Set<Any>()): string => {
     ) {
       return ctor.name + "(" + JSON.stringify((v as Stringer).toString()) + ")";
     }
-    // no toString() for custom object, so process all members.
-    const [members, _] = getMembersOf(v);
-    return ctor.name + toString(members, cycle);
+    throw new Error(
+      "mingo: cannot stringify custom type without explicit toString() method."
+    );
   } finally {
     cycle.delete(v);
   }

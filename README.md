@@ -248,16 +248,16 @@ Pre-loaded operators defined [here](https://github.com/kofrasa/mingo/blob/master
 
 ## Updating Documents
 
-An update operation can be performed using the `updateObject` function from the `mingo/updater` module. Unlike other operations in the library, this only works on a single object.
+An update operation can be performed using the `update` function from the `mingo/updater` module. Unlike other operations in the library, this only works on a single object.
 The query and aggregation operators are powerful enough to use for transforming arrays of documents and should be preferred when dealing with multiple objects.
-`updateObject` returns an array of all paths that were updated. It also supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters) for applicable operators. To detect whether a change occured you can check the length of the returned array.
+`update` returns an array of all paths that were updated. It also supports [arrayFilters](https://www.mongodb.com/docs/manual/release-notes/3.6/#std-label-3.6-arrayFilters) for applicable operators. To detect whether a change occured you can check the length of the returned array.
 
 All operators as of MongoDB 5.0 are supported except the positional array operator `$`.
 
 ### Examples
 
 ```ts
-import { updateObject } from "mingo/updater";
+import { update } from "mingo/updater";
 // all update operators are automatically loaded.
 
 const obj = {
@@ -268,16 +268,16 @@ const obj = {
 };
 
 // returns array of modified paths if value changed.
-updateObject(obj, { $set: { firstName: "Bob", lastName: "Doe" } }); // ["firstName", "lastName"]
+update(obj, { $set: { firstName: "Bob", lastName: "Doe" } }); // ["firstName", "lastName"]
 
 // update nested values.
-updateObject(obj, { $pop: { friends: 1 } }); // ["friends"] => friends: ["Scooby", "Shagy"]
+update(obj, { $pop: { friends: 1 } }); // ["friends"] => friends: ["Scooby", "Shagy"]
 // update nested value path
-updateObject(obj, { $unset: { "friends.1": "" } }); // ["friends.1"] => friends: ["Scooby", null]
+update(obj, { $unset: { "friends.1": "" } }); // ["friends.1"] => friends: ["Scooby", null]
 // update with condition
-updateObject(obj, { $set: { "friends.$[e]": "Velma" } }, [{ e: null }]); // ["friends"] => friends: ["Scooby", "Velma"]
+update(obj, { $set: { "friends.$[e]": "Velma" } }, [{ e: null }]); // ["friends"] => friends: ["Scooby", "Velma"]
 // empty array returned if value has not changed.
-updateObject(obj, { $set: { fristName: "Bob" } }); // [] => no change to object.
+update(obj, { $set: { fristName: "Bob" } }); // [] => no change to object.
 ```
 
 You can also create a preconfigured updater function.
@@ -286,14 +286,14 @@ You can also create a preconfigured updater function.
 import { createUpdater } from "mingo/updater";
 
 // configure updater to deep clone passed values. clone mode defaults to "copy".
-const updateObject = createUpdater({ cloneMode: "deep" });
+const updateState = createUpdater({ cloneMode: "deep" });
 
 const state = { people: ["Fred", "John"] };
 const newPeople = ["Amy", "Mark"];
 
 console.log(state.people); // ["Fred", "John"]
 
-updateObject(state, { $set: { people: newPeople } });
+updateState(state, { $set: { people: newPeople } });
 
 newPeople.push("Jason");
 
