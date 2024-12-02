@@ -1,10 +1,4 @@
-import {
-  getOperator,
-  initOptions,
-  OperatorType,
-  Options,
-  QueryOperator
-} from "./core";
+import { getOperator, initOptions, Options, QueryOperator } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Any, AnyObject, Callback, Predicate } from "./types";
@@ -72,11 +66,7 @@ export class Query {
   }
 
   private processOperator(field: string, operator: string, value: Any): void {
-    const call = getOperator(
-      OperatorType.QUERY,
-      operator,
-      this.#options
-    ) as QueryOperator;
+    const call = getOperator("query", operator, this.#options) as QueryOperator;
     if (!call) {
       throw new MingoError(`unknown query operator ${operator}`);
     }

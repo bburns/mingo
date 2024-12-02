@@ -318,7 +318,7 @@ export type UpdateOperator = (
   options: UpdateOptions
 ) => string[];
 
-export type Operator =
+type Operator =
   | AccumulatorOperator
   | ExpressionOperator
   | PipelineOperator
@@ -333,8 +333,17 @@ type QueryOps = Record<string, QueryOperator>;
 type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
+/** Kinds of operators that can be registered. */
+export type OpType =
+  | "accumulator"
+  | "expression"
+  | "pipeline"
+  | "projection"
+  | "query"
+  | "window";
+
 export class Context {
-  #operators = new Map<OperatorType, Record<string, Operator>>();
+  #operators = new Map<OpType, Record<string, Operator>>();
 
   private constructor() {}
 
@@ -350,7 +359,7 @@ export class Context {
   }
 
   private addOperators(
-    type: OperatorType,
+    type: OpType,
     operators: Record<string, Operator>
   ): Context {
     if (!this.#operators.has(type)) this.#operators.set(type, {});
@@ -362,33 +371,33 @@ export class Context {
     return this;
   }
 
-  getOperator(type: OperatorType, name: string): Callback | null {
+  getOperator(type: OpType, name: string): Callback | null {
     const ops = this.#operators.get(type) ?? {};
     return ops[name] ?? null;
   }
 
   addAccumulatorOps(ops: AccumulatorOps) {
-    return this.addOperators(OperatorType.ACCUMULATOR, ops);
+    return this.addOperators("accumulator", ops);
   }
 
   addExpressionOps(ops: ExpressionOps) {
-    return this.addOperators(OperatorType.EXPRESSION, ops);
+    return this.addOperators("expression", ops);
   }
 
   addQueryOps(ops: QueryOps) {
-    return this.addOperators(OperatorType.QUERY, ops);
+    return this.addOperators("query", ops);
   }
 
   addPipelineOps(ops: PipelineOps) {
-    return this.addOperators(OperatorType.PIPELINE, ops);
+    return this.addOperators("pipeline", ops);
   }
 
   addProjectionOps(ops: ProjectionOps) {
-    return this.addOperators(OperatorType.PROJECTION, ops);
+    return this.addOperators("projection", ops);
   }
 
   addWindowOps(ops: WindowOps) {
-    return this.addOperators(OperatorType.WINDOW, ops);
+    return this.addOperators("window", ops);
   }
 }
 
@@ -402,7 +411,7 @@ const GLOBAL_CONTEXT = Context.init();
  * @param operators Map of operator name to functions
  */
 export function useOperators(
-  type: OperatorType,
+  type: OpType,
   operators: Record<string, Operator>
 ): void {
   for (const [name, fn] of Object.entries(operators)) {
@@ -418,22 +427,22 @@ export function useOperators(
   }
   // toss the operator salad :)
   switch (type) {
-    case OperatorType.ACCUMULATOR:
+    case "accumulator":
       GLOBAL_CONTEXT.addAccumulatorOps(operators as AccumulatorOps);
       break;
-    case OperatorType.EXPRESSION:
+    case "expression":
       GLOBAL_CONTEXT.addExpressionOps(operators as ExpressionOps);
       break;
-    case OperatorType.PIPELINE:
+    case "pipeline":
       GLOBAL_CONTEXT.addPipelineOps(operators as PipelineOps);
       break;
-    case OperatorType.PROJECTION:
+    case "projection":
       GLOBAL_CONTEXT.addProjectionOps(operators as ProjectionOps);
       break;
-    case OperatorType.QUERY:
+    case "query":
       GLOBAL_CONTEXT.addQueryOps(operators as QueryOps);
       break;
-    case OperatorType.WINDOW:
+    case "window":
       GLOBAL_CONTEXT.addWindowOps(operators as WindowOps);
       break;
   }
@@ -446,7 +455,7 @@ export function useOperators(
  * @param options
  */
 export function getOperator(
-  type: OperatorType,
+  type: OpType,
   name: string,
   options: Pick<Options, "useGlobalContext" | "context">
 ): Operator {
@@ -454,79 +463,6 @@ export function getOperator(
   const fn = ctx ? (ctx.getOperator(type, name) as Operator) : null;
   return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, name) : fn;
 }
-
-/* eslint-disable unused-imports/no-unused-vars */
-
-/**
- * Implementation of system variables
- * @type {Object}
- */
-const systemVariables: Record<string, typeof redact> = {
-  $$ROOT(_obj: Any, _expr: Any, options: ComputeOptions) {
-    return options.root;
-  },
-  $$CURRENT(obj: Any, _expr: Any, _options: ComputeOptions) {
-    return obj;
-  },
-  $$REMOVE(_obj: Any, _expr: Any, _options: ComputeOptions) {
-    return undefined;
-  },
-  $$NOW(_obj: Any, _expr: Any, options: ComputeOptions) {
-    return new Date();
-  }
-};
-
-/**
- * Implementation of $redact variables
- *
- * Each function accepts 3 arguments (obj, expr, options)
- *
- * @type {Object}
- */
-const redactVariables: Record<string, typeof redact> = {
-  $$KEEP(obj: Any, _expr: Any, _options: ComputeOptions): Any {
-    return obj;
-  },
-  $$PRUNE(_obj: Any, _expr: Any, _options: ComputeOptions): Any {
-    return undefined;
-  },
-  $$DESCEND(obj: AnyObject, expr: Any, options: ComputeOptions): Any {
-    // traverse nested documents iff there is a $cond
-    if (!has(expr as AnyObject, "$cond")) return obj;
-
-    let result: ArrayOrObject;
-
-    for (const [key, current] of Object.entries(obj)) {
-      if (isObjectLike(current)) {
-        if (isArray(current)) {
-          const array: Any[] = [];
-          for (let elem of current) {
-            if (isObject(elem)) {
-              elem = redact(elem as AnyObject, expr, options.update(elem));
-            }
-            if (!isNil(elem)) {
-              array.push(elem);
-            }
-          }
-          result = array;
-        } else {
-          result = redact(
-            current as AnyObject,
-            expr,
-            options.update(current)
-          ) as ArrayOrObject;
-        }
-
-        if (isNil(result)) {
-          delete obj[key]; // pruned result
-        } else {
-          obj[key] = result;
-        }
-      }
-    }
-    return obj;
-  }
-};
 
 /**
  * Computes the value of the expression on the object for the given operator
@@ -550,6 +486,9 @@ export function computeValue(
     : computeExpression(obj, expr, copts);
 }
 
+const SYSTEM_VARS = ["$$ROOT", "$$CURRENT", "$$REMOVE", "$$NOW"] as const;
+type SystemVar = (typeof SYSTEM_VARS)[number];
+
 /** Computes the value of the expr given for the object. */
 function computeExpression(obj: Any, expr: Any, options: ComputeOptions): Any {
   // if expr is a string and begins with "$$", then we have a variable.
@@ -559,21 +498,29 @@ function computeExpression(obj: Any, expr: Any, options: ComputeOptions): Any {
   // if expr begins only a single "$", then it is a path to a field on the object.
   if (isString(expr) && expr.length > 0 && expr[0] === "$") {
     // we return redact variables as literals
-    if (has(redactVariables, expr)) return expr;
+    if (REDACT_ACTIONS.includes(expr as RedactAction)) return expr;
 
     // default to root for resolving path.
     let ctx = options.root;
 
     // handle selectors with explicit prefix
     const arr = expr.split(".");
-    if (has(systemVariables, arr[0])) {
+    if (SYSTEM_VARS.includes(arr[0] as SystemVar)) {
       // set 'root' only the first time it is required to be used for all subsequent calls
       // if it already available on the options, it will be used
-      ctx = systemVariables[arr[0]](
-        obj as AnyObject,
-        null,
-        options
-      ) as ArrayOrObject;
+      switch (arr[0] as SystemVar) {
+        case "$$ROOT":
+          break;
+        case "$$CURRENT":
+          ctx = obj;
+          break;
+        case "$$REMOVE":
+          ctx = undefined;
+          break;
+        case "$$NOW":
+          ctx = new Date();
+          break;
+      }
       expr = expr.slice(arr[0].length + 1); //  +1 for '.'
     } else if (arr[0].slice(0, 2) === "$$") {
       // handle user-defined variables
@@ -628,7 +575,7 @@ function computeOperator(
 ): Any {
   // if the field of the object is a valid operator
   const callExpression = getOperator(
-    OperatorType.EXPRESSION,
+    "expression",
     operator,
     options
   ) as ExpressionOperator;
@@ -636,7 +583,7 @@ function computeOperator(
 
   // handle accumulators
   const callAccumulator = getOperator(
-    OperatorType.ACCUMULATOR,
+    "accumulator",
     operator,
     options
   ) as AccumulatorOperator;
@@ -660,6 +607,9 @@ function computeOperator(
   );
 }
 
+const REDACT_ACTIONS = ["$$KEEP", "$$PRUNE", "$$DESCEND"] as const;
+type RedactAction = (typeof REDACT_ACTIONS)[number];
+
 /**
  * Redact an object
  * @param  {Object} obj The object to redact
@@ -672,8 +622,49 @@ export function redact(
   expr: Any,
   options: ComputeOptions
 ): Any {
-  const result = computeExpression(obj, expr, options) as string;
-  return has(redactVariables, result)
-    ? redactVariables[result](obj, expr, options)
-    : result;
+  const action = computeValue(obj, expr, null, options) as RedactAction;
+  switch (action) {
+    case "$$KEEP":
+      return obj;
+    case "$$PRUNE":
+      return undefined;
+    case "$$DESCEND": {
+      // traverse nested documents iff there is a $cond
+      if (!has(expr as AnyObject, "$cond")) return obj;
+
+      let result: ArrayOrObject;
+
+      for (const [key, current] of Object.entries(obj)) {
+        if (isObjectLike(current)) {
+          if (isArray(current)) {
+            const array: Any[] = [];
+            for (let elem of current) {
+              if (isObject(elem)) {
+                elem = redact(elem as AnyObject, expr, options.update(elem));
+              }
+              if (!isNil(elem)) {
+                array.push(elem);
+              }
+            }
+            result = array;
+          } else {
+            result = redact(
+              current as AnyObject,
+              expr,
+              options.update(current)
+            ) as ArrayOrObject;
+          }
+
+          if (isNil(result)) {
+            delete obj[key]; // pruned result
+          } else {
+            obj[key] = result;
+          }
+        }
+      }
+      return obj;
+    }
+    default:
+      return action;
+  }
 }

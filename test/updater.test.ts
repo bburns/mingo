@@ -1,6 +1,5 @@
-import { Query } from "../src";
 import { clone } from "../src/operators/update/_internal";
-import { updateObject } from "../src/updater";
+import { update } from "../src/updater";
 import { isArray } from "../src/util";
 
 describe("updateObject", () => {
@@ -12,50 +11,43 @@ describe("updateObject", () => {
   it("should contain single operator in expression", () => {
     const expr = { $set: { name: "Fred" } };
     expr["$inc"] = { age: 2 };
-    expect(() => updateObject(obj, expr)).toThrow(
-      /must contain only one operator/
-    );
+    expect(() => update(obj, expr)).toThrow(/must contain only one operator/);
   });
 
   it("should contain valid operator in expression", () => {
     const expr = { $set: { name: "Fred" } };
     expr["$cos"] = { age: 2 };
     delete expr["$set" as string];
-    expect(() => updateObject(obj, expr)).toThrow(
+    expect(() => update(obj, expr)).toThrow(
       /operator '\$cos' is not supported/
     );
   });
 
   it("should check condition before update", () => {
     expect(
-      updateObject(obj, { $set: { name: "Fred" } }, [], { age: { $lt: 10 } })
+      update(obj, { $set: { name: "Fred" } }, [], { age: { $lt: 10 } })
     ).toEqual([]);
     expect(obj).toEqual({ name: "John", age: 30 });
   });
 
   it("should apply update on valid condition expression", () => {
     expect(
-      updateObject(obj, { $set: { name: "Fred" } }, [], { age: { $gt: 10 } })
+      update(obj, { $set: { name: "Fred" } }, [], { age: { $gt: 10 } })
     ).toEqual(["name"]);
     expect(obj).toEqual({ name: "Fred", age: 30 });
   });
 
   it("should not apply update on invalid condition expression", () => {
     expect(obj).toEqual({ name: "John", age: 30 });
-    expect(
-      updateObject(obj, { $set: { name: "Fred" } }, [], { age: 10 })
-    ).toEqual([]);
+    expect(update(obj, { $set: { name: "Fred" } }, [], { age: 10 })).toEqual(
+      []
+    );
     expect(obj).toEqual({ name: "John", age: 30 });
   });
 
   it("should apply update on valid condition query", () => {
     expect(
-      updateObject(
-        obj,
-        { $set: { name: "Fred" } },
-        [],
-        new Query({ age: { $gt: 10 } })
-      )
+      update(obj, { $set: { name: "Fred" } }, [], { age: { $gt: 10 } })
     ).toEqual(["name"]);
     expect(obj).toEqual({ name: "Fred", age: 30 });
   });

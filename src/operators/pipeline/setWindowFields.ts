@@ -1,10 +1,7 @@
-// $setWindowFields -  https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/
-
 import {
   AccumulatorOperator,
   getOperator,
   initOptions,
-  OperatorType,
   Options,
   PipelineOperator,
   WindowOperator
@@ -70,8 +67,8 @@ export const $setWindowFields: PipelineOperator = (
     const keys = Object.keys(outputExpr);
     const op = keys.find(isOperator);
     assert(
-      !!getOperator(OperatorType.WINDOW, op, options) ||
-        !!getOperator(OperatorType.ACCUMULATOR, op, options),
+      !!getOperator("window", op, options) ||
+        !!getOperator("accumulator", op, options),
       `'${op}' is not a valid window operator`
     );
 
@@ -128,12 +125,8 @@ export const $setWindowFields: PipelineOperator = (
       const config = {
         operatorName: op,
         func: {
-          left: getOperator(
-            OperatorType.ACCUMULATOR,
-            op,
-            options
-          ) as AccumulatorOperator,
-          right: getOperator(OperatorType.WINDOW, op, options) as WindowOperator
+          left: getOperator("accumulator", op, options) as AccumulatorOperator,
+          right: getOperator("window", op, options) as WindowOperator
         },
         args: outputExpr[op],
         field: field,

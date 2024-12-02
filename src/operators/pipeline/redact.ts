@@ -1,6 +1,6 @@
 import { ComputeOptions, Options, PipelineOperator, redact } from "../../core";
 import { Iterator } from "../../lazy";
-import { AnyObject, Callback } from "../../types";
+import { AnyObject } from "../../types";
 
 /**
  * Restricts the contents of the documents based on information stored in the documents themselves.
@@ -13,6 +13,7 @@ export const $redact: PipelineOperator = (
   options: Options
 ): Iterator => {
   const copts = ComputeOptions.init(options);
-  return collection.map(((obj: AnyObject) =>
-    redact(obj, expr, copts.update(obj))) as Callback);
+  return collection.map((obj: AnyObject) =>
+    redact(obj, expr, copts.update(obj))
+  );
 };

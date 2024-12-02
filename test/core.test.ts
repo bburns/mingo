@@ -3,7 +3,6 @@ import {
   ComputeOptions,
   computeValue,
   initOptions,
-  OperatorType,
   Options,
   PipelineOperator,
   ProcessingMode,
@@ -93,7 +92,7 @@ describe("core", () => {
       }
 
       // DEFAULT_OPTS.context.addQueryOps({ $between });
-      useOperators(OperatorType.QUERY, { $between });
+      useOperators("query", { $between });
 
       const coll = [
         { a: 1, b: 1 },

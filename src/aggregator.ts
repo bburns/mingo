@@ -1,7 +1,6 @@
 import {
   getOperator,
   initOptions,
-  OperatorType,
   Options,
   PipelineOperator,
   ProcessingMode
@@ -51,11 +50,7 @@ export class Aggregator {
       for (const operator of this.#pipeline) {
         const operatorKeys = Object.keys(operator);
         const opName = operatorKeys[0];
-        const call = getOperator(
-          OperatorType.PIPELINE,
-          opName,
-          opts
-        ) as PipelineOperator;
+        const call = getOperator("pipeline", opName, opts) as PipelineOperator;
 
         assert(
           operatorKeys.length === 1 && !!call,

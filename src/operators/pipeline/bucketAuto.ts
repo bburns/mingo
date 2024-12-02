@@ -1,6 +1,6 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
-import { Any, AnyObject, BucketAutoGranularity, Callback } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import {
   assert,
   compare,
@@ -11,6 +11,21 @@ import {
   isNumber
 } from "../../util";
 
+type Granularity =
+  | "E6"
+  | "E12"
+  | "E24"
+  | "E48"
+  | "E96"
+  | "E192"
+  | "R5"
+  | "R10"
+  | "R20"
+  | "R40"
+  | "R80"
+  | "POWERSOF2"
+  | "1-2-5";
+
 interface InputExpr {
   /** An expression to group documents by. */
   groupBy: Any;
@@ -19,7 +34,7 @@ interface InputExpr {
   /** A document that specifies the fields to include in the output documents in addition to the _id field. */
   output?: AnyObject;
   /** A string that specifies the preferred number series to use to ensure that the calculated boundary edges end on preferred round numbers or their powers of 10. */
-  granularity?: BucketAutoGranularity;
+  granularity?: Granularity;
 }
 
 type GetNextBucket = Callback<{
@@ -233,7 +248,7 @@ function granularityPowerOfTwo(
   };
 }
 
-type PreferredSeries = Exclude<BucketAutoGranularity, "POWERSOF2">;
+type PreferredSeries = Exclude<Granularity, "POWERSOF2">;
 const PREFERRED_NUMBERS: Record<PreferredSeries, number[]> = Object.freeze({
   // "Least rounded" Renard number series, taken from Wikipedia page on preferred
   // numbers: https://en.wikipedia.org/wiki/Preferred_number#Renard_numbers

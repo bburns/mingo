@@ -18,9 +18,6 @@ type OneKey<K extends keyof any, V, KK extends keyof any = K> = {
 
 export type UpdateExpression = OneKey<keyof typeof UPDATE_OPERATORS, AnyObject>;
 
-/** A condition expression or Query object to use for checking that object meets condition prior to update.  */
-export type Condition = AnyObject | Query;
-
 /** Interface for update operators */
 export type UpdateOperator = (
   obj: AnyObject,
@@ -34,7 +31,7 @@ export type Updater = (
   obj: AnyObject,
   expr: UpdateExpression,
   arrayFilters?: AnyObject[],
-  condition?: Condition,
+  condition?: AnyObject,
   options?: UpdateOptions
 ) => string[];
 
@@ -43,8 +40,9 @@ export type Updater = (
  * @param defaultOptions The default options. Defaults to no cloning with strict mode off for queries.
  * @returns {Updater}
  */
-export function createUpdater(defaultOptions: UpdateOptions): Updater {
+export function createUpdater(defaultOptions?: UpdateOptions): Updater {
   // automatically load basic query options for update operators
+  defaultOptions = defaultOptions || {};
   defaultOptions = {
     ...defaultOptions,
     queryOptions: initOptions(defaultOptions.queryOptions)
@@ -58,7 +56,7 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
     obj: AnyObject,
     expr: UpdateExpression,
     arrayFilters: AnyObject[] = [],
-    condition: Condition = {},
+    condition: AnyObject = {},
     options: UpdateOptions = {}
   ): string[] => {
     const opts = Object.assign({ cloneMode: "copy" }, defaultOptions, options);
@@ -67,8 +65,6 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
         Object.assign({ useStrictMode: false }, opts?.queryOptions)
       )
     });
-    arrayFilters = arrayFilters || [];
-    condition = condition || {};
     // validate operator
     const entry = Object.entries(expr);
     // check for single entry
@@ -107,7 +103,7 @@ export function createUpdater(defaultOptions: UpdateOptions): Updater {
  * @param options Update options to override defaults.
  * @returns {string[]} A list of modified field paths in the object.
  */
-export const update = createUpdater({});
+export const update = createUpdater();
 /**
  * @deprecated Alias to {@link update}
  */

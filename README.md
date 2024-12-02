@@ -63,12 +63,12 @@ To support tree-shaking for client side bundles, you can import and register spe
 ### ES6
 
 ```js
-import { useOperators, OperatorType } from "mingo/core";
+import { useOperators } from "mingo/core";
 import { $trunc } from "mingo/operators/expression";
 import { $bucket } from "mingo/operators/pipeline";
 
-useOperators(OperatorType.EXPRESSION, { $trunc });
-useOperators(OperatorType.PIPELINE, { $bucket });
+useOperators("expression", { $trunc });
+useOperators("pipeline", { $bucket });
 ```
 
 ### CommonJS
@@ -78,10 +78,9 @@ const core = require("mingo/core");
 const $trunc = require("mingo/operators/expression").$trunc;
 const $bucket = require("mingo/operators/pipeline").$bucket;
 const useOperators = core.useOperators;
-const OperatorType = core.OperatorType;
 
-useOperators(OperatorType.EXPRESSION, { $trunc: $trunc });
-useOperators(OperatorType.PIPELINE, { $bucket: $bucket });
+useOperators("expression", { $trunc: $trunc });
+useOperators("pipeline", { $bucket: $bucket });
 ```
 
 ## Using query to test objects
@@ -183,13 +182,13 @@ find(docs, { $jsonSchema: schema }, {}, { jsonSchemaValidator }).all();
 
 ```js
 import { Aggregator } from "mingo/aggregator";
-import { useOperators, OperatorType } from "mingo/core";
+import { useOperators } from "mingo/core";
 import { $match, $group } from "mingo/operators/pipeline";
 import { $min } from "mingo/operators/accumulator";
 
 // ensure the required operators are preloaded prior to using them.
-useOperators(OperatorType.PIPELINE, { $match, $group });
-useOperators(OperatorType.ACCUMULATOR, { $min });
+useOperators("pipeline", { $match, $group });
+useOperators("accumulator", { $min });
 
 let agg = new Aggregator([
   { $match: { type: "homework" } },
@@ -257,7 +256,7 @@ All operators as of MongoDB 5.0 are supported except the positional array operat
 ### Examples
 
 ```ts
-import { update } from "mingo/updater";
+import { update } from "mingo";
 // all update operators are automatically loaded.
 
 const obj = {

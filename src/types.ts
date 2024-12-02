@@ -100,18 +100,3 @@ export interface WindowOperatorInput {
   readonly documentNumber: number;
   readonly field: string;
 }
-
-export type BucketAutoGranularity =
-  | "E6"
-  | "E12"
-  | "E24"
-  | "E48"
-  | "E96"
-  | "E192"
-  | "R5"
-  | "R10"
-  | "R20"
-  | "R40"
-  | "R80"
-  | "POWERSOF2"
-  | "1-2-5";

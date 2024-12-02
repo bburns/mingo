@@ -2,7 +2,6 @@ import {
   ComputeOptions,
   computeValue,
   getOperator,
-  OperatorType,
   Options,
   PipelineOperator,
   ProjectionOperator
@@ -127,7 +126,7 @@ function processObject(
 
       // first try a projection operator
       const call = getOperator(
-        OperatorType.PROJECTION,
+        "projection",
         operator,
         options
       ) as ProjectionOperator;
