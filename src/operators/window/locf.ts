@@ -7,12 +7,12 @@ import { withMemo } from "./_internal";
 /**
  * Last observation carried forward. Sets values for null and missing fields in a window to the last non-null value for the field.
  */
-export function $locf(
+export const $locf = (
   _: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   return withMemo(
     collection,
     expr,
@@ -25,4 +25,4 @@ export function $locf(
     },
     (series: Any[]) => series[expr.documentNumber - 1]
   );
-}
+};

@@ -1,5 +1,5 @@
 import { Options } from "../../core";
-import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, WindowOperatorInput } from "../../types";
 import { assert, isNumber } from "../../util";
 import { $push } from "../accumulator";
 import { withMemo } from "./_internal";
@@ -8,12 +8,12 @@ import { withMemo } from "./_internal";
  * Returns the exponential moving average of numeric expressions applied to documents
  * in a partition defined in the $setWindowFields stage.
  */
-export function $expMovingAvg(
+export const $expMovingAvg = (
   _: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   const { input, N, alpha } = expr.inputExpr as {
     input: Any;
     N: number;
@@ -28,10 +28,10 @@ export function $expMovingAvg(
   return withMemo(
     collection,
     expr,
-    (() => {
+    () => {
       const series = $push(collection, input, options).filter(isNumber);
       return series.length === collection.length ? series : null;
-    }) as Callback<number[]>,
+    },
     (series: number[]) => {
       // return null if there are incompatible values
       if (series === null) return null;
@@ -44,4 +44,4 @@ export function $expMovingAvg(
       return series[i];
     }
   );
-}
+};

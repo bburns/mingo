@@ -24,8 +24,8 @@ export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
   millisecond: 1
 };
 
-// internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
-const memo = new WeakMap<Array<Any>, Any>();
+// internal cache to store precomputed series once to avoid O(N^2) calls over the collection
+const memo = new WeakMap<Any[], Any>();
 
 /**
  * Caches all computed values in a window sequence for reuse.

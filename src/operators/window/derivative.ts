@@ -1,4 +1,4 @@
-import { Options } from "../../core";
+import { Options, WindowOperator } from "../../core";
 import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator";
@@ -7,12 +7,12 @@ import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
 /**
  * Returns the average rate of change within the specified window
  */
-export function $derivative(
+export const $derivative: WindowOperator = (
   _: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   // need 2 points to compute derivative
   if (collection.length < 2) return null;
 
@@ -34,4 +34,4 @@ export function $derivative(
   const deltaX = (x2 - x1) / (MILLIS_PER_UNIT[unit] || 1);
 
   return (y2 - y1) / deltaX;
-}
+};

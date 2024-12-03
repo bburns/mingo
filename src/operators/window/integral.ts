@@ -7,12 +7,12 @@ import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
 /**
  * Returns the approximation of the area under a curve.
  */
-export function $integral(
+export const $integral = (
   _: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   const { input, unit } = expr.inputExpr as {
     input: Any;
     unit?: WindowTimeUnit;
@@ -38,4 +38,4 @@ export function $integral(
   }
 
   return result;
-}
+};

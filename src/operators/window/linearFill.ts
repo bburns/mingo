@@ -20,16 +20,16 @@ const interpolate = (
 /**
  * Fills null and missing fields in a window using linear interpolation based on surrounding field values.
  */
-export function $linearFill(
+export const $linearFill = (
   _: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   return withMemo(
     collection,
     expr,
-    (() => {
+    () => {
       const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
       const points = $push(
         collection,
@@ -73,7 +73,7 @@ export function $linearFill(
         lindex = rindex;
       }
       return points.map(([_, y]) => y);
-    }) as Callback<number[]>,
+    },
     (values: number[]) => values[expr.documentNumber - 1]
   );
-}
+};

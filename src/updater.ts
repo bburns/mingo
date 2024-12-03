@@ -1,4 +1,4 @@
-import { initOptions, UpdateOptions } from "./core";
+import { initOptions, UpdateOperator, UpdateOptions } from "./core";
 import * as booleanOperators from "./operators/expression/boolean";
 import * as comparisonOperators from "./operators/expression/comparison";
 import * as queryOperators from "./operators/query";
@@ -17,14 +17,6 @@ type OneKey<K extends keyof any, V, KK extends keyof any = K> = {
 }[K];
 
 export type UpdateExpression = OneKey<keyof typeof UPDATE_OPERATORS, AnyObject>;
-
-/** Interface for update operators */
-export type UpdateOperator = (
-  obj: AnyObject,
-  expr: AnyObject,
-  arrayFilters: AnyObject[],
-  options?: UpdateOptions
-) => string[];
 
 /** A function to process an update expression and modify the object. */
 export type Updater = (

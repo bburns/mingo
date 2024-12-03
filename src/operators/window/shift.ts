@@ -5,12 +5,12 @@ import { Any, AnyObject, WindowOperatorInput } from "../../types";
  * Returns the value from an expression applied to a document in a specified
  * position relative to the current document in the $setWindowFields stage partition.
  */
-export function $shift(
+export const $shift = (
   obj: AnyObject,
   collection: AnyObject[],
   expr: WindowOperatorInput,
   options: Options
-): Any {
+): Any => {
   const input = expr.inputExpr as {
     output: Any;
     by: number;
@@ -24,4 +24,4 @@ export function $shift(
       : null;
   }
   return computeValue(collection[shiftedIndex], input.output, null, options);
-}
+};
