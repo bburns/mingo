@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNumber, MAX_INT, MIN_INT, typeOf } from "../../../util";
+import { isNumber, isRegExp, MAX_INT, MIN_INT, typeOf } from "../../../util";
 
 export const $type: ExpressionOperator = (
   obj: AnyObject,
@@ -19,6 +19,7 @@ export const $type: ExpressionOperator = (
       if (v % 1 != 0) return "double";
       return v >= MIN_INT && v <= MAX_INT ? "int" : "long";
     }
+    if (isRegExp(v)) return "regex";
   }
   return typeOf(v);
 };

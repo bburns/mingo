@@ -7,8 +7,9 @@
 - Export default update function and factory in module index.
 - Improve performance of `$bucketAuto` by removing excessive hashing.
 - Simplify API for adding operators in Context class.
-- Deprecate `updateObject(..)` in favour of `update(..)`.
+- Renamed `updateObject(..)` to `update(..)`.
 - Remove optimistic string representation on custom type without explicit `toString()` method.
+- Expression operator `$type` returns `"regexp"` instead of `"regex"` when `useStrictMode`=`false`.
 
 **Fixes**
 
