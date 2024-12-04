@@ -15,7 +15,6 @@ import {
   isFunction,
   isNil,
   isObject,
-  isObjectLike,
   isOperator,
   isString,
   resolve
@@ -632,37 +631,30 @@ export function redact(
       // traverse nested documents iff there is a $cond
       if (!has(expr as AnyObject, "$cond")) return obj;
 
-      let result: ArrayOrObject;
+      const output = {};
 
-      for (const [key, current] of Object.entries(obj)) {
-        if (isObjectLike(current)) {
-          if (isArray(current)) {
-            const array: Any[] = [];
-            for (let elem of current) {
-              if (isObject(elem)) {
-                elem = redact(elem as AnyObject, expr, options.update(elem));
-              }
-              if (!isNil(elem)) {
-                array.push(elem);
-              }
+      for (const [key, value] of Object.entries(obj)) {
+        if (isArray(value)) {
+          const res = new Array<Any>();
+          for (let elem of value) {
+            if (isObject(elem)) {
+              elem = redact(elem as AnyObject, expr, options.update(elem));
             }
-            result = array;
-          } else {
-            result = redact(
-              current as AnyObject,
-              expr,
-              options.update(current)
-            ) as ArrayOrObject;
+            if (!isNil(elem)) res.push(elem);
           }
-
-          if (isNil(result)) {
-            delete obj[key]; // pruned result
-          } else {
-            obj[key] = result;
-          }
+          output[key] = res;
+        } else if (isObject(value)) {
+          const res = redact(
+            value as AnyObject,
+            expr,
+            options.update(value)
+          ) as ArrayOrObject;
+          if (!isNil(res)) output[key] = res;
+        } else {
+          output[key] = value;
         }
       }
-      return obj;
+      return output;
     }
     default:
       return action;

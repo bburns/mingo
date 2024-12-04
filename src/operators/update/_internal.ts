@@ -7,6 +7,7 @@ import {
   isArray,
   isDate,
   isObject,
+  isRegExp,
   resolve,
   walk,
   WalkOptions
@@ -20,6 +21,7 @@ export const clone = (mode: CloneMode, val: Any): Any => {
       if (isDate(val)) return new Date(val);
       if (isArray(val)) return [...(val as Any[])];
       if (isObject(val)) return { ...val };
+      if (isRegExp(val)) return new RegExp(val);
       return val;
     }
     default:

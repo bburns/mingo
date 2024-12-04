@@ -24,8 +24,6 @@ export interface Comparator<T = Any> {
   (left: T, right: T): number;
 }
 
-export type GroupByOutput = Map<Any, Any[]>;
-
 /**
  * Custom function to hash values to improve faster comparaisons
  */

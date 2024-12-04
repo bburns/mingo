@@ -3,7 +3,6 @@ import {
   Any,
   AnyObject,
   Callback,
-  GroupByOutput,
   TimeUnit,
   WindowOperatorInput
 } from "../../types";
@@ -74,7 +73,7 @@ export function rank(
   options: Options,
   dense: boolean
 ): Any {
-  return withMemo<{ values: Any[]; groups: GroupByOutput }, number>(
+  return withMemo<{ values: Any[]; groups: Map<Any, Any[]> }, number>(
     collection,
     expr,
     () => {
