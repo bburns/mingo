@@ -2,9 +2,9 @@ import { CollationSpec, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any, AnyObject, Comparator } from "../../types";
 import {
+  assert,
   compare,
   groupBy,
-  into,
   isEmpty,
   isObject,
   isString,
@@ -48,12 +48,10 @@ export const $sort: PipelineOperator = (
       const sortedKeys = Array.from(groups.keys()).sort(cmp);
       if (sortKeys[key] === -1) sortedKeys.reverse();
 
-      // reuse collection so the data is available for the next iteration of the sort modifiers.
-      coll = [];
-      sortedKeys.reduce(
-        (acc: Any[], key: Any) => into(acc, groups.get(key)),
-        coll
-      );
+      // modify collection in place.
+      let i = 0;
+      for (const k of sortedKeys) for (const v of groups.get(k)) coll[i++] = v;
+      assert(i == coll.length, "bug: counter must match collection size.");
     }
     return coll;
   });

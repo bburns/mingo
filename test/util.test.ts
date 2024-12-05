@@ -13,8 +13,9 @@ import {
   normalize,
   resolve,
   resolveGraph,
-  toString,
+  stringify,
   truthy,
+  typeOf,
   unique,
   ValueMap,
   walk
@@ -49,6 +50,34 @@ describe("util", () => {
       ]
     ])("should normalize: %p => %p", (input, output) => {
       expect(normalize(input)).toEqual(output);
+    });
+  });
+
+  class Custom {
+    constructor(readonly _id: string) {}
+    toString() {
+      return this._id;
+    }
+  }
+
+  describe("typeOf", () => {
+    it.each([
+      ["null", null],
+      ["undefined", undefined],
+      ["number", NaN],
+      ["number", 1],
+      ["string", ""],
+      ["regexp", /a/],
+      ["boolean", true],
+      ["boolean", false],
+      ["symbol", Symbol("a")],
+      ["error", new Error()],
+      ["array", []],
+      ["object", {}],
+      ["arraybuffer", new ArrayBuffer(0)],
+      ["Custom", new Custom("abc")]
+    ])("should expect %p for %p", (res, input) => {
+      expect(typeOf(input)).toEqual(res);
     });
   });
 
@@ -88,7 +117,7 @@ describe("util", () => {
     });
   });
 
-  describe("toString", () => {
+  describe("stringify", () => {
     const a: Any[] = [1, 2, 3];
     const b: Any[] = [4, 5, 6];
 
@@ -103,15 +132,15 @@ describe("util", () => {
       [[1, "a"], '[1,"a"]'],
       [new Date("2001-01-01T00:00:00.000Z"), "2001-01-01T00:00:00.000Z"],
       [(id: Any) => id, "(id) => id"],
-      [new Uint8Array([5, 2]), "Uint8Array[5,2]"],
-      [new Float32Array([1.5, 2.5]), "Float32Array[1.5,2.5]"],
+      [new Uint8Array([5, 2]), "uint8array[5,2]"],
+      [new Float32Array([1.5, 2.5]), "float32array[1.5,2.5]"],
       [{ a: a, b: a }, "{a:[1,2,3],b:[1,2,3]}"],
       [[a, a], "[[1,2,3],[1,2,3]]"],
       [[a, b], "[[1,2,3],[4,5,6]]"],
       [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"],
       [ObjectId("1234567890"), 'objectId("1234567890")']
     ])("should pass: %p => %p", (input, output) => {
-      expect(toString(input)).toEqual(output);
+      expect(stringify(input)).toEqual(output);
     });
 
     it("should check for cycles in object", () => {
@@ -120,7 +149,7 @@ describe("util", () => {
       const obj = { a, b };
       b.push(obj);
 
-      expect(() => toString(obj)).toThrow(/cycle detected/);
+      expect(() => stringify(obj)).toThrow(/cycle detected/);
     });
 
     it("should check for cycles in array", () => {
@@ -129,7 +158,7 @@ describe("util", () => {
       const c = [a, b];
       a.push(c);
 
-      expect(() => toString(c)).toThrow(/cycle detected/);
+      expect(() => stringify(c)).toThrow(/cycle detected/);
     });
   });
 

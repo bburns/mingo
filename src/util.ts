@@ -1,24 +1,17 @@
 /**
  * Utility constants and functions
  */
-
 import {
   Any,
   AnyObject,
   ArrayOrObject,
   Callback,
   Comparator,
-  GroupByOutput,
   HashFunction
 } from "./types";
 
 /** Represents an error reported by the mingo library. */
 export class MingoError extends Error {}
-
-export const MAX_INT = 2147483647;
-export const MIN_INT = -2147483648;
-export const MAX_LONG = Number.MAX_SAFE_INTEGER;
-export const MIN_LONG = Number.MIN_SAFE_INTEGER;
 
 // special value to identify missing items. treated differently from undefined
 const MISSING = Symbol("missing");
@@ -26,8 +19,6 @@ const MISSING = Symbol("missing");
 const CYCLE_FOUND_ERROR = Object.freeze(
   new Error("mingo: cycle detected while processing object/array")
 ) as Error;
-
-const OBJECT_TAG = "[object Object]";
 
 type Constructor = new (...args: Any[]) => Any;
 
@@ -38,17 +29,22 @@ type Constructor = new (...args: Any[]) => Any;
  * @returns {number}
  */
 const DEFAULT_HASH_FUNCTION: HashFunction = (value: Any): number => {
-  const s = toString(value, new Set());
+  const s = stringify(value);
   let hash = 0;
   let i = s.length;
   while (i) hash = ((hash << 5) - hash) ^ s.charCodeAt(--i);
   return hash >>> 0;
 };
 
-export const EMPTY_ARRAY = [] as const;
+const objectProto = Object.prototype;
+const arrayProto = Array.prototype;
+const getPrototypeOf = Object.getPrototypeOf;
 
-export const isPrimitive = (v: Any): boolean =>
+const isPrimitive = (v: Any): boolean =>
   (typeof v !== "object" && typeof v !== "function") || v === null;
+
+/** Scalar types provided by the JS runtime. Includes primitives, RegExp, and Date */
+const isScalar = (v: Any) => isPrimitive(v) || isDate(v) || isRegExp(v);
 
 /** Options to resolve() and resolveGraph() functions */
 interface ResolveOptions {
@@ -57,29 +53,20 @@ interface ResolveOptions {
   preserveKeys?: boolean;
 }
 
-// no array, object, or function types
-const JS_SIMPLE_TYPES = new Set<string>([
-  "null",
-  "undefined",
-  "boolean",
-  "number",
-  "string",
-  "date",
-  "regex"
-]);
-
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
-const SORT_ORDER_BY_TYPE: Record<string, number> = {
-  null: 0,
-  undefined: 0,
-  number: 1,
-  string: 2,
-  object: 3,
-  array: 4,
-  boolean: 5,
-  date: 6,
-  regex: 7,
-  function: 8
+const SORT_ORDER: Record<string, number> = {
+  undefined: 1,
+  null: 2,
+  number: 3,
+  string: 4,
+  symbol: 5,
+  object: 6,
+  array: 7,
+  arraybuffer: 8,
+  boolean: 9,
+  date: 10,
+  regexp: 11,
+  function: 12
 };
 
 /**
@@ -92,18 +79,12 @@ const SORT_ORDER_BY_TYPE: Record<string, number> = {
 export const compare = <T = Any>(a: T, b: T): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const [u, v] = [a, b].map(n => SORT_ORDER_BY_TYPE[typeOf(n)]);
+  const [u, v] = [a, b].map(n => SORT_ORDER[typeOf(n)]);
   if (u !== v) return u - v;
-  // number | string | date
-  if (u === 1 || u === 2 || u === 6) {
-    if ((a as number) < (b as number)) return -1;
-    if ((a as number) > (b as number)) return 1;
-    return 0;
-  }
   // check for equivalence equality
   if (isEqual(a, b)) return 0;
-  if ((a as number) < (b as number)) return -1;
-  if ((a as number) > (b as number)) return 1;
+  if ((a as string) < (b as string)) return -1;
+  if ((a as string) > (b as string)) return 1;
   // if we get here we are comparing a type that does not make sense.
   return 0;
 };
@@ -122,10 +103,7 @@ export class ValueMap<K, V> extends Map<K, V> {
   // returns a tuple of [<masterKey>, <hash>]. Expects an object key.
   #unpack = (key: K): [K, number] => {
     const hash = this.#hashFn(key);
-    return [
-      (this.#keyMap.get(hash) || EMPTY_ARRAY).find(k => isEqual(k, key)),
-      hash
-    ];
+    return [(this.#keyMap.get(hash) || []).find(k => isEqual(k, key)), hash];
   };
 
   private constructor() {
@@ -220,17 +198,15 @@ export function assert(condition: boolean, message: string): void {
 }
 
 /**
- * Returns the name of type.
- * @param v A value
+ * Returns the name of type in lowercase.
+ * @param v Any value
  */
 export const typeOf = (v: Any): string => {
-  if (v === null) return "null";
-  const n = typeof v;
-  if (n !== "object") return n;
-  if (isDate(v)) return "date";
-  if (isArray(v)) return "array";
-  if (isRegExp(v)) return "regex";
-  return n;
+  const s = objectProto.toString.call(v) as string;
+  const t = s.substring(8, s.length - 1).toLowerCase();
+  if (t !== "object") return t;
+  const ctor = v.constructor;
+  return ctor == null || ctor === Object ? t : ctor.name;
 };
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
 export const isString = (v: Any): v is string => typeof v === "string";
@@ -242,11 +218,8 @@ export const isNotNaN = (v: Any) =>
 export const isArray = Array.isArray;
 export const isObject = (v: Any): v is object => {
   if (!v) return false;
-  const proto = Object.getPrototypeOf(v) as Any;
-  return (
-    (proto === Object.prototype || proto === null) &&
-    OBJECT_TAG === Object.prototype.toString.call(v)
-  );
+  const p = Object.getPrototypeOf(v) as Any;
+  return (p === Object.prototype || p === null) && typeOf(v) === "object";
 };
 //  objects, arrays, functions, date, custom object
 export const isObjectLike = (v: Any): boolean => !isPrimitive(v);
@@ -254,9 +227,6 @@ export const isDate = (v: Any): v is Date => v instanceof Date;
 export const isRegExp = (v: Any): v is RegExp => v instanceof RegExp;
 export const isFunction = (v: Any): boolean => typeof v === "function";
 export const isNil = (v: Any): boolean => v === null || v === undefined;
-export const inArray = (arr: Any[], item: Any): boolean => arr.includes(item);
-export const notInArray = (arr: Any[], item: Any): boolean =>
-  !inArray(arr, item);
 export const truthy = (arg: Any, strict = true): boolean =>
   !!arg || (strict && arg === "");
 export const isEmpty = (x: Any): boolean =>
@@ -264,34 +234,40 @@ export const isEmpty = (x: Any): boolean =>
   (isString(x) && !x) ||
   (isArray(x) && x.length === 0) ||
   (isObject(x) && Object.keys(x).length === 0);
-
-export const isMissing = (v: Any): boolean => v === MISSING;
 /** ensure a value is an array or wrapped within one. */
 export const ensureArray = <T>(x: T | T[]): T[] => (isArray(x) ? x : [x]);
 
 export const has = (obj: object, prop: string): boolean =>
-  !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
+  !!obj && (objectProto.hasOwnProperty.call(obj, prop) as boolean);
 
 const isTypedArray = (v: Any): boolean =>
   typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
 
-const cloneInternal = (v: Any, refs: Set<Any>): Any => {
-  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
-  if (isPrimitive(v)) return v;
-  if (isDate(v)) return new Date(v);
-  if (isRegExp(v)) return new RegExp(v);
+/**
+ * Deep clone an object.
+ */
+export const cloneDeep = <T>(v: T, refs?: Set<Any>): T => {
+  // if (structuredClone) return structuredClone(v);
+  if (isNil(v) || isBoolean(v) || isNumber(v) || isString(v)) return v;
+  if (isDate(v)) return new Date(v) as T;
+  if (isRegExp(v)) return new RegExp(v) as T;
   if (isTypedArray(v)) {
     const ctor = v.constructor as Constructor;
-    return new ctor(v);
+    return new ctor(v) as T;
   }
-
+  if (!(refs instanceof Set)) refs = new Set();
+  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
+  refs.add(v);
   try {
-    refs.add(v);
-    if (isArray(v)) return v.map(e => cloneInternal(e, refs)) as Any;
+    if (isArray(v)) {
+      const arr = new Array<Any>(v.length);
+      for (let i = 0; i < v.length; i++) arr[i] = cloneDeep(v[i], refs);
+      return arr as T;
+    }
     if (isObject(v)) {
-      const res = {};
-      for (const k of Object.keys(v)) res[k] = cloneInternal(v[k], refs);
-      return res;
+      const obj: AnyObject = {};
+      for (const k of Object.keys(v)) obj[k] = cloneDeep(v[k], refs);
+      return obj as T;
     }
   } finally {
     refs.delete(v);
@@ -301,10 +277,33 @@ const cloneInternal = (v: Any, refs: Set<Any>): Any => {
   return v;
 };
 
+const isMissing = (v: Any): boolean => v === MISSING;
+
 /**
- * Deep clone an object. Value types and immutable objects are returned as is.
+ * Deep merge objects or arrays. When the inputs have unmergeable types, the right hand value is returned.
+ * If inputs are arrays, elements in the same position are merged together.
+ * Remaining elements are appended to the target object.
+ *
+ * @param target Target object to merge into.
+ * @param input  Source object to merge from.
+ * @private
  */
-export const cloneDeep = (obj: Any): Any => cloneInternal(obj, new Set());
+export function merge(target: Any, input: Any): Any {
+  // take care of missing inputs
+  if (isMissing(target) || isNil(target)) return input;
+  if (isMissing(input) || isNil(input)) return target;
+  if (isPrimitive(target) || isPrimitive(input)) return input;
+  if (isArray(target) && isArray(input)) {
+    assert(
+      target.length === input.length,
+      "arrays must be of equal length to merge."
+    );
+  }
+  for (const k in input as AnyObject) {
+    target[k] = merge(target[k], input[k]);
+  }
+  return target;
+}
 
 /**
  * Returns the intersection of multiple arrays.
@@ -357,29 +356,6 @@ export function flatten(xs: Any[], depth = 1): Any[] {
   return arr;
 }
 
-/** Returns all members of the value in an object literal. */
-const getMembersOf = (value: Any): [AnyObject, Any] => {
-  let [proto, names] = [
-    Object.getPrototypeOf(value),
-    Object.getOwnPropertyNames(value)
-  ] as [Any, string[]];
-  // save effective prototype
-  let activeProto = proto;
-  // traverse the prototype hierarchy until we get property names or hit the bottom prototype.
-  while (
-    !names.length &&
-    proto !== Object.prototype &&
-    proto !== Array.prototype
-  ) {
-    activeProto = proto;
-    names = Object.getOwnPropertyNames(proto);
-    proto = Object.getPrototypeOf(proto);
-  }
-  const o = {};
-  names.forEach(k => (o[k] = (value as AnyObject)[k]));
-  return [o, activeProto];
-};
-
 type Stringer = { toString(): string };
 
 /**
@@ -418,12 +394,10 @@ export function isEqual(a: Any, b: Any): boolean {
     return true;
   }
   // toString() compare all supported types including custom ones.
-  const proto = Object.getPrototypeOf(a) as object;
+  const proto = getPrototypeOf(a) as object;
   const cmp =
     isTypedArray(a) ||
-    (proto !== Object.prototype &&
-      proto !== Array.prototype &&
-      (Object.prototype.hasOwnProperty.call(proto, "toString") as boolean));
+    (proto !== objectProto && proto !== arrayProto && has(proto, "toString"));
   return cmp && (a as Stringer).toString() === (b as Stringer).toString();
 }
 
@@ -444,53 +418,43 @@ export function unique(
 /**
  * Encode value to string using a simple non-colliding stable scheme.
  * Handles user-defined types by processing keys on first non-empty prototype.
- * If a user-defined type provides a "toJSON" function, it is used.
+ * If a user-defined type provides a "toString" function, it is used.
  *
  * @param value The value to convert to a string representation.
- * @returns {String}
+ * @returns {string}
  */
-export const toString = (v: Any, cycle = new Set<Any>()): string => {
-  const kind = typeOf(v);
-  switch (kind) {
-    case "boolean":
-    case "string":
-    case "number":
-      return JSON.stringify(v);
-    case "date":
-      return (v as Date).toISOString();
-    case "undefined":
-    case "null":
-      return kind;
-    case "symbol":
-    case "function":
-    case "regex":
-      return (v as Stringer).toString();
-  }
-  const ctor = v.constructor;
+export const stringify = (v: Any, refs?: Set<Any>): string => {
+  if (v === null) return "null";
+  if (v === undefined) return "undefined";
+  if (isString(v) || isNumber(v) || isBoolean(v)) return JSON.stringify(v);
+  if (isDate(v)) return v.toISOString();
+  if (isRegExp(v) || isSymbol(v) || isFunction(v))
+    return (v as Stringer).toString();
   if (isTypedArray(v))
-    return ctor.name + "[" + (v as Stringer).toString() + "]";
-  if (cycle.has(v)) throw CYCLE_FOUND_ERROR;
+    return typeOf(v) + "[" + (v as Stringer).toString() + "]";
+  if (!(refs instanceof Set)) refs = new Set();
+  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
   try {
-    cycle.add(v);
-    if (isArray(v)) return "[" + v.map(s => toString(s, cycle)).join(",") + "]";
+    refs.add(v);
+    if (isArray(v)) return "[" + v.map(s => stringify(s, refs)).join(",") + "]";
     if (isObject(v)) {
       const keys = Object.keys(v).sort();
-      return "{" + keys.map(k => `${k}:${toString(v[k], cycle)}`).join() + "}";
+      return "{" + keys.map(k => `${k}:${stringify(v[k], refs)}`).join() + "}";
     }
-    // use toString represenation of custom-type
+    // use toString representation of custom-type
     const proto = Object.getPrototypeOf(v) as object;
     if (
-      proto !== Object.prototype &&
-      proto !== Array.prototype &&
-      (Object.prototype.hasOwnProperty.call(proto, "toString") as boolean)
+      proto !== objectProto &&
+      proto !== arrayProto &&
+      has(proto, "toString")
     ) {
-      return ctor.name + "(" + JSON.stringify((v as Stringer).toString()) + ")";
+      return typeOf(v) + "(" + JSON.stringify((v as Stringer).toString()) + ")";
     }
     throw new Error(
       "mingo: cannot stringify custom type without explicit toString() method."
     );
   } finally {
-    cycle.delete(v);
+    refs.delete(v);
   }
 };
 
@@ -513,13 +477,13 @@ export function hashCode(value: Any, hashFunction?: HashFunction): number {
  *
  * @param collection
  * @param keyFn {Function} to compute the group key of an item in the collection
- * @returns {GroupByOutput}
+ * @returns {Map<Any, Any[]>}
  */
 export function groupBy(
   collection: Any[],
   keyFn: Callback<Any>,
   hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
-): GroupByOutput {
+): Map<Any, Any[]> {
   if (collection.length < 1) return new Map();
 
   // map of hash to collided values
@@ -574,28 +538,26 @@ const MAX_ARRAY_PUSH = 50000;
  *
  * @param {*} target The target object
  * @param {*} rest The array of elements to merge into dest
+ * @private
  */
 export function into(
   target: ArrayOrObject,
   ...rest: ArrayOrObject[]
 ): ArrayOrObject {
   if (isArray(target)) {
-    return rest.reduce(
-      ((acc, arr: Any[]) => {
-        // push arrary in batches to handle large inputs
-        let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
-        let begin = 0;
-        while (i-- > 0) {
-          Array.prototype.push.apply(
-            acc,
-            arr.slice(begin, begin + MAX_ARRAY_PUSH)
-          );
-          begin += MAX_ARRAY_PUSH;
-        }
-        return acc;
-      }) as Callback<typeof target>,
-      target
-    );
+    for (const arr of rest as Any[][]) {
+      // push arrary in batches to handle large inputs
+      let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
+      let begin = 0;
+      while (i-- > 0) {
+        Array.prototype.push.apply(
+          target,
+          arr.slice(begin, begin + MAX_ARRAY_PUSH)
+        );
+        begin += MAX_ARRAY_PUSH;
+      }
+    }
+    return target;
   } else {
     // merge objects. same behaviour as Object.assign
     return rest.filter(isObjectLike).reduce((acc, item) => {
@@ -613,7 +575,7 @@ export function into(
  * @private
  */
 function getValue(obj: ArrayOrObject, key: string | number): Any {
-  return isObjectLike(obj) ? obj[key] : undefined;
+  return isArray(obj) || isObject(obj) ? obj[key] : undefined;
 }
 
 /**
@@ -639,20 +601,17 @@ export function resolve(
   options?: ResolveOptions
 ): Any {
   let depth = 0;
-
   function resolve2(o: ArrayOrObject, path: string[]): Any {
     let value: Any = o;
     for (let i = 0; i < path.length; i++) {
       const field = path[i];
       const isText = /^\d+$/.exec(field) === null;
-
       // using instanceof to aid typescript compiler
       if (isText && isArray(value)) {
         // On the first iteration, we check if we received a stop flag.
         // If so, we stop to prevent iterating over a nested array value
         // on consecutive object keys in the selector.
         if (i === 0 && depth > 0) break;
-
         depth += 1;
         // only look at the rest of the path
         const subpath = path.slice(i);
@@ -670,13 +629,8 @@ export function resolve(
     return value;
   }
 
-  const result = JS_SIMPLE_TYPES.has(typeOf(obj))
-    ? obj
-    : resolve2(obj, selector.split("."));
-
-  return isArray(result) && options?.unwrapArray
-    ? unwrap(result, depth)
-    : result;
+  const res = isScalar(obj) ? obj : resolve2(obj, selector.split("."));
+  return isArray(res) && options?.unwrapArray ? unwrap(res, depth) : res;
 }
 
 /**
@@ -738,6 +692,7 @@ export function resolveGraph(
  * Filter out all MISSING values from the object in-place
  *
  * @param obj The object to filter
+ * @private
  */
 export function filterMissing(obj: ArrayOrObject): void {
   if (isArray(obj)) {
@@ -889,19 +844,14 @@ export function isOperator(name: string): boolean {
  * @returns {*}
  */
 export function normalize(expr: Any): Any {
-  // normalized primitives
-  if (JS_SIMPLE_TYPES.has(typeOf(expr))) {
+  if (isScalar(expr)) {
     return isRegExp(expr) ? { $regex: expr } : { $eq: expr };
   }
 
   // normalize object expression. using ObjectLike handles custom types
   if (isObjectLike(expr)) {
-    const exprObj = expr as AnyObject;
     // no valid query operator found, so we do simple comparison
-    if (!Object.keys(exprObj).some(isOperator)) {
-      return { $eq: expr };
-    }
-
+    if (!Object.keys(expr as AnyObject).some(isOperator)) return { $eq: expr };
     // ensure valid regex
     if (has(expr as AnyObject, "$regex")) {
       const newExpr = { ...(expr as AnyObject) };

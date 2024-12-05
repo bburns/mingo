@@ -13,22 +13,21 @@ import {
   ensureArray,
   filterMissing,
   has,
-  inArray,
   into,
   isArray,
   isEmpty,
-  isMissing,
   isNil,
   isNumber,
   isObject,
   isOperator,
-  isPrimitive,
   isString,
-  notInArray,
+  merge,
   removeValue,
   resolveGraph,
   setValue
 } from "../../util";
+
+const DESCRIPTORS = new Set<Any>(Array.from([0, 1, false, true]));
 
 /**
  * Reshapes each document in the stream, such as by adding new fields or removing existing fields. For each input document, outputs one document.
@@ -49,18 +48,14 @@ export const $project: PipelineOperator = (
 
   // result collection
   const expressionKeys = Object.keys(expr);
-  let idOnlyExcluded = false;
 
   // validate inclusion and exclusion
   validateExpression(expr, options);
 
   const ID_KEY = options.idKey;
 
-  if (inArray(expressionKeys, ID_KEY)) {
-    const id = expr[ID_KEY];
-    idOnlyExcluded = id === 0 && expressionKeys.length === 1;
-  } else {
-    // if not specified the add the ID field
+  if (!expressionKeys.includes(ID_KEY)) {
+    // if not specified then add the ID field
     expressionKeys.push(ID_KEY);
   }
 
@@ -102,7 +97,7 @@ function processObject(
     // expression to associate with key
     const subExpr = expr[key];
 
-    if (key !== options.idKey && inArray([0, false], subExpr)) {
+    if (key !== options.idKey && (subExpr === 0 || subExpr === false)) {
       foundExclusion = true;
     }
 
@@ -111,7 +106,7 @@ function processObject(
       value = obj[key];
     } else if (isString(subExpr)) {
       value = computeValue(obj, subExpr, key, options);
-    } else if (inArray([1, true], subExpr)) {
+    } else if (subExpr === 1 || subExpr === true) {
       // For direct projections, we use the resolved object value
     } else if (isArray(subExpr)) {
       value = subExpr.map(v => {
@@ -185,7 +180,7 @@ function processObject(
     }
 
     // if computed add/or remove accordingly
-    if (notInArray([0, 1, false, true], subExpr)) {
+    if (!DESCRIPTORS.has(subExpr)) {
       if (value === undefined) {
         removeValue(newObj, key, { descendArray: true });
       } else {
@@ -233,29 +228,4 @@ function validateExpression(expr: AnyObject, options: Options): void {
       "Projection cannot have a mix of inclusion and exclusion."
     );
   }
-}
-
-/**
- * Deep merge objects or arrays. When the inputs have unmergeable types, the  right hand value is returned.
- * If inputs are arrays and options.flatten is set, elements in the same position are merged together.
- * Remaining elements are appended to the target object.
- *
- * @param target Target object to merge into.
- * @param input  Source object to merge from.
- */
-function merge(target: Any, input: Any): Any {
-  // take care of missing inputs
-  if (isMissing(target) || isNil(target)) return input;
-  if (isMissing(input) || isNil(input)) return target;
-  if (isPrimitive(target) || isPrimitive(input)) return input;
-  if (isArray(target) && isArray(input)) {
-    assert(
-      target.length === input.length,
-      "arrays must be of equal length to merge."
-    );
-  }
-  for (const k in input as AnyObject) {
-    target[k] = merge(target[k], input[k]);
-  }
-  return target;
 }

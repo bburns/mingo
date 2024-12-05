@@ -1,5 +1,5 @@
+import { update } from "../src";
 import { clone } from "../src/operators/update/_internal";
-import { update } from "../src/updater";
 import { isArray } from "../src/util";
 
 describe("updateObject", () => {

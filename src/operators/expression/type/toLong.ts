@@ -4,8 +4,7 @@
 
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { MAX_LONG, MIN_LONG } from "../../../util";
-import { toInteger } from "./_internal";
+import { MAX_LONG, MIN_LONG, toInteger } from "./_internal";
 
 /**
  * Converts a value to a long. If the value cannot be converted to a long, $toLong errors. If the value is null or missing, $toLong returns null.
@@ -16,6 +15,4 @@ export const $toLong: ExpressionOperator = (
   obj: AnyObject,
   expr: Any,
   options: Options
-): number | null => {
-  return toInteger(obj, expr, options, MAX_LONG, MIN_LONG, "long");
-};
+): number | null => toInteger(obj, expr, options, MIN_LONG, MAX_LONG);

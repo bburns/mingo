@@ -21,7 +21,6 @@ import {
   compare as mingoCmp,
   ensureArray,
   flatten,
-  inArray,
   intersection,
   isArray,
   isBoolean,
@@ -252,7 +251,7 @@ export function $all(
   for (const query of queries) {
     // no need to check all the queries.
     if (!matched) break;
-    if (isObject(query) && inArray(Object.keys(query), "$elemMatch")) {
+    if (isObject(query) && Object.keys(query).includes("$elemMatch")) {
       matched = $elemMatch(values, query["$elemMatch"] as AnyObject, options);
     } else if (isRegExp(query)) {
       matched = values.some(s => typeof s === "string" && query.test(s));

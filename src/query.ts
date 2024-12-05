@@ -2,14 +2,11 @@ import { getOperator, initOptions, Options, QueryOperator } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Any, AnyObject, Callback, Predicate } from "./types";
-import {
-  assert,
-  inArray,
-  isObject,
-  isOperator,
-  MingoError,
-  normalize
-} from "./util";
+import { assert, isObject, isOperator, MingoError, normalize } from "./util";
+
+const TOP_LEVEL_OPS = new Set(
+  Array.from(["$and", "$or", "$nor", "$expr", "$jsonSchema"])
+);
 
 /**
  * An object used to filter input documents
@@ -41,9 +38,7 @@ export class Query {
     for (const [field, expr] of Object.entries(this.#condition)) {
       if ("$where" === field) {
         Object.assign(whereOperator, { field: field, expr: expr });
-      } else if (
-        inArray(["$and", "$or", "$nor", "$expr", "$jsonSchema"], field)
-      ) {
+      } else if (TOP_LEVEL_OPS.has(field)) {
         this.processOperator(field, field, expr);
       } else {
         // normalize expression

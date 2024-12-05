@@ -86,17 +86,6 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
 }
 
 /**
- * Updates the given object with the expression.
- *
- * @param obj The object to update.
- * @param expr The update expressions.
- * @param arrayFilters Filters to apply to nested items.
- * @param conditions Conditions to validate before performing update.
- * @param options Update options to override defaults.
- * @returns {string[]} A list of modified field paths in the object.
+ * @deprecated Use {@link update}.
  */
-export const update = createUpdater();
-/**
- * @deprecated Alias to {@link update}
- */
-export const updateObject = update;
+export const updateObject = createUpdater();
