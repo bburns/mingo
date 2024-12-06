@@ -7,23 +7,11 @@ import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
 import { AnyObject } from "./types";
-import { createUpdater } from "./updater";
+import { createUpdater, update } from "./updater";
 
 export { Aggregator } from "./aggregator";
 export { Query } from "./query";
-export { createUpdater } from "./updater";
-
-/**
- * Updates the given object with the expression.
- *
- * @param obj The object to update.
- * @param expr The update expressions.
- * @param arrayFilters Filters to apply to nested items.
- * @param conditions Conditions to validate before performing update.
- * @param options Update options to override defaults.
- * @returns {string[]} A list of modified field paths in the object.
- */
-export const update = createUpdater();
+export { createUpdater, update } from "./updater";
 
 /**
  * Performs a query on a collection and returns a cursor object.
