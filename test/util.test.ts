@@ -262,30 +262,49 @@ describe("util", () => {
 
     it("resolves the path to the selected field only", () => {
       const result = resolveGraph(doc, "b.e.1");
-      expect({ b: { e: [2] } }).toEqual(result);
+      expect(result).toEqual({ b: { e: [2] } });
       expect(doc).toEqual(sameDoc);
     });
 
     it("resolves item in nested array by index", () => {
       const result = resolveGraph({ a: [5, { b: [10] }] }, "a.1.b.0");
-      expect({ a: [{ b: [10] }] }).toEqual(result);
+      expect(result).toEqual({ a: [{ b: [10] }] });
     });
 
     it("resolves object in a nested array", () => {
       const result = resolveGraph({ a: [{ b: [{ c: 1 }] }] }, "a.b.c");
-      expect({ a: [{ b: [{ c: 1 }] }] }).toEqual(result);
+      expect(result).toEqual({ a: [{ b: [{ c: 1 }] }] });
     });
 
-    it("preserves other keys of the resolved object graph", () => {
+    it("preserves untouched keys of the resolved object", () => {
       const result = resolveGraph(doc, "b.e.1", {
         preserveKeys: true
       }) as AnyObject;
-      expect({ a: 1, b: { c: 2, d: ["hello"], e: [2] } }).toEqual(result);
+      expect(result).toEqual({ a: 1, b: { c: 2, d: ["hello"], e: [2] } });
       expect(doc).toEqual(sameDoc);
 
       const leaf = resolve(result, "b.d");
       expect(leaf).toEqual(["hello"]);
       expect(leaf === doc.b.d).toBeTruthy();
+    });
+
+    it("preserves untouched array indexes of resolved object graph", () => {
+      const result = resolveGraph(doc, "b.e.1", {
+        preserveIndex: true
+      }) as AnyObject;
+      expect(result).toEqual({ b: { e: [1, 2, 3] } });
+
+      const res2 = resolveGraph({ a: 1, b: [{ c: 2 }, { d: 3 }] }, "b.1.d", {
+        preserveIndex: true
+      }) as AnyObject;
+      expect(res2).toEqual({ b: [{ c: 2 }, { d: 3 }] });
+    });
+
+    it("preserves position of touched array indexes for nested object in resolved object", () => {
+      const result = resolveGraph({ a: 1, b: [{ c: 2 }, { d: 3 }] }, "b.d", {
+        preserveIndex: true
+      }) as AnyObject;
+      expect(result).toEqual({ b: [undefined, { d: 3 }] });
     });
   });
 

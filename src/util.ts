@@ -46,13 +46,6 @@ const isPrimitive = (v: Any): boolean =>
 /** Scalar types provided by the JS runtime. Includes primitives, RegExp, and Date */
 const isScalar = (v: Any) => isPrimitive(v) || isDate(v) || isRegExp(v);
 
-/** Options to resolve() and resolveGraph() functions */
-interface ResolveOptions {
-  unwrapArray?: boolean;
-  preserveMissing?: boolean;
-  preserveKeys?: boolean;
-}
-
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
 const SORT_ORDER: Record<string, number> = {
   undefined: 1,
@@ -582,11 +575,24 @@ function getValue(obj: ArrayOrObject, key: string | number): Any {
  * Unwrap a single element array to specified depth
  * @param {Array} arr
  * @param {Number} depth
+ * @private
  */
 function unwrap(arr: Any[], depth: number): Any[] {
   if (depth < 1) return arr;
   while (depth-- && arr.length === 1) arr = arr[0] as Any[];
   return arr;
+}
+
+/** Options to resolve() and resolveGraph() functions */
+interface ResolveOptions {
+  /** Unwrap the final array value.  */
+  unwrapArray?: boolean;
+  /** Replace "undefined" values with special MISSING symbol value. */
+  preserveMissing?: boolean;
+  /** Preserve values for untouched keys of objects. */
+  preserveKeys?: boolean;
+  /** Preserve untouched indexes in arrays. */
+  preserveIndex?: boolean;
 }
 
 /**
@@ -598,7 +604,7 @@ function unwrap(arr: Any[], depth: number): Any[] {
 export function resolve(
   obj: ArrayOrObject,
   selector: string,
-  options?: ResolveOptions
+  options?: Pick<ResolveOptions, "unwrapArray">
 ): Any {
   let depth = 0;
   function resolve2(o: ArrayOrObject, path: string[]): Any {
@@ -635,7 +641,6 @@ export function resolve(
 
 /**
  * Returns the full object to the resolved value given by the selector.
- * This function excludes empty values as they aren't practically useful.
  *
  * @param obj {AnyObject} the object context
  * @param selector {String} dot separated path to field
@@ -645,47 +650,47 @@ export function resolveGraph(
   selector: string,
   options?: ResolveOptions
 ): ArrayOrObject | undefined {
-  const names: string[] = selector.split(".");
-  const key = names[0];
-  // get the next part of the selector
-  const next = names.slice(1).join(".");
-  const isIndex = /^\d+$/.test(key);
-  const hasNext = names.length > 1;
-  let result: Any;
-  let value: Any;
+  const sep = selector.indexOf(".");
+  const key = sep == -1 ? selector : selector.substring(0, sep);
+  const next = selector.substring(sep + 1);
+  const hasNext = sep != -1;
 
   if (isArray(obj)) {
+    // obj is an array
+    const isIndex = /^\d+$/.test(key);
+    const arr = isIndex && options?.preserveIndex ? [...obj] : [];
     if (isIndex) {
-      result = getValue(obj, Number(key)) as ArrayOrObject;
+      const index = parseInt(key);
+      let value = getValue(obj, index) as ArrayOrObject;
       if (hasNext) {
-        result = resolveGraph(result as ArrayOrObject, next, options);
+        value = resolveGraph(value, next, options);
       }
-      result = [result];
+      if (options?.preserveIndex) {
+        arr[index] = value;
+      } else {
+        arr.push(value);
+      }
     } else {
-      result = [];
       for (const item of obj) {
-        value = resolveGraph(item as ArrayOrObject, selector, options);
+        const value = resolveGraph(item as ArrayOrObject, selector, options);
         if (options?.preserveMissing) {
-          if (value === undefined) {
-            value = MISSING;
-          }
-          (result as Any[]).push(value);
-        } else if (value !== undefined) {
-          (result as Any[]).push(value);
+          arr.push(value == undefined ? MISSING : value);
+        } else if (value != undefined || options?.preserveIndex) {
+          arr.push(value);
         }
       }
     }
-  } else {
-    value = getValue(obj, key);
-    if (hasNext) {
-      value = resolveGraph(value as ArrayOrObject, next, options);
-    }
-    if (value === undefined) return undefined;
-    result = options?.preserveKeys ? { ...obj } : {};
-    (result as AnyObject)[key] = value;
+    return arr;
   }
 
-  return result as ArrayOrObject;
+  const res = options?.preserveKeys ? { ...obj } : {};
+  let value = getValue(obj, key);
+  if (hasNext) {
+    value = resolveGraph(value as ArrayOrObject, next, options);
+  }
+  if (value === undefined) return undefined;
+  res[key] = value;
+  return res;
 }
 
 /**
