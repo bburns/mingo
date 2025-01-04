@@ -77,7 +77,7 @@ export const $bucketAuto: PipelineOperator = (
 
   if (granularity) {
     assert(
-      /^POWERSOF2|1-2-5|E(6|12|24|48|96|192)|R(5|10|20|40|80)$/.test(
+      /^(POWERSOF2|1-2-5|E(6|12|24|48|96|192)|R(5|10|20|40|80))$/.test(
         granularity
       ),
       `$bucketAuto: invalid granularity '${granularity}'.`

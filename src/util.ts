@@ -292,7 +292,7 @@ export function merge(target: Any, input: Any): Any {
       "arrays must be of equal length to merge."
     );
   }
-  for (const k in input as AnyObject) {
+  for (const k of Object.keys(input as AnyObject)) {
     target[k] = merge(target[k], input[k]);
   }
   return target;
