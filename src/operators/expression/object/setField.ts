@@ -38,11 +38,12 @@ export const $setField: ExpressionOperator = (
     "$setField expression 'field' must evaluate to a string"
   );
 
+  const newObj = { ...input };
   if (expr.value == "$$REMOVE") {
-    delete obj[field];
+    delete newObj[field];
   } else {
-    obj[field] = value;
+    newObj[field] = value;
   }
 
-  return obj;
+  return newObj;
 };
