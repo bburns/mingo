@@ -319,13 +319,19 @@ export function $elemMatch(
 const isNull = (a: Any) => a === null;
 
 /** Mapping of type to predicate */
-const compareFuncs: Record<number | string, Predicate<Any>> = {
+const compareFuncs: Record<ConversionType, Predicate<Any>> = {
   array: isArray as Predicate<Any>,
   boolean: isBoolean,
+  bool: isBoolean,
   date: isDate,
   number: isNumber,
+  int: isNumber,
+  long: isNumber,
+  double: isNumber,
+  decimal: isNumber,
   null: isNull,
   object: isObject,
+  regexp: isRegExp,
   regex: isRegExp,
   string: isString,
   // added for completeness
@@ -343,8 +349,8 @@ const compareFuncs: Record<number | string, Predicate<Any>> = {
   9: isDate,
   10: isNull,
   11: isRegExp,
-  16: isNumber,
-  18: isNumber,
+  16: isNumber, //int
+  18: isNumber, //long
   19: isNumber //decimal
 };
 
