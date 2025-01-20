@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.5.2 / 2025-01-19
+**Fixes**
+- `$slice`: handle negative skip values correctly. [#503](https://github.com/kofrasa/mingo/issues/503)
+- `$setField`: modify correct input object when adding new field.
+- `$convert`: add missing BSON type strings.
+
 ## 6.5.1 / 2024-12-07
 
 **Improvements**
