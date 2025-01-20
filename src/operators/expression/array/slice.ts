@@ -26,7 +26,6 @@ export const $slice: ExpressionOperator = (
   if (isNil(limit)) {
     if (skip < 0) {
       skip = Math.max(0, arr.length + skip);
-      limit = arr.length - skip + 1;
     } else {
       limit = skip;
       skip = 0;
