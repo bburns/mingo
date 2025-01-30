@@ -7,30 +7,29 @@ import {
   ProjectionOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { Any, AnyObject, Callback } from "../../types";
+import { Any, AnyObject } from "../../types";
 import {
   assert,
   ensureArray,
   filterMissing,
   has,
-  into,
   isArray,
+  isBoolean,
   isEmpty,
-  isNil,
   isNumber,
   isObject,
   isOperator,
   isString,
   merge,
   removeValue,
+  resolve,
   resolveGraph,
   setValue
 } from "../../util";
 
-const DESCRIPTORS = new Set<Any>(Array.from([0, 1, false, true]));
-
 /**
- * Reshapes each document in the stream, such as by adding new fields or removing existing fields. For each input document, outputs one document.
+ * Reshapes each document in the stream, such as by adding new fields or removing existing fields.
+ * For each input document, outputs one document.
  *
  * See {@link https://www.mongodb.com/docs/manual/reference/operator/aggregation/project usage}.
  *
@@ -45,176 +44,17 @@ export const $project: PipelineOperator = (
   options: Options
 ): Iterator => {
   if (isEmpty(expr)) return collection;
-
-  // result collection
-  const expressionKeys = Object.keys(expr);
-
-  // validate inclusion and exclusion
-  validateExpression(expr, options);
-
-  const ID_KEY = options.idKey;
-
-  if (!expressionKeys.includes(ID_KEY)) {
-    // if not specified then add the ID field
-    expressionKeys.push(ID_KEY);
-  }
-
+  checkExpression(expr, options);
   const copts = ComputeOptions.init(options);
-  return collection.map(((obj: AnyObject) =>
-    processObject(obj, expr, copts.update(obj), expressionKeys)) as Callback);
+  return collection.map(prepareHandler(expr, copts, true));
 };
-
-/**
- *Process the expression value for $project operators
- * @param obj The object to use as options
- * @param expr  The experssion object of $project operator
- * @param options The options
- * @param expressionKeys The key in the 'expr' object
- * @returns
- */
-function processObject(
-  obj: AnyObject,
-  expr: AnyObject,
-  options: ComputeOptions,
-  expressionKeys: string[]
-): AnyObject {
-  let newObj = {};
-  let foundSlice = false;
-  let foundExclusion = false;
-  // flag indicating whether only the ID key is excluded
-  const idOnlyExcluded =
-    expr[options.idKey] === 0 && expressionKeys.length === 1;
-  const dropKeys: string[] = [];
-
-  if (idOnlyExcluded) {
-    dropKeys.push(options.idKey);
-  }
-
-  for (const key of expressionKeys) {
-    // final computed value of the key
-    let value: Any = undefined;
-
-    // expression to associate with key
-    const subExpr = expr[key];
-
-    if (key !== options.idKey && (subExpr === 0 || subExpr === false)) {
-      foundExclusion = true;
-    }
-
-    if (key === options.idKey && isEmpty(subExpr)) {
-      // tiny optimization here to skip over id
-      value = obj[key];
-    } else if (isString(subExpr)) {
-      value = computeValue(obj, subExpr, key, options);
-    } else if (subExpr === 1 || subExpr === true) {
-      // For direct projections, we use the resolved object value
-    } else if (isArray(subExpr)) {
-      value = subExpr.map(v => {
-        const r = computeValue(obj, v, null, options);
-        if (isNil(r)) return null;
-        return r;
-      });
-    } else if (isObject(subExpr)) {
-      const subExprObj = subExpr as AnyObject;
-      const subExprKeys = Object.keys(subExpr);
-      const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
-
-      // first try a projection operator
-      const call = getOperator(
-        "projection",
-        operator,
-        options
-      ) as ProjectionOperator;
-      if (call) {
-        // apply the projection operator on the operator expression for the key
-        if (operator === "$slice") {
-          // $slice is handled differently for aggregation and projection operations
-          if (ensureArray(subExprObj[operator]).every(isNumber)) {
-            // $slice for projection operation
-            value = call(obj, subExprObj[operator], key, options);
-            foundSlice = true;
-          } else {
-            // $slice for aggregation operation
-            value = computeValue(obj, subExprObj, key, options);
-          }
-        } else {
-          value = call(obj, subExprObj[operator], key, options);
-        }
-      } else if (isOperator(operator)) {
-        // compute if operator key
-        value = computeValue(obj, subExprObj[operator], operator, options);
-      } else if (has(obj, key)) {
-        // compute the value for the sub expression for the key
-        validateExpression(subExprObj, options);
-        let target = obj[key];
-        if (isArray(target)) {
-          value = target.map((o: AnyObject) =>
-            processObject(o, subExprObj, options, subExprKeys)
-          );
-        } else {
-          target = isObject(target) ? target : obj;
-          value = processObject(
-            target as AnyObject,
-            subExprObj,
-            options,
-            subExprKeys
-          );
-        }
-      } else {
-        // compute the value for the sub expression for the key
-        value = computeValue(obj, subExpr, null, options);
-      }
-    } else {
-      dropKeys.push(key);
-      continue;
-    }
-
-    // get value with object graph
-    const objPathGraph = resolveGraph(obj, key, {
-      preserveMissing: true
-    }) as AnyObject;
-
-    // add the value at the path
-    if (isObject(objPathGraph)) {
-      merge(newObj, objPathGraph);
-    }
-
-    // if computed add/or remove accordingly
-    if (!DESCRIPTORS.has(subExpr)) {
-      if (value === undefined) {
-        removeValue(newObj, key, { descendArray: true });
-      } else {
-        setValue(newObj, key, value);
-      }
-    }
-  }
-
-  // filter out all missing values preserved to support correct merging
-  filterMissing(newObj);
-
-  // For the following cases we include all keys on the object that were not explicitly excluded.
-  //
-  // 1. projection included $slice operator
-  // 2. some fields were explicitly excluded
-  // 3. only the id field was excluded
-  if (foundSlice || foundExclusion || idOnlyExcluded) {
-    newObj = into({}, obj, newObj);
-    if (dropKeys.length > 0) {
-      for (const k of dropKeys) {
-        removeValue(newObj, k, { descendArray: true });
-      }
-    }
-  }
-
-  return newObj;
-}
 
 /**
  * Validate inclusion and exclusion values in expression
  *
  * @param {Object} expr The expression given for the projection
  */
-function validateExpression(expr: AnyObject, options: Options): void {
+function checkExpression(expr: AnyObject, options: Options): void {
   const check = [false, false];
   for (const [k, v] of Object.entries(expr)) {
     if (k === options?.idKey) return;
@@ -228,4 +68,149 @@ function validateExpression(expr: AnyObject, options: Options): void {
       "Projection cannot have a mix of inclusion and exclusion."
     );
   }
+}
+
+type Handler = (_: AnyObject) => Any;
+
+/**
+ * Prepare the expression for projection.
+ * @param expr  The projection expression
+ * @param options The options
+ * @returns
+ */
+function prepareHandler(
+  expr: AnyObject,
+  options: ComputeOptions,
+  isRoot: boolean = false
+): Handler {
+  const idKey = options.idKey;
+  const expressionKeys = Object.keys(expr);
+  const excludedKeys = new Array<string>();
+  const includedKeys = new Array<string>();
+  const handlers: Record<string, Handler> = {};
+
+  for (const key of expressionKeys) {
+    // get expression associated with key
+    const subExpr = expr[key];
+
+    if (isNumber(subExpr) || isBoolean(subExpr)) {
+      if (subExpr) {
+        includedKeys.push(key);
+      } else {
+        excludedKeys.push(key);
+      }
+    } else if (isArray(subExpr)) {
+      handlers[key] = (o: AnyObject) =>
+        subExpr.map(v => computeValue(o, v, null, options.update(o)) ?? null);
+    } else if (isObject(subExpr)) {
+      const subExprKeys = Object.keys(subExpr);
+      const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
+      // first try projection operator as used in Query.find() queries
+      const projectFn = getOperator(
+        "projection",
+        operator,
+        options
+      ) as ProjectionOperator;
+      if (projectFn) {
+        // check if this $slice operator is used with $expr instead of Query.find()
+        // we assume $slice is used with $expr if any of its arguments are not a number
+        const foundSlice = operator === "$slice";
+        if (foundSlice && !ensureArray(subExpr[operator]).every(isNumber)) {
+          handlers[key] = (o: AnyObject) =>
+            computeValue(o, subExpr, key, options.update(o));
+        } else {
+          handlers[key] = (o: AnyObject) =>
+            projectFn(o, subExpr[operator], key, options.update(o));
+        }
+      } else if (isOperator(operator)) {
+        // pipelien projection
+        handlers[key] = (o: AnyObject) =>
+          computeValue(o, subExpr[operator], operator, options);
+      } else {
+        // repeat for nested expression
+        checkExpression(subExpr as AnyObject, options);
+        handlers[key] = (o: AnyObject) => {
+          if (!has(o, key)) return computeValue(o, subExpr, null, options);
+          // ensure that the root object is passed down.
+          if (isRoot) options.update(o);
+          const target = resolve(o, key);
+          const fn = prepareHandler(subExpr as AnyObject, options);
+          if (isArray(target)) return target.map(fn);
+          if (isObject(target)) return fn(target as AnyObject);
+          return fn(o);
+        };
+      }
+    } else {
+      handlers[key] =
+        isString(subExpr) && subExpr[0] === "$"
+          ? (o: AnyObject) => computeValue(o, subExpr, key, options)
+          : (_: AnyObject) => subExpr;
+    }
+  }
+
+  const handlerKeys = Object.keys(handlers);
+  // the exclude keys includes.
+  const idKeyExcluded = excludedKeys.includes(idKey);
+  // for root key only.
+  const idKeyOnlyExcluded =
+    isRoot &&
+    idKeyExcluded &&
+    excludedKeys.length === 1 &&
+    !includedKeys.length &&
+    !handlerKeys.length;
+
+  // special case for root object with only idKey excluded.
+  if (idKeyOnlyExcluded) {
+    return (o: AnyObject) => {
+      const newObj = { ...o };
+      delete newObj[idKey];
+      return newObj;
+    };
+  }
+
+  // implicitly add the 'idKey' only for root object.
+  const idKeyImplicit =
+    isRoot && !idKeyExcluded && !includedKeys.includes(idKey);
+
+  // ResolveOptions for resolveGraph().
+  const opts = {
+    preserveMissing: true
+  };
+
+  return (o: AnyObject) => {
+    const newObj = {};
+
+    // if there is at least one excluded key (not including idKey)
+    if (excludedKeys.length && !includedKeys.length) {
+      merge(newObj, o);
+      for (const k of excludedKeys) {
+        removeValue(newObj, k, { descendArray: true });
+      }
+    }
+
+    for (const key of includedKeys) {
+      // get value with object graph
+      const pathObj = resolveGraph(o, key, opts) ?? {};
+      // add the value at the path
+      merge(newObj, pathObj);
+    }
+
+    // filter out all missing values preserved to support correct merging
+    if (includedKeys.length) filterMissing(newObj);
+
+    for (const key of handlerKeys) {
+      const value = handlers[key](o);
+      if (value === undefined) {
+        removeValue(newObj, key, { descendArray: true });
+      } else {
+        setValue(newObj, key, value);
+      }
+    }
+
+    if (idKeyImplicit && has(o, idKey)) {
+      newObj[idKey] = resolve(o, idKey);
+    }
+
+    return newObj;
+  };
 }

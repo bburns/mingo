@@ -45,6 +45,63 @@ describe("operators/projection", () => {
     }
   ];
 
+  xdescribe("positional '$' operator", () => {
+    const students = [
+      { _id: 1, semester: 1, grades: [70, 87, 90] },
+      { _id: 2, semester: 1, grades: [90, 88, 92] },
+      { _id: 3, semester: 1, grades: [85, 100, 90] },
+      { _id: 4, semester: 2, grades: [79, 85, 80] },
+      { _id: 5, semester: 2, grades: [88, 88, 92] },
+      { _id: 6, semester: 2, grades: [95, 90, 96] }
+    ];
+
+    it("project array values", () => {
+      const result = find(
+        students,
+        { semester: 1, grades: { $gte: 85 } },
+        { "grades.$": 1 }
+      ).all();
+      expect(result).toEqual([
+        { _id: 1, grades: [87] },
+        { _id: 2, grades: [90] },
+        { _id: 3, grades: [85] }
+      ]);
+    });
+
+    it("project array documents", () => {
+      const grades = [
+        {
+          _id: 7,
+          semester: 3,
+          grades: [
+            { grade: 80, mean: 75, std: 8 },
+            { grade: 85, mean: 90, std: 5 },
+            { grade: 90, mean: 85, std: 3 }
+          ]
+        },
+
+        {
+          _id: 8,
+          semester: 3,
+          grades: [
+            { grade: 92, mean: 88, std: 8 },
+            { grade: 78, mean: 90, std: 5 },
+            { grade: 88, mean: 85, std: 3 }
+          ]
+        }
+      ];
+      const result = find(
+        grades,
+        { "grades.mean": { $gt: 70 } },
+        { "grades.$": 1 }
+      ).all();
+      expect(result).toEqual([
+        { _id: 7, grades: [{ grade: 80, mean: 75, std: 8 }] },
+        { _id: 8, grades: [{ grade: 92, mean: 88, std: 8 }] }
+      ]);
+    });
+  });
+
   describe("$elemMatch", () => {
     it("can project single field with $elemMatch", () => {
       const result = find(
@@ -181,7 +238,7 @@ describe("operators/projection", () => {
         ];
       });
 
-      it("should omit single item in object", () => {
+      it("should include single item in object", () => {
         const result = find(data, {}, { "features.hair": 1 }).next();
         expect(result).toEqual({ features: { hair: "brown" } });
         expect(data[0]).not.toEqual(result);
