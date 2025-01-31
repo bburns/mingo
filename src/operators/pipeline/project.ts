@@ -55,16 +55,25 @@ export const $project: PipelineOperator = (
  * @param {Object} expr The expression given for the projection
  */
 function checkExpression(expr: AnyObject, options: Options): void {
-  const check = [false, false];
+  let exclusions = false;
+  let inclusions = false;
+  let positional = 0;
   for (const [k, v] of Object.entries(expr)) {
-    if (k === options?.idKey) return;
+    assert(!k.startsWith("$"), "Field names may not start with '$'.");
+    if (k.endsWith(".$")) {
+      assert(
+        ++positional < 2,
+        "Cannot specify more than one positional projection per query."
+      );
+    }
+    if (k === options?.idKey) continue;
     if (v === 0 || v === false) {
-      check[0] = true;
+      exclusions = true;
     } else if (v === 1 || v === true) {
-      check[1] = true;
+      inclusions = true;
     }
     assert(
-      !(check[0] && check[1]),
+      !(exclusions && inclusions),
       "Projection cannot have a mix of inclusion and exclusion."
     );
   }
@@ -189,9 +198,9 @@ function createHandler(
       }
     }
 
-    for (const key of includedKeys) {
+    for (const k of includedKeys) {
       // get value with object graph
-      const pathObj = resolveGraph(o, key, opts) ?? {};
+      const pathObj = resolveGraph(o, k, opts) ?? {};
       // add the value at the path
       merge(newObj, pathObj);
     }
@@ -199,12 +208,12 @@ function createHandler(
     // filter out all missing values preserved to support correct merging
     if (includedKeys.length) filterMissing(newObj);
 
-    for (const key of handlerKeys) {
-      const value = handlers[key](o);
+    for (const k of handlerKeys) {
+      const value = handlers[k](o);
       if (value === undefined) {
-        removeValue(newObj, key, { descendArray: true });
+        removeValue(newObj, k, { descendArray: true });
       } else {
-        setValue(newObj, key, value);
+        setValue(newObj, k, value);
       }
     }
 
