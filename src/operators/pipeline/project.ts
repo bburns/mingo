@@ -46,7 +46,7 @@ export const $project: PipelineOperator = (
   if (isEmpty(expr)) return collection;
   checkExpression(expr, options);
   const copts = ComputeOptions.init(options);
-  return collection.map(prepareHandler(expr, copts, true));
+  return collection.map(createHandler(expr, copts));
 };
 
 /**
@@ -73,15 +73,16 @@ function checkExpression(expr: AnyObject, options: Options): void {
 type Handler = (_: AnyObject) => Any;
 
 /**
- * Prepare the expression for projection.
+ * Creates a precompiled handler for projection operation.
  * @param expr  The projection expression
  * @param options The options
+ * @param isRoot Indicates whether the handler is for the root object.
  * @returns
  */
-function prepareHandler(
+function createHandler(
   expr: AnyObject,
   options: ComputeOptions,
-  isRoot: boolean = false
+  isRoot: boolean = true
 ): Handler {
   const idKey = options.idKey;
   const expressionKeys = Object.keys(expr);
@@ -134,7 +135,7 @@ function prepareHandler(
           // ensure that the root object is passed down.
           if (isRoot) options.update(o);
           const target = resolve(o, key);
-          const fn = prepareHandler(subExpr as AnyObject, options);
+          const fn = createHandler(subExpr as AnyObject, options, false);
           if (isArray(target)) return target.map(fn);
           if (isObject(target)) return fn(target as AnyObject);
           return fn(o);
