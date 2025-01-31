@@ -1,8 +1,13 @@
-import { Aggregator } from "./aggregator";
-import { CollationSpec, Options } from "./core";
+import { CollationSpec, Options, PipelineOperator } from "./core";
 import { concat, Iterator, Lazy, Source } from "./lazy";
+import { $limit } from "./operators/pipeline/limit";
+import { $project } from "./operators/pipeline/project";
+import { $skip } from "./operators/pipeline/skip";
+import { $sort } from "./operators/pipeline/sort";
 import { Any, AnyObject, Callback, Predicate } from "./types";
-import { isObject } from "./util";
+import { cloneDeep, has, isObject } from "./util";
+
+const OPERATORS: Record<string, PipelineOperator> = { $sort, $skip, $limit };
 
 /**
  * Cursor to iterate and perform filtering on matched objects.
@@ -19,7 +24,7 @@ export class Cursor<T> {
   #predicate: Predicate<Any>;
   #projection: AnyObject;
   #options?: Options;
-  #operators: AnyObject[] = [];
+  #operators: AnyObject = {};
   #result: Iterator | null = null;
   #buffer: T[] = [];
 
@@ -39,18 +44,21 @@ export class Cursor<T> {
   private fetch(): Iterator {
     if (this.#result) return this.#result;
 
-    // add projection operator
-    if (isObject(this.#projection)) {
-      this.#operators.push({ $project: this.#projection });
+    // apply filter
+    this.#result = Lazy(this.#source).filter(this.#predicate).map(cloneDeep);
+    // apply cursor operators
+    for (const op of ["$sort", "$skip", "$limit"]) {
+      if (has(this.#operators, op)) {
+        this.#result = OPERATORS[op](
+          this.#result,
+          this.#operators[op],
+          this.#options
+        );
+      }
     }
-
-    // filter collection
-    this.#result = Lazy(this.#source).filter(this.#predicate);
-
-    if (this.#operators.length > 0) {
-      this.#result = new Aggregator(this.#operators, this.#options).stream(
-        this.#result
-      );
+    // apply projection
+    if (isObject(this.#projection)) {
+      this.#result = $project(this.#result, this.#projection, this.#options);
     }
 
     return this.#result;
@@ -85,7 +93,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   skip(n: number): Cursor<T> {
-    this.#operators.push({ $skip: n });
+    this.#operators["$skip"] = n;
     return this;
   }
 
@@ -95,7 +103,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   limit(n: number): Cursor<T> {
-    this.#operators.push({ $limit: n });
+    this.#operators["$limit"] = n;
     return this;
   }
 
@@ -105,7 +113,7 @@ export class Cursor<T> {
    * @return {Cursor} Returns the cursor, so you can chain this call.
    */
   sort(modifier: AnyObject): Cursor<T> {
-    this.#operators.push({ $sort: modifier });
+    this.#operators["$sort"] = modifier;
     return this;
   }
 
