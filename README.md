@@ -349,17 +349,13 @@ Below is a description of how this library differs from the full MongoDB query e
 
 1. There is no concept of a collection. Input is an array, generator or iterable of objects.
 1. Support a single numeric type `number`.
-1. When `useStrictMode` is `false`, replace MongoDB [types](https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/#available-types) with JS native types as follows;
-   - `"bool"` -> `"boolean"`.
-   - `"int"|"long"|"double"|"decimal"` -> `"number"`.
-   - `"missing"` -> `"undefined"`.
 1. Does not support [types](https://www.mongodb.com/docs/manual/reference/operator/aggregation/type/#available-types) `"minKey"`, `"maxKey"`, `"timestamp"`, or `"binData"`.
 1. Does not support server specific operators. E.g. `$collStat`, `$planCacheStats`, `$listSessions`.
 1. Does not support geometry query operators.
 1. Does not support query operators dependent on persistent storage; `$comment`, `$meta`, `$text`.
 1. Does not support positional query or update operator `$`.
 1. Does not support server specific expression operators; `$toObjectId`, `$binarySize`, `bsonSize`.
-1. Agregation pipeline operator `$merge` enforces unique constraint on the lookup field during input processing.
+1. Aggregation pipeline operator `$merge` enforces unique constraint on the lookup field during input processing.
 1. Custom function evaluation operators; `$where`, `$function`, and `$accumulator`, do not accept strings as the function body.
 1. Custom function evaluation operators are enabled by default. They can be disabled with the `scriptEnabled` option.
 1. Custom function evaluation operator [$accumulator](https://docs.mongodb.com/manual/reference/operator/aggregation/accumulator/) does not support the `merge` option.
