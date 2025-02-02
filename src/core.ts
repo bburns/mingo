@@ -10,6 +10,7 @@ import {
 } from "./types";
 import {
   assert,
+  cloneDeep,
   has,
   isArray,
   isFunction,
@@ -110,6 +111,81 @@ export interface Options {
   readonly context: Context;
 }
 
+export class DefaultOptions implements Options {
+  #options: Options;
+  #context: Context;
+  constructor(options?: Partial<Options>) {
+    this.#context =
+      options && options.context
+        ? Context.from(options?.context)
+        : Context.init();
+    if (options instanceof DefaultOptions) {
+      this.#options = cloneDeep(options.#options);
+    } else {
+      this.#options = {
+        idKey: "_id",
+        scriptEnabled: true,
+        useStrictMode: true,
+        useGlobalContext: true,
+        processingMode: ProcessingMode.CLONE_OFF,
+        ...cloneDeep(options),
+        context: this.#context
+      };
+    }
+  }
+
+  get parent() {
+    return this.#options;
+  }
+
+  get idKey() {
+    return this.parent.idKey ?? "_id";
+  }
+  get collation() {
+    return this.parent?.collation;
+  }
+  get processingMode() {
+    return this.parent.processingMode;
+  }
+  get useStrictMode() {
+    return this.parent.useStrictMode;
+  }
+  get scriptEnabled() {
+    return this.parent.scriptEnabled;
+  }
+  get useGlobalContext() {
+    return this.parent.useGlobalContext;
+  }
+  get hashFunction() {
+    return this.parent?.hashFunction;
+  }
+  get collectionResolver() {
+    return this.parent?.collectionResolver;
+  }
+  get jsonSchemaValidator() {
+    return this.parent?.jsonSchemaValidator;
+  }
+  get variables() {
+    return this.parent?.variables;
+  }
+  get context() {
+    return this.#context;
+  }
+}
+
+export class QueryOptions extends DefaultOptions {
+  private constructor(
+    options: Partial<Options>,
+    readonly condition: AnyObject
+  ) {
+    super(options);
+  }
+
+  static init(options: Partial<Options>, condition: AnyObject): QueryOptions {
+    return new QueryOptions(options, condition);
+  }
+}
+
 interface LocalData {
   /** The groupId computed for a group of documents. */
   readonly groupId?: Any;
@@ -118,38 +194,32 @@ interface LocalData {
 }
 
 /** Custom type to facilitate type checking for global options */
-export class ComputeOptions implements Options {
-  #options: Options;
+export class ComputeOptions extends DefaultOptions {
   /** Reference to the root object when processing subgraphs of the object. */
   #root: Any;
   #local: LocalData;
 
   private constructor(options: Options, root: Any, local?: LocalData) {
-    this.#options = options;
+    super(options);
     this.update(root, local);
   }
 
   /**
    * Initialize new ComputeOptions.
-   *
-   * @param options
-   * @param root
-   * @param local
    * @returns {ComputeOptions}
    */
   static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
-    return options instanceof ComputeOptions
-      ? new ComputeOptions(options.#options, options.root ?? root, {
+    return !(options instanceof ComputeOptions)
+      ? new ComputeOptions(options, root, local)
+      : new ComputeOptions(options.parent, options.root ?? root, {
           ...options.#local,
           ...local,
-          // retain existing variables
           variables: Object.assign(
             {},
             options.#local?.variables,
             local?.variables
           )
-        })
-      : new ComputeOptions(options, root, local);
+        });
   }
 
   /**
@@ -163,24 +233,13 @@ export class ComputeOptions implements Options {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
     // retain existing variables
-    const variables = Object.assign(
-      {},
-      this.#local?.variables,
-      local?.variables
-    );
-    if (Object.keys(variables).length) {
-      this.#local = { ...local, variables };
+    const vars = Object.assign({}, this.#local?.variables, local?.variables);
+    if (Object.keys(vars).length) {
+      this.#local = { ...local, variables: vars };
     } else {
       this.#local = local ?? {};
     }
     return this;
-  }
-
-  getOptions() {
-    return Object.freeze({
-      ...this.#options,
-      context: Context.from(this.#options.context)
-    }) as Options;
   }
 
   get root() {
@@ -189,39 +248,6 @@ export class ComputeOptions implements Options {
   get local() {
     return this.#local;
   }
-  get idKey() {
-    return this.#options.idKey;
-  }
-  get collation() {
-    return this.#options?.collation;
-  }
-  get processingMode() {
-    return this.#options?.processingMode || ProcessingMode.CLONE_OFF;
-  }
-  get useStrictMode() {
-    return this.#options?.useStrictMode;
-  }
-  get scriptEnabled() {
-    return this.#options?.scriptEnabled;
-  }
-  get useGlobalContext() {
-    return this.#options?.useGlobalContext;
-  }
-  get hashFunction() {
-    return this.#options?.hashFunction;
-  }
-  get collectionResolver() {
-    return this.#options?.collectionResolver;
-  }
-  get jsonSchemaValidator() {
-    return this.#options?.jsonSchemaValidator;
-  }
-  get variables() {
-    return this.#options?.variables;
-  }
-  get context() {
-    return this.#options?.context;
-  }
 }
 
 /**
@@ -229,8 +255,9 @@ export class ComputeOptions implements Options {
  * @param options Options
  */
 export function initOptions(options?: Partial<Options>): Options {
+  // return new DefaultOptions(options);
   return options instanceof ComputeOptions
-    ? options.getOptions()
+    ? options.parent
     : Object.freeze({
         idKey: "_id",
         scriptEnabled: true,

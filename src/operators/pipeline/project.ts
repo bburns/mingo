@@ -1,13 +1,16 @@
 import {
   ComputeOptions,
   computeValue,
+  DefaultOptions,
   getOperator,
   Options,
   PipelineOperator,
-  ProjectionOperator
+  ProjectionOperator,
+  QueryOperator,
+  QueryOptions
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { Any, AnyObject } from "../../types";
+import { Any, AnyObject, Predicate } from "../../types";
 import {
   assert,
   ensureArray,
@@ -21,6 +24,7 @@ import {
   isOperator,
   isString,
   merge,
+  normalize,
   removeValue,
   resolve,
   resolveGraph,
@@ -79,6 +83,44 @@ function checkExpression(expr: AnyObject, options: Options): void {
   }
 }
 
+function getPositionalFilter(field: string, options: Options): Predicate<Any> {
+  let cond: AnyObject = undefined;
+  let opts = options;
+  // location the query condition on the options object.
+  while (opts instanceof DefaultOptions) {
+    if (opts instanceof QueryOptions) {
+      cond = opts.condition;
+      break;
+    }
+    opts = opts.parent;
+  }
+  assert(
+    !!cond,
+    "query must be specified to support projection positional operator '$'."
+  );
+  // extract the queries for the field and siblings if part of an $and expression.
+  let operator: string;
+  let value: Any = undefined;
+  for (const key of Object.keys(cond)) {
+    if (key === field) {
+      const entry = Object.entries(normalize(cond[key])).pop();
+      operator = entry[0];
+      value = entry[1];
+    } else if (key === "$and") {
+      // the field must be part of the $and expression. confirm that and compile it whole.
+      value = cond[key];
+      operator = "$and";
+      assert(
+        isArray(value) && value.some(o => has(o as AnyObject, field)),
+        `condition must include array field '${field}'.`
+      );
+    }
+  }
+  const call = getOperator("query", operator, options) as QueryOperator;
+  assert(!!call, `no query operator found for '${operator}'.`);
+  return call(field, value, options);
+}
+
 type Handler = (_: AnyObject) => Any;
 
 /**
@@ -98,6 +140,7 @@ function createHandler(
   const excludedKeys = new Array<string>();
   const includedKeys = new Array<string>();
   const handlers: Record<string, Handler> = {};
+  const positional: Record<string, Predicate<Any>> = {};
 
   for (const key of expressionKeys) {
     // get expression associated with key
@@ -106,6 +149,11 @@ function createHandler(
     if (isNumber(subExpr) || isBoolean(subExpr)) {
       if (subExpr) {
         includedKeys.push(key);
+        // get predicate for field if used as a positional projection "<array>.$".
+        if (isRoot && key.endsWith(".$")) {
+          const field = key.substring(0, key.lastIndexOf(".$"));
+          positional[field] = getPositionalFilter(field, options);
+        }
       } else {
         excludedKeys.push(key);
       }
@@ -203,6 +251,16 @@ function createHandler(
       const pathObj = resolveGraph(o, k, opts) ?? {};
       // add the value at the path
       merge(newObj, pathObj);
+      // handle positional projection fields.
+      if (has(positional, k) && positional[k](o)) {
+        const val = resolve(newObj, k) as Any[];
+        if (isArray(val) && val.length > 1) {
+          // __update_set(newObj, { [k]: [val[0]] }, [], {
+          //   cloneMode: "deep",
+          //   queryOptions: options
+          // });
+        }
+      }
     }
 
     // filter out all missing values preserved to support correct merging

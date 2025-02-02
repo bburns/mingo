@@ -1,4 +1,9 @@
-import { initOptions, UpdateOperator, UpdateOptions } from "./core";
+import {
+  DefaultOptions,
+  initOptions,
+  UpdateOperator,
+  UpdateOptions
+} from "./core";
 import * as booleanOperators from "./operators/expression/boolean";
 import * as comparisonOperators from "./operators/expression/comparison";
 import * as queryOperators from "./operators/query";
@@ -37,7 +42,7 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
   defaultOptions = defaultOptions || {};
   defaultOptions = {
     ...defaultOptions,
-    queryOptions: initOptions(defaultOptions.queryOptions)
+    queryOptions: new DefaultOptions(defaultOptions.queryOptions)
   };
   defaultOptions.queryOptions.context
     .addQueryOps(queryOperators)
@@ -49,7 +54,7 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
     expr: UpdateExpression,
     arrayFilters: AnyObject[] = [],
     condition: AnyObject = {},
-    options: UpdateOptions = {}
+    options: UpdateOptions = defaultOptions
   ): string[] => {
     const opts = Object.assign({ cloneMode: "copy" }, defaultOptions, options);
     Object.assign(opts, {
@@ -57,7 +62,6 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
         Object.assign({ useStrictMode: false }, opts?.queryOptions)
       )
     });
-    // validate operator
     const entry = Object.entries(expr);
     // check for single entry
     assert(
@@ -74,10 +78,7 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
     const mutate = UPDATE_OPERATORS[op] as UpdateOperator;
     // validate condition
     if (Object.keys(condition).length) {
-      const q =
-        condition instanceof Query
-          ? condition
-          : new Query(condition, opts.queryOptions);
+      const q = new Query(condition, opts.queryOptions);
       if (!q.test(obj)) return [] as string[];
     }
     // apply updates

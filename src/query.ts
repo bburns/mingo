@@ -1,8 +1,8 @@
-import { getOperator, initOptions, Options, QueryOperator } from "./core";
+import { getOperator, Options, QueryOperator, QueryOptions } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
-import { Any, AnyObject, Callback, Predicate } from "./types";
-import { assert, isObject, isOperator, MingoError, normalize } from "./util";
+import { Any, AnyObject, Predicate } from "./types";
+import { assert, cloneDeep, isObject, isOperator, normalize } from "./util";
 
 const TOP_LEVEL_OPS = new Set(
   Array.from(["$and", "$or", "$nor", "$expr", "$jsonSchema"])
@@ -16,13 +16,13 @@ const TOP_LEVEL_OPS = new Set(
  * @constructor
  */
 export class Query {
-  #compiled: Callback<Any>[];
+  #compiled: Predicate<Any>[];
   #options: Options;
   #condition: AnyObject;
 
   constructor(condition: AnyObject, options?: Partial<Options>) {
-    this.#condition = condition;
-    this.#options = initOptions(options);
+    this.#condition = cloneDeep(condition);
+    this.#options = QueryOptions.init(options, this.#condition);
     this.#compiled = [];
     this.compile();
   }
@@ -37,6 +37,10 @@ export class Query {
 
     for (const [field, expr] of Object.entries(this.#condition)) {
       if ("$where" === field) {
+        assert(
+          this.#options.scriptEnabled,
+          "$where operator requires 'scriptEnabled' option to be true."
+        );
         Object.assign(whereOperator, { field: field, expr: expr });
       } else if (TOP_LEVEL_OPS.has(field)) {
         this.processOperator(field, field, expr);
@@ -62,29 +66,18 @@ export class Query {
 
   private processOperator(field: string, operator: string, value: Any): void {
     const call = getOperator("query", operator, this.#options) as QueryOperator;
-    if (!call) {
-      throw new MingoError(`unknown query operator ${operator}`);
-    }
-    const fn = call(field, value, this.#options) as Callback<
-      boolean,
-      AnyObject
-    >;
-    this.#compiled.push(fn);
+    assert(!!call, `unknown query operator ${operator}`);
+    this.#compiled.push(call(field, value, this.#options));
   }
 
   /**
    * Checks if the object passes the query criteria. Returns true if so, false otherwise.
    *
    * @param obj The object to test
-   * @returns {boolean} True or false
+   * @returns {boolean}
    */
   test<T>(obj: T): boolean {
-    for (let i = 0, len = this.#compiled.length; i < len; i++) {
-      if (!this.#compiled[i](obj)) {
-        return false;
-      }
-    }
-    return true;
+    return this.#compiled.every(p => p(obj));
   }
 
   /**
@@ -97,7 +90,7 @@ export class Query {
   find<T>(collection: Source, projection?: AnyObject): Cursor<T> {
     return new Cursor<T>(
       collection,
-      ((x: AnyObject) => this.test(x)) as Predicate<Any>,
+      o => this.test(o),
       projection || {},
       this.#options
     );

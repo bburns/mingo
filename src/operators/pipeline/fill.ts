@@ -1,4 +1,4 @@
-import { initOptions, Options, PipelineOperator } from "../../core";
+import { DefaultOptions, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any } from "../../types";
 import { assert, has, isObject } from "../../util";
@@ -50,7 +50,7 @@ export const $fill: PipelineOperator = (
     "fields in partitionByFields cannot begin with '$'."
   );
 
-  options = initOptions(options);
+  options = new DefaultOptions(options);
   options.context.addExpressionOps({ $ifNull });
   options.context.addWindowOps({ $locf, $linearFill });
 
