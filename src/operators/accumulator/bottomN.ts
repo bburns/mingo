@@ -1,12 +1,13 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/bottomN/#mongodb-group-grp.-bottomN
-import { Aggregator } from "../../aggregator";
 import {
   AccumulatorOperator,
   ComputeOptions,
   computeValue,
   Options
 } from "../../core";
+import { Lazy } from "../../lazy";
 import { Any, AnyObject } from "../../types";
+import { $sort } from "../pipeline/sort";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -37,7 +38,7 @@ export const $bottomN: AccumulatorOperator<Any[]> = (
     copts
   ) as Pick<InputExpr, "n" | "sortBy">;
 
-  const result = new Aggregator([{ $sort: sortBy }], copts).run(collection);
+  const result = $sort(Lazy(collection), sortBy, options).value();
 
   const m = result.length;
   const p = n as number;

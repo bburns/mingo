@@ -1,9 +1,10 @@
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortArray/#mongodb-expression-exp.-sortArray
 
-import { Aggregator } from "../../../aggregator";
 import { computeValue, ExpressionOperator, Options } from "../../../core";
+import { Lazy } from "../../../lazy";
 import { Any, AnyObject } from "../../../types";
 import { assert, compare, isArray, isNil, isObject } from "../../../util";
+import { $sort } from "../../pipeline/sort";
 
 /**
  * Sorts an array based on its elements. The sort order is user specified.
@@ -27,7 +28,7 @@ export const $sortArray: ExpressionOperator = (
   assert(isArray(input), "$sortArray expression must resolve to an array");
 
   if (isObject(sortBy)) {
-    return new Aggregator([{ $sort: sortBy }]).run(input);
+    return $sort(Lazy(input), sortBy, options).value();
   }
 
   const result = [...input];
