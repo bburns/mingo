@@ -134,6 +134,20 @@ export class DefaultOptions implements Options {
     }
   }
 
+  // constructor(base?: Partial<Options>, overrides?: Partial<Options>) {
+  //   const isType = base instanceof DefaultOptions;
+  //   this.#options = {
+  //     idKey: "_id",
+  //     scriptEnabled: true,
+  //     useStrictMode: true,
+  //     useGlobalContext: true,
+  //     processingMode: ProcessingMode.CLONE_OFF,
+  //     ...(isType ? base.parent : {}),
+  //     context: isType ? Context.from(base?.context) : Context.init(),
+  //     ...overrides
+  //   };
+  // }
+
   get parent() {
     return this.#options;
   }
@@ -169,7 +183,7 @@ export class DefaultOptions implements Options {
     return this.parent?.variables;
   }
   get context() {
-    return this.#context;
+    return this.#options.context;
   }
 }
 
@@ -281,9 +295,9 @@ export type CloneMode = "deep" | "copy" | "none";
 
 export interface UpdateOptions {
   /** Specifies whether to deep clone values to persist in the internal store. @default "copy". */
-  readonly cloneMode?: CloneMode;
+  readonly cloneMode: CloneMode;
   /** Options to use for processing queries. Unless overriden 'useStrictMode' is false.  */
-  readonly queryOptions?: Partial<Options>;
+  readonly queryOptions: Options;
 }
 
 /**

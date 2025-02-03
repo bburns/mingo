@@ -1,14 +1,19 @@
 import { UpdateOptions } from "../../core";
 import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { has, intersection, isObject, unique } from "../../util";
-import { applyUpdate, clone, walkExpression } from "./_internal";
+import {
+  applyUpdate,
+  clone,
+  UPDATE_OPTIONS,
+  walkExpression
+} from "./_internal";
 
 /** Adds a value to an array unless the value is already present. */
 export const $addToSet = (
   obj: AnyObject,
   expr: AnyObject,
   arrayFilters: AnyObject[] = [],
-  options: UpdateOptions = {}
+  options: UpdateOptions = UPDATE_OPTIONS
 ) => {
   return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
     const args = { $each: [val] };

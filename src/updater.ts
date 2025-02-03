@@ -1,13 +1,6 @@
-import {
-  DefaultOptions,
-  initOptions,
-  UpdateOperator,
-  UpdateOptions
-} from "./core";
-import * as booleanOperators from "./operators/expression/boolean";
-import * as comparisonOperators from "./operators/expression/comparison";
-import * as queryOperators from "./operators/query";
+import { UpdateOperator, UpdateOptions } from "./core";
 import * as UPDATE_OPERATORS from "./operators/update";
+import { UPDATE_OPTIONS } from "./operators/update/_internal";
 import { Query } from "./query";
 import { AnyObject } from "./types";
 import { assert, has } from "./util";
@@ -39,15 +32,7 @@ export type Updater = (
  */
 export function createUpdater(defaultOptions?: UpdateOptions): Updater {
   // automatically load basic query options for update operators
-  defaultOptions = defaultOptions || {};
-  defaultOptions = {
-    ...defaultOptions,
-    queryOptions: new DefaultOptions(defaultOptions.queryOptions)
-  };
-  defaultOptions.queryOptions.context
-    .addQueryOps(queryOperators)
-    .addExpressionOps(booleanOperators)
-    .addExpressionOps(comparisonOperators);
+  defaultOptions = defaultOptions ?? UPDATE_OPTIONS;
 
   return (
     obj: AnyObject,
@@ -56,12 +41,6 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
     condition: AnyObject = {},
     options: UpdateOptions = defaultOptions
   ): string[] => {
-    const opts = Object.assign({ cloneMode: "copy" }, defaultOptions, options);
-    Object.assign(opts, {
-      queryOptions: initOptions(
-        Object.assign({ useStrictMode: false }, opts?.queryOptions)
-      )
-    });
     const entry = Object.entries(expr);
     // check for single entry
     assert(
@@ -78,11 +57,11 @@ export function createUpdater(defaultOptions?: UpdateOptions): Updater {
     const mutate = UPDATE_OPERATORS[op] as UpdateOperator;
     // validate condition
     if (Object.keys(condition).length) {
-      const q = new Query(condition, opts.queryOptions);
+      const q = new Query(condition, options.queryOptions);
       if (!q.test(obj)) return [] as string[];
     }
     // apply updates
-    return mutate(obj, args, arrayFilters, opts);
+    return mutate(obj, args, arrayFilters, options);
   };
 }
 

@@ -1,7 +1,12 @@
 import { UpdateOptions } from "../../core";
 import { AnyObject, ArrayOrObject } from "../../types";
 import { assert, isNumber } from "../../util";
-import { Action, applyUpdate, walkExpression } from "./_internal";
+import {
+  Action,
+  applyUpdate,
+  UPDATE_OPTIONS,
+  walkExpression
+} from "./_internal";
 
 const BIT_OPS = new Set(["and", "or", "xor"]);
 
@@ -10,7 +15,7 @@ export const $bit = (
   obj: AnyObject,
   expr: AnyObject,
   arrayFilters: AnyObject[] = [],
-  options: UpdateOptions = {}
+  options: UpdateOptions = UPDATE_OPTIONS
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     const op = Object.keys(val);

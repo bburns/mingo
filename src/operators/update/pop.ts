@@ -1,14 +1,19 @@
 import { UpdateOptions } from "../../core";
 import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { assert, isArray } from "../../util";
-import { Action, applyUpdate, walkExpression } from "./_internal";
+import {
+  Action,
+  applyUpdate,
+  UPDATE_OPTIONS,
+  walkExpression
+} from "./_internal";
 
 /** Removes the first or last element of an array. */
 export const $pop = (
   obj: AnyObject,
   expr: Record<string, 1 | -1>,
   arrayFilters: AnyObject[] = [],
-  options: UpdateOptions = {}
+  options: UpdateOptions = UPDATE_OPTIONS
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     return applyUpdate(obj, node, queries, (o: ArrayOrObject, k: string) => {

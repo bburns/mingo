@@ -1,4 +1,7 @@
-import { CloneMode, UpdateOptions } from "../../core";
+import { CloneMode, Context, DefaultOptions, UpdateOptions } from "../../core";
+import * as booleanOperators from "../../operators/expression/boolean";
+import * as comparisonOperators from "../../operators/expression/comparison";
+import * as queryOperators from "../../operators/query";
 import { Query } from "../../query";
 import { Any, AnyObject, ArrayOrObject, Callback } from "../../types";
 import {
@@ -12,6 +15,16 @@ import {
   walk,
   WalkOptions
 } from "../../util";
+
+export const UPDATE_OPTIONS: UpdateOptions = {
+  cloneMode: "copy",
+  queryOptions: new DefaultOptions({
+    context: Context.init()
+      .addQueryOps(queryOperators)
+      .addExpressionOps(booleanOperators)
+      .addExpressionOps(comparisonOperators)
+  })
+};
 
 export const clone = (mode: CloneMode, val: Any): Any => {
   switch (mode) {

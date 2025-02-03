@@ -1,7 +1,13 @@
 import { UpdateOptions } from "../../core";
 import { Any, AnyObject, ArrayOrObject } from "../../types";
 import { compare, has, isEqual, isNumber, isObject, resolve } from "../../util";
-import { Action, applyUpdate, clone, walkExpression } from "./_internal";
+import {
+  Action,
+  applyUpdate,
+  clone,
+  UPDATE_OPTIONS,
+  walkExpression
+} from "./_internal";
 
 const OPERATOR_MODIFIERS = Object.freeze([
   "$each",
@@ -15,7 +21,7 @@ export const $push = (
   obj: AnyObject,
   expr: AnyObject,
   arrayFilters: AnyObject[] = [],
-  options: UpdateOptions = {}
+  options: UpdateOptions = UPDATE_OPTIONS
 ) => {
   return walkExpression(expr, arrayFilters, options, ((val, node, queries) => {
     const args: {

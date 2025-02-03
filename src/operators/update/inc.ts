@@ -1,14 +1,14 @@
 import { UpdateOptions } from "../../core";
 import { AnyObject, ArrayOrObject } from "../../types";
 import { assert, isNumber, resolve } from "../../util";
-import { applyUpdate, walkExpression } from "./_internal";
+import { applyUpdate, UPDATE_OPTIONS, walkExpression } from "./_internal";
 
 /** Increments a field by a specified value. */
 export const $inc = (
   obj: AnyObject,
   expr: Record<string, number>,
   arrayFilters: AnyObject[] = [],
-  options: UpdateOptions = {}
+  options: UpdateOptions = UPDATE_OPTIONS
 ) => {
   return walkExpression(expr, arrayFilters, options, (val, node, queries) => {
     if (!node.child) {
