@@ -1,11 +1,11 @@
 import "../../../src/init/system";
 
 import { aggregate } from "../../../src";
-import { initOptions, ProcessingMode } from "../../../src/core";
+import { DefaultOptions, ProcessingMode } from "../../../src/core";
 import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS } from "../../support";
 
-const options = initOptions({
+const options = new DefaultOptions({
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
 });
@@ -484,9 +484,9 @@ describe("operators/pipeline/merge", () => {
       { name: "Bob", age: 15 },
       { name: "Charlie", age: 21 }
     ];
-    const options = initOptions({
+    const options = {
       collectionResolver: (_: string) => output
-    });
+    };
     expect(() =>
       aggregate(
         [
@@ -513,9 +513,9 @@ describe("operators/pipeline/merge", () => {
       { name: "Alison", age: 10 },
       { name: "Bobby", age: 17 }
     ];
-    const options = initOptions({
+    const options = {
       collectionResolver: (_: string) => output
-    });
+    };
     aggregate(
       [
         { name: "Alice", age: 10, height: 80 },
@@ -546,9 +546,9 @@ describe("operators/pipeline/merge", () => {
       { name: "Alison", age: 10 },
       { name: "Bobby", age: 17 }
     ];
-    const options = initOptions({
+    const options = {
       collectionResolver: (_: string) => output
-    });
+    };
 
     aggregate(
       [

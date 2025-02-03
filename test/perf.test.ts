@@ -1,9 +1,9 @@
 import "../src/init/system";
 
+/* eslint-disable-next-line */
 import { performance } from "perf_hooks";
 
 import { aggregate, Aggregator } from "../src";
-import { initOptions } from "../src/core";
 import { AnyObject, Callback } from "../src/types";
 
 /* eslint-disable no-console */
@@ -102,12 +102,12 @@ describe("perf", () => {
           }
         }
       ],
-      initOptions({
+      {
         collation: {
           locale: "en",
           strength: 1
         }
-      })
+      }
     );
     const mingoSorter2 = new Aggregator([
       {

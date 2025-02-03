@@ -1,10 +1,10 @@
 import "../../../src/init/system";
 
 import { aggregate, find } from "../../../src";
-import { initOptions } from "../../../src/core";
 import { $getField } from "../../../src/operators/expression/misc/getField";
 import { Any, AnyObject } from "../../../src/types";
 import { isEqual } from "../../../src/util";
+import { TEST_OPTIONS } from "../../support";
 
 describe("operators/expression/misc", () => {
   describe("$rand", () => {
@@ -41,7 +41,7 @@ describe("operators/expression/misc", () => {
   describe("$getField", () => {
     it("should work with only 'field' in expression", () => {
       expect(
-        $getField({ "a.b": "dotted" }, { field: "a.b" }, initOptions({}))
+        $getField({ "a.b": "dotted" }, { field: "a.b" }, TEST_OPTIONS)
       ).toEqual("dotted");
     });
 

@@ -1,11 +1,11 @@
 import { aggregate } from "../../../src";
-import { initOptions, ProcessingMode } from "../../../src/core";
+import { ProcessingMode } from "../../../src/core";
 import { DEFAULT_OPTS } from "../../support";
 
-const options = initOptions({
+const options = {
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
-});
+};
 
 const data = [
   { stock: "ABC", date: new Date("2020-05-18T20:00:00Z"), price: 13 },

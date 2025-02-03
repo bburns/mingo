@@ -2,7 +2,7 @@ import { aggregate, Aggregator, find } from "../src";
 import {
   ComputeOptions,
   computeValue,
-  initOptions,
+  DefaultOptions,
   Options,
   PipelineOperator,
   ProcessingMode,
@@ -12,9 +12,9 @@ import {
 import { Iterator } from "../src/lazy";
 import { Any, AnyObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
-import { complexGradesData, DEFAULT_OPTS } from "./support";
+import { complexGradesData, DEFAULT_OPTS, TEST_OPTIONS } from "./support";
 
-const copts = ComputeOptions.init(DEFAULT_OPTS);
+const copts = ComputeOptions.init(TEST_OPTIONS);
 
 describe("core", () => {
   afterEach(() => {
@@ -69,7 +69,7 @@ describe("core", () => {
         return agg.stream(array).map(item => (item as AnyObject)["__temp__"]);
       };
 
-      const opts = initOptions(DEFAULT_OPTS);
+      const opts = new DefaultOptions(DEFAULT_OPTS);
       if (opts.context) opts.context.addPipelineOps({ $pluck });
 
       const result = aggregate(
@@ -91,7 +91,7 @@ describe("core", () => {
         };
       }
 
-      // DEFAULT_OPTS.context.addQueryOps({ $between });
+      // TEST_OPTIONS.context.addQueryOps({ $between });
       useOperators("query", { $between });
 
       const coll = [
@@ -104,13 +104,13 @@ describe("core", () => {
         coll,
         { a: { $between: [5, 10] } },
         {},
-        DEFAULT_OPTS
+        TEST_OPTIONS
       ).all();
       expect(result.length).toBe(2);
     });
 
     it("should add accumulator operator", () => {
-      DEFAULT_OPTS.context.addAccumulatorOps({
+      TEST_OPTIONS.context.addAccumulatorOps({
         $stddev: (collection: Any[], expr: Any, options?: Options) => {
           const result = aggregate(
             collection,
@@ -136,7 +136,7 @@ describe("core", () => {
           { $unwind: "$scores" },
           { $group: { _id: null, stddev: { $stddev: "$scores.score" } } }
         ],
-        DEFAULT_OPTS
+        TEST_OPTIONS
       );
       expect(result.length).toBe(1);
       expect(result[0].stddev).toEqual(28.57362029450366);
@@ -145,7 +145,7 @@ describe("core", () => {
 
   describe("computeValue", () => {
     it("throws for invalid operator", () => {
-      expect(() => computeValue({}, {}, "$fakeOperator", DEFAULT_OPTS)).toThrow(
+      expect(() => computeValue({}, {}, "$fakeOperator", TEST_OPTIONS)).toThrow(
         Error
       );
     });
@@ -155,7 +155,7 @@ describe("core", () => {
         {},
         { date: "$$NOW" },
         null,
-        DEFAULT_OPTS
+        TEST_OPTIONS
       ) as {
         date: Date;
       };

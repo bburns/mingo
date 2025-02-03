@@ -1,11 +1,11 @@
 import { aggregate } from "../../../src";
-import { initOptions, ProcessingMode } from "../../../src/core";
+import { ProcessingMode } from "../../../src/core";
 import { DEFAULT_OPTS, testPath } from "../../support";
 
-const options = initOptions({
+const options = {
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
-});
+};
 
 describe(testPath("accumulator/median"), () => {
   const input = [

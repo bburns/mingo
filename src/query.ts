@@ -1,4 +1,10 @@
-import { getOperator, Options, QueryOperator, QueryOptions } from "./core";
+import {
+  DefaultOptions,
+  getOperator,
+  Options,
+  QueryOperator,
+  QueryOptions
+} from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Any, AnyObject, Predicate } from "./types";
@@ -22,7 +28,10 @@ export class Query {
 
   constructor(condition: AnyObject, options?: Partial<Options>) {
     this.#condition = cloneDeep(condition);
-    this.#options = QueryOptions.init(options, this.#condition);
+    this.#options = QueryOptions.init(
+      new DefaultOptions(options),
+      this.#condition
+    );
     this.#compiled = [];
     this.compile();
   }

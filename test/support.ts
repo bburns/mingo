@@ -4,7 +4,7 @@ import { aggregate as srcAggregate, find as srcFind } from "../src";
 import {
   computeValue,
   Context,
-  initOptions,
+  DefaultOptions,
   Options,
   ProcessingMode
 } from "../src/core";
@@ -30,7 +30,8 @@ const FULL_CONTEXT = Context.init()
   .addQueryOps(queryOperators)
   .addWindowOps(windowOperators);
 
-export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
+export const DEFAULT_OPTS = { context: FULL_CONTEXT };
+export const TEST_OPTIONS = new DefaultOptions(DEFAULT_OPTS);
 
 export const complexGradesData = complexGrades;
 export const simpleGradesData = simpleGrades;
@@ -56,7 +57,7 @@ export const ObjectId = (id: string) => new objectId(id);
 export const aggregate = (
   coll: Source,
   pipeline: AnyObject[],
-  options?: Options
+  options?: Partial<Options>
 ) => srcAggregate(coll, pipeline, options ?? DEFAULT_OPTS);
 
 export const find = (
@@ -235,7 +236,7 @@ export function runTest(
             });
           } else {
             it(`${prefix} => ${JSON.stringify(expected)}`, () => {
-              let actual = computeValue(obj, input, field, DEFAULT_OPTS);
+              let actual = computeValue(obj, input, field, TEST_OPTIONS);
               // NaNs don't compare
               if (actual !== actual && expected !== expected) {
                 actual = expected = 0;
@@ -266,15 +267,11 @@ export function runTestPipeline(
   describe(description, () => {
     suite.forEach(unitTest => {
       const { input, pipeline, expected, message, options } = unitTest;
-      const actual = aggregate(
-        input,
-        pipeline,
-        initOptions({
-          ...DEFAULT_OPTS,
-          ...options,
-          processingMode: ProcessingMode.CLONE_INPUT
-        })
-      );
+      const actual = aggregate(input, pipeline, {
+        ...DEFAULT_OPTS,
+        ...options,
+        processingMode: ProcessingMode.CLONE_INPUT
+      });
       it(message, () => {
         if (typeof expected === "function") {
           const cb = expected as Callback<Any>;

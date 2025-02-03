@@ -1,6 +1,6 @@
 import {
+  DefaultOptions,
   getOperator,
-  initOptions,
   Options,
   PipelineOperator,
   ProcessingMode
@@ -22,7 +22,7 @@ export class Aggregator {
 
   constructor(pipeline: AnyObject[], options?: Partial<Options>) {
     this.#pipeline = pipeline;
-    this.#options = initOptions(options);
+    this.#options = new DefaultOptions(options);
   }
 
   /**

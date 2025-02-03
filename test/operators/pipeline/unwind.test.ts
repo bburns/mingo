@@ -1,11 +1,11 @@
 import { aggregate } from "../../../src";
-import { initOptions, ProcessingMode } from "../../../src/core";
+import { ProcessingMode } from "../../../src/core";
 import { DEFAULT_OPTS, studentsData } from "../../support";
 
-const options = initOptions({
+const options = {
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
-});
+};
 
 const data = [
   { _id: 1, item: "ABC", sizes: ["S", "M", "L"] },

@@ -10,7 +10,6 @@ import {
 } from "./types";
 import {
   assert,
-  cloneDeep,
   has,
   isArray,
   isFunction,
@@ -113,74 +112,56 @@ export interface Options {
 
 export class DefaultOptions implements Options {
   #options: Options;
-  #context: Context;
   constructor(options?: Partial<Options>) {
-    this.#context =
-      options && options.context
-        ? Context.from(options?.context)
-        : Context.init();
     if (options instanceof DefaultOptions) {
-      this.#options = cloneDeep(options.#options);
-    } else {
-      this.#options = {
-        idKey: "_id",
-        scriptEnabled: true,
-        useStrictMode: true,
-        useGlobalContext: true,
-        processingMode: ProcessingMode.CLONE_OFF,
-        ...cloneDeep(options),
-        context: this.#context
-      };
+      options = options.#options;
     }
+    this.#options = {
+      idKey: "_id",
+      scriptEnabled: true,
+      useStrictMode: true,
+      useGlobalContext: true,
+      processingMode: ProcessingMode.CLONE_OFF,
+      ...options,
+      context: options?.context
+        ? Context.from(options?.context)
+        : Context.init()
+    };
   }
-
-  // constructor(base?: Partial<Options>, overrides?: Partial<Options>) {
-  //   const isType = base instanceof DefaultOptions;
-  //   this.#options = {
-  //     idKey: "_id",
-  //     scriptEnabled: true,
-  //     useStrictMode: true,
-  //     useGlobalContext: true,
-  //     processingMode: ProcessingMode.CLONE_OFF,
-  //     ...(isType ? base.parent : {}),
-  //     context: isType ? Context.from(base?.context) : Context.init(),
-  //     ...overrides
-  //   };
-  // }
 
   get parent() {
     return this.#options;
   }
 
   get idKey() {
-    return this.parent.idKey ?? "_id";
+    return this.#options.idKey ?? "_id";
   }
   get collation() {
-    return this.parent?.collation;
+    return this.#options?.collation;
   }
   get processingMode() {
-    return this.parent.processingMode;
+    return this.#options.processingMode;
   }
   get useStrictMode() {
-    return this.parent.useStrictMode;
+    return this.#options.useStrictMode;
   }
   get scriptEnabled() {
-    return this.parent.scriptEnabled;
+    return this.#options.scriptEnabled;
   }
   get useGlobalContext() {
-    return this.parent.useGlobalContext;
+    return this.#options.useGlobalContext;
   }
   get hashFunction() {
-    return this.parent?.hashFunction;
+    return this.#options?.hashFunction;
   }
   get collectionResolver() {
-    return this.parent?.collectionResolver;
+    return this.#options?.collectionResolver;
   }
   get jsonSchemaValidator() {
-    return this.parent?.jsonSchemaValidator;
+    return this.#options?.jsonSchemaValidator;
   }
   get variables() {
-    return this.parent?.variables;
+    return this.#options?.variables;
   }
   get context() {
     return this.#options.context;
@@ -195,7 +176,7 @@ export class QueryOptions extends DefaultOptions {
     super(options);
   }
 
-  static init(options: Partial<Options>, condition: AnyObject): QueryOptions {
+  static init(options: Options, condition: AnyObject): QueryOptions {
     return new QueryOptions(options, condition);
   }
 }
@@ -262,27 +243,6 @@ export class ComputeOptions extends DefaultOptions {
   get local() {
     return this.#local;
   }
-}
-
-/**
- * Creates an Option from another where required keys are initialized.
- * @param options Options
- */
-export function initOptions(options?: Partial<Options>): Options {
-  // return new DefaultOptions(options);
-  return options instanceof ComputeOptions
-    ? options.parent
-    : Object.freeze({
-        idKey: "_id",
-        scriptEnabled: true,
-        useStrictMode: true,
-        useGlobalContext: true,
-        processingMode: ProcessingMode.CLONE_OFF,
-        ...options,
-        context: options?.context
-          ? Context.from(options?.context)
-          : Context.init()
-      });
 }
 
 /**
