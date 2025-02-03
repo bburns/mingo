@@ -23,7 +23,7 @@ const TOP_LEVEL_OPS = new Set(
  */
 export class Query {
   #compiled: Predicate<Any>[];
-  #options: Options;
+  #options: QueryOptions;
   #condition: AnyObject;
 
   constructor(condition: AnyObject, options?: Partial<Options>) {

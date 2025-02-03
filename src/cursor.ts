@@ -1,4 +1,9 @@
-import { CollationSpec, Options, PipelineOperator } from "./core";
+import {
+  CollationSpec,
+  DefaultOptions,
+  PipelineOperator,
+  QueryOptions
+} from "./core";
 import { concat, Iterator, Lazy, Source } from "./lazy";
 import { $limit } from "./operators/pipeline/limit";
 import { $project } from "./operators/pipeline/project";
@@ -23,7 +28,7 @@ export class Cursor<T> {
   #source: Source;
   #predicate: Predicate<Any>;
   #projection: AnyObject;
-  #options?: Options;
+  #options?: QueryOptions;
   #operators: AnyObject = {};
   #result: Iterator | null = null;
   #buffer: T[] = [];
@@ -32,7 +37,7 @@ export class Cursor<T> {
     source: Source,
     predicate: Predicate<Any>,
     projection: AnyObject,
-    options?: Options
+    options: QueryOptions
   ) {
     this.#source = source;
     this.#predicate = predicate;
@@ -122,7 +127,10 @@ export class Cursor<T> {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor<T> {
-    this.#options = { ...this.#options, collation: spec };
+    this.#options = QueryOptions.init(
+      new DefaultOptions({ ...this.#options.parent, collation: spec }),
+      this.#options.condition
+    );
     return this;
   }
 

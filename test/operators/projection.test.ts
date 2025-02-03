@@ -1,9 +1,8 @@
 import "../../src/init/system";
 
-import { find } from "../../src";
 import { ProcessingMode } from "../../src/core";
 import { Any, AnyObject } from "../../src/types";
-import { ObjectId, personData } from "../support";
+import { find, ObjectId, personData } from "../support";
 
 const idStr = "123456789abe";
 const obj = Object.assign({}, personData, { _id: ObjectId(idStr) });
@@ -45,7 +44,7 @@ describe("operators/projection", () => {
     }
   ];
 
-  xdescribe("positional '$' operator", () => {
+  describe("positional '$' operator", () => {
     const students = [
       { _id: 1, semester: 1, grades: [70, 87, 90] },
       { _id: 2, semester: 1, grades: [90, 88, 92] },
@@ -55,7 +54,29 @@ describe("operators/projection", () => {
       { _id: 6, semester: 2, grades: [95, 90, 96] }
     ];
 
-    xit("project array values", () => {
+    const grades = [
+      {
+        _id: 7,
+        semester: 3,
+        grades: [
+          { grade: 80, mean: 75, std: 8 },
+          { grade: 85, mean: 90, std: 5 },
+          { grade: 90, mean: 85, std: 3 }
+        ]
+      },
+
+      {
+        _id: 8,
+        semester: 3,
+        grades: [
+          { grade: 92, mean: 88, std: 8 },
+          { grade: 78, mean: 90, std: 5 },
+          { grade: 88, mean: 85, std: 3 }
+        ]
+      }
+    ];
+
+    it("project array values", () => {
       const result = find(
         students,
         { semester: 1, grades: { $gte: 85 } },
@@ -68,28 +89,7 @@ describe("operators/projection", () => {
       ]);
     });
 
-    xit("project array documents", () => {
-      const grades = [
-        {
-          _id: 7,
-          semester: 3,
-          grades: [
-            { grade: 80, mean: 75, std: 8 },
-            { grade: 85, mean: 90, std: 5 },
-            { grade: 90, mean: 85, std: 3 }
-          ]
-        },
-
-        {
-          _id: 8,
-          semester: 3,
-          grades: [
-            { grade: 92, mean: 88, std: 8 },
-            { grade: 78, mean: 90, std: 5 },
-            { grade: 88, mean: 85, std: 3 }
-          ]
-        }
-      ];
+    it("project array documents", () => {
       const result = find(
         grades,
         { "grades.mean": { $gt: 70 } },
@@ -98,6 +98,46 @@ describe("operators/projection", () => {
       expect(result).toEqual([
         { _id: 7, grades: [{ grade: 80, mean: 75, std: 8 }] },
         { _id: 8, grades: [{ grade: 92, mean: 88, std: 8 }] }
+      ]);
+    });
+
+    it("project array documents from nested values", () => {
+      const result = find(
+        grades,
+        { "grades.mean": { $gt: 70 } },
+        { "grades.mean.$": 1 }
+      ).all();
+      expect(result).toEqual([
+        { _id: 7, grades: [{ mean: 75 }] },
+        { _id: 8, grades: [{ mean: 88 }] }
+      ]);
+    });
+
+    it("project positional item on $elemMatch", () => {
+      const result = find(
+        grades,
+        {
+          grades: {
+            $elemMatch: {
+              mean: { $gt: 70 },
+              grade: { $gt: 90 }
+            }
+          }
+        },
+        { "grades.$": 1 }
+      ).all();
+
+      expect(result).toEqual([
+        {
+          _id: 8,
+          grades: [
+            {
+              grade: 92,
+              mean: 88,
+              std: 8
+            }
+          ]
+        }
       ]);
     });
   });
