@@ -1,11 +1,11 @@
 import "../../../src/init/system";
 
 import { aggregate } from "../../../src";
-import { DefaultOptions, ProcessingMode } from "../../../src/core";
+import { initOptions, ProcessingMode } from "../../../src/core";
 import { AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS } from "../../support";
 
-const options = new DefaultOptions({
+const options = initOptions({
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
 });

@@ -1,10 +1,5 @@
 import { Aggregator } from "../../aggregator";
-import {
-  computeValue,
-  DefaultOptions,
-  Options,
-  PipelineOperator
-} from "../../core";
+import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any, AnyObject } from "../../types";
 import {
@@ -104,16 +99,14 @@ export const $lookup: PipelineOperator = (
 
   // options to use for processing each stage.
   const agg = new Aggregator(subQueryPipeline, options);
-  const localOpts = {
-    ...(options instanceof DefaultOptions ? options.parent : options)
-  };
+  const opts = { ...options };
   return collection.map((obj: AnyObject) => {
-    const variables = computeValue(obj, letExpr, null, options) as AnyObject;
-    localOpts.variables = { ...options.variables, ...variables };
+    const vars = computeValue(obj, letExpr, null, options) as AnyObject;
+    opts.variables = { ...options.variables, ...vars };
     const [ok, res] = lookupEq(obj);
     return {
       ...obj,
-      [expr.as]: ok ? agg.run(joinColl, localOpts) : res
+      [expr.as]: ok ? agg.run(joinColl, opts) : res
     };
   });
 };

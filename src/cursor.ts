@@ -1,8 +1,8 @@
 import {
   CollationSpec,
-  DefaultOptions,
+  Options,
   PipelineOperator,
-  QueryOptions
+  ProcessingMode
 } from "./core";
 import { concat, Iterator, Lazy, Source } from "./lazy";
 import { $limit } from "./operators/pipeline/limit";
@@ -10,7 +10,7 @@ import { $project } from "./operators/pipeline/project";
 import { $skip } from "./operators/pipeline/skip";
 import { $sort } from "./operators/pipeline/sort";
 import { Any, AnyObject, Callback, Predicate } from "./types";
-import { cloneDeep, has, isObject } from "./util";
+import { cloneDeep, has } from "./util";
 
 const OPERATORS: Record<string, PipelineOperator> = { $sort, $skip, $limit };
 
@@ -28,7 +28,7 @@ export class Cursor<T> {
   #source: Source;
   #predicate: Predicate<Any>;
   #projection: AnyObject;
-  #options?: QueryOptions;
+  #options: Options;
   #operators: AnyObject = {};
   #result: Iterator | null = null;
   #buffer: T[] = [];
@@ -37,7 +37,7 @@ export class Cursor<T> {
     source: Source,
     predicate: Predicate<Any>,
     projection: AnyObject,
-    options: QueryOptions
+    options?: Options
   ) {
     this.#source = source;
     this.#predicate = predicate;
@@ -50,7 +50,12 @@ export class Cursor<T> {
     if (this.#result) return this.#result;
 
     // apply filter
-    this.#result = Lazy(this.#source).filter(this.#predicate).map(cloneDeep);
+    this.#result = Lazy(this.#source).filter(this.#predicate);
+    const mode = this.#options.processingMode;
+
+    // handle processing flag.
+    if (mode & ProcessingMode.CLONE_INPUT) this.#result.map(cloneDeep);
+
     // apply cursor operators
     for (const op of ["$sort", "$skip", "$limit"]) {
       if (has(this.#operators, op)) {
@@ -62,9 +67,11 @@ export class Cursor<T> {
       }
     }
     // apply projection
-    if (isObject(this.#projection)) {
+    if (Object.keys(this.#projection).length) {
       this.#result = $project(this.#result, this.#projection, this.#options);
     }
+
+    if (mode & ProcessingMode.CLONE_OUTPUT) this.#result.map(cloneDeep);
 
     return this.#result;
   }
@@ -127,10 +134,7 @@ export class Cursor<T> {
    * @param {*} spec
    */
   collation(spec: CollationSpec): Cursor<T> {
-    this.#options = QueryOptions.init(
-      new DefaultOptions({ ...this.#options.parent, collation: spec }),
-      this.#options.condition
-    );
+    this.#options = { ...this.#options, collation: spec };
     return this;
   }
 

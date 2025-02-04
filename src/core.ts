@@ -45,41 +45,17 @@ export interface CollationSpec {
 export type JsonSchemaValidator = (schema: AnyObject) => Predicate<AnyObject>;
 
 /**
- * This controls how input and output documents are processed to meet different application needs.
- * Each mode has different trade offs for; immutability, reference sharing, and performance.
+ * Specified how input and output documents are processed.
  */
 export enum ProcessingMode {
-  /**
-   * Clone inputs prior to processing, and the outputs if some objects graphs may be shared.
-   * Use this option to keep input collection immutable and to get distinct output objects.
-   *
-   * Note: This option is expensive and reduces performance.
-   */
-  CLONE_ALL = "CLONE_ALL",
-
-  /**
-   * Clones inputs prior to processing.
-   * This option will return output objects with shared graphs in their path if specific operators are used.
-   * Use this option to keep the input collection immutable.
-   *
-   */
-  CLONE_INPUT = "CLONE_INPUT",
-
-  /**
-   * Clones the output to return distinct objects with no shared paths.
-   * This option modifies the input collection and during processing.
-   */
-  CLONE_OUTPUT = "CLONE_OUTPUT",
-
-  /**
-   * Turn off cloning and modifies the input collection as needed.
-   * This option will also return output objects with shared paths in their graph when specific operators are used.
-   * This option provides the greatest speedup for the biggest tradeoff.
-   * When using the aggregation pipeline, you can use the "$out" operator to collect immutable intermediate results.
-   *
-   * @default
-   */
-  CLONE_OFF = "CLONE_OFF"
+  /** Do not clone inputs or outputs. Resulting documents may share references. @default */
+  CLONE_OFF = 0,
+  /** Clone input documents to maintain immutability of original input. */
+  CLONE_INPUT = 1,
+  /** Clone output documents to ensure distinct objects without shared references. */
+  CLONE_OUTPUT = 2,
+  /** Clone input and output documents. */
+  CLONE_ALL = CLONE_INPUT | CLONE_OUTPUT
 }
 
 /**
@@ -94,7 +70,7 @@ export interface Options {
   readonly processingMode: ProcessingMode;
   /** Enforces strict MongoDB compatibilty. See README. @default true. */
   readonly useStrictMode: boolean;
-  /** Enable or disable custom script execution via $where, $accumulator, and $function operators. @default true. */
+  /** Enable or disable custom script execution using `$where`, `$accumulator`, and `$function` operators. @default true. */
   readonly scriptEnabled: boolean;
   /** Enable or disable falling back to the global context for operators. @default true. */
   readonly useGlobalContext: boolean;
@@ -110,77 +86,6 @@ export interface Options {
   readonly context: Context;
 }
 
-export class DefaultOptions implements Options {
-  #options: Options;
-  constructor(options?: Partial<Options>) {
-    if (options instanceof DefaultOptions) {
-      options = options.#options;
-    }
-    this.#options = {
-      idKey: "_id",
-      scriptEnabled: true,
-      useStrictMode: true,
-      useGlobalContext: true,
-      processingMode: ProcessingMode.CLONE_OFF,
-      ...options,
-      context: options?.context
-        ? Context.from(options?.context)
-        : Context.init()
-    };
-  }
-
-  get parent() {
-    return this.#options;
-  }
-
-  get idKey() {
-    return this.#options.idKey ?? "_id";
-  }
-  get collation() {
-    return this.#options?.collation;
-  }
-  get processingMode() {
-    return this.#options.processingMode;
-  }
-  get useStrictMode() {
-    return this.#options.useStrictMode;
-  }
-  get scriptEnabled() {
-    return this.#options.scriptEnabled;
-  }
-  get useGlobalContext() {
-    return this.#options.useGlobalContext;
-  }
-  get hashFunction() {
-    return this.#options?.hashFunction;
-  }
-  get collectionResolver() {
-    return this.#options?.collectionResolver;
-  }
-  get jsonSchemaValidator() {
-    return this.#options?.jsonSchemaValidator;
-  }
-  get variables() {
-    return this.#options?.variables;
-  }
-  get context() {
-    return this.#options.context;
-  }
-}
-
-export class QueryOptions extends DefaultOptions {
-  private constructor(
-    options: Partial<Options>,
-    readonly condition: AnyObject
-  ) {
-    super(options);
-  }
-
-  static init(options: Options, condition: AnyObject): QueryOptions {
-    return new QueryOptions(options, condition);
-  }
-}
-
 interface LocalData {
   /** The groupId computed for a group of documents. */
   readonly groupId?: Any;
@@ -189,13 +94,14 @@ interface LocalData {
 }
 
 /** Custom type to facilitate type checking for global options */
-export class ComputeOptions extends DefaultOptions {
+export class ComputeOptions implements Options {
+  #options: Options;
   /** Reference to the root object when processing subgraphs of the object. */
   #root: Any;
   #local: LocalData;
 
   private constructor(options: Options, root: Any, local?: LocalData) {
-    super(options);
+    this.#options = options;
     this.update(root, local);
   }
 
@@ -206,7 +112,7 @@ export class ComputeOptions extends DefaultOptions {
   static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
     return !(options instanceof ComputeOptions)
       ? new ComputeOptions(options, root, local)
-      : new ComputeOptions(options.parent, options.root ?? root, {
+      : new ComputeOptions(options.#options, options.root ?? root, {
           ...options.#local,
           ...local,
           variables: Object.assign(
@@ -228,13 +134,24 @@ export class ComputeOptions extends DefaultOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
     // retain existing variables
-    const vars = Object.assign({}, this.#local?.variables, local?.variables);
-    if (Object.keys(vars).length) {
-      this.#local = { ...local, variables: vars };
+    const variables = Object.assign(
+      {},
+      this.#local?.variables,
+      local?.variables
+    );
+    if (Object.keys(variables).length) {
+      this.#local = { ...local, variables };
     } else {
       this.#local = local ?? {};
     }
     return this;
+  }
+
+  getOptions() {
+    return Object.freeze({
+      ...this.#options,
+      context: Context.from(this.#options.context)
+    }) as Options;
   }
 
   get root() {
@@ -243,6 +160,59 @@ export class ComputeOptions extends DefaultOptions {
   get local() {
     return this.#local;
   }
+  get idKey() {
+    return this.#options.idKey;
+  }
+  get collation() {
+    return this.#options?.collation;
+  }
+  get processingMode() {
+    return this.#options?.processingMode || ProcessingMode.CLONE_OFF;
+  }
+  get useStrictMode() {
+    return this.#options?.useStrictMode;
+  }
+  get scriptEnabled() {
+    return this.#options?.scriptEnabled;
+  }
+  get useGlobalContext() {
+    return this.#options?.useGlobalContext;
+  }
+  get hashFunction() {
+    return this.#options?.hashFunction;
+  }
+  get collectionResolver() {
+    return this.#options?.collectionResolver;
+  }
+  get jsonSchemaValidator() {
+    return this.#options?.jsonSchemaValidator;
+  }
+  get variables() {
+    return this.#options?.variables;
+  }
+  get context() {
+    return this.#options?.context;
+  }
+}
+
+/**
+ * Creates an Option from another where required keys are initialized.
+ * @param options Options
+ */
+export function initOptions(options?: Partial<Options>): Options {
+  return options instanceof ComputeOptions
+    ? options.getOptions()
+    : Object.freeze({
+        idKey: "_id",
+        scriptEnabled: true,
+        useStrictMode: true,
+        useGlobalContext: true,
+        processingMode: ProcessingMode.CLONE_OFF,
+        ...options,
+        context: options?.context
+          ? Context.from(options?.context)
+          : Context.init()
+      });
 }
 
 /**
@@ -255,9 +225,9 @@ export type CloneMode = "deep" | "copy" | "none";
 
 export interface UpdateOptions {
   /** Specifies whether to deep clone values to persist in the internal store. @default "copy". */
-  readonly cloneMode: CloneMode;
+  readonly cloneMode?: CloneMode;
   /** Options to use for processing queries. Unless overriden 'useStrictMode' is false.  */
-  readonly queryOptions: Options;
+  readonly queryOptions?: Partial<Options>;
 }
 
 /**

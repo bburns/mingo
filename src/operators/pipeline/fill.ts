@@ -1,4 +1,4 @@
-import { DefaultOptions, Options, PipelineOperator } from "../../core";
+import { initOptions, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any } from "../../types";
 import { assert, has, isObject } from "../../util";
@@ -50,12 +50,12 @@ export const $fill: PipelineOperator = (
     "fields in partitionByFields cannot begin with '$'."
   );
 
-  options = new DefaultOptions(options);
+  options = initOptions(options);
   options.context.addExpressionOps({ $ifNull });
   options.context.addWindowOps({ $locf, $linearFill });
 
   const partitionExpr =
-    expr.partitionBy || expr?.partitionByFields?.map(s => `$${s}`);
+    expr.partitionBy || expr?.partitionByFields?.map(s => "$" + s);
 
   // collect and remove all output fields using 'value' instead of 'method'.
   // if there are any fields remaining, process collection using $setWindowFields.

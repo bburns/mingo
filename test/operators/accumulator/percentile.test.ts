@@ -1,9 +1,9 @@
 import { aggregate } from "../../../src";
-import { DefaultOptions, ProcessingMode } from "../../../src/core";
+import { initOptions, ProcessingMode } from "../../../src/core";
 import { $percentile } from "../../../src/operators/accumulator";
-import { DEFAULT_OPTS, TEST_OPTIONS, testPath } from "../../support";
+import { DEFAULT_OPTS, testPath } from "../../support";
 
-const options = new DefaultOptions({
+const options = initOptions({
   ...DEFAULT_OPTS,
   processingMode: ProcessingMode.CLONE_INPUT
 });
@@ -152,7 +152,7 @@ describe(testPath("accumulator/percentile"), () => {
           $percentile(
             X,
             { input: "$$CURRENT", p: [p], method },
-            TEST_OPTIONS
+            DEFAULT_OPTS
           ).pop()
         ).toEqual(results[i]);
       });

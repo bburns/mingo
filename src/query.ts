@@ -1,10 +1,4 @@
-import {
-  DefaultOptions,
-  getOperator,
-  Options,
-  QueryOperator,
-  QueryOptions
-} from "./core";
+import { getOperator, initOptions, Options, QueryOperator } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Any, AnyObject, Predicate } from "./types";
@@ -23,15 +17,12 @@ const TOP_LEVEL_OPS = new Set(
  */
 export class Query {
   #compiled: Predicate<Any>[];
-  #options: QueryOptions;
+  #options: Options;
   #condition: AnyObject;
 
   constructor(condition: AnyObject, options?: Partial<Options>) {
     this.#condition = cloneDeep(condition);
-    this.#options = QueryOptions.init(
-      new DefaultOptions(options),
-      this.#condition
-    );
+    this.#options = initOptions(options);
     this.#compiled = [];
     this.compile();
   }

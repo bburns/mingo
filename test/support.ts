@@ -4,7 +4,7 @@ import { aggregate as srcAggregate, find as srcFind } from "../src";
 import {
   computeValue,
   Context,
-  DefaultOptions,
+  initOptions,
   Options,
   ProcessingMode
 } from "../src/core";
@@ -30,8 +30,7 @@ const FULL_CONTEXT = Context.init()
   .addQueryOps(queryOperators)
   .addWindowOps(windowOperators);
 
-export const DEFAULT_OPTS = { context: FULL_CONTEXT };
-export const TEST_OPTIONS = new DefaultOptions(DEFAULT_OPTS);
+export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
 
 export const complexGradesData = complexGrades;
 export const simpleGradesData = simpleGrades;
@@ -236,7 +235,7 @@ export function runTest(
             });
           } else {
             it(`${prefix} => ${JSON.stringify(expected)}`, () => {
-              let actual = computeValue(obj, input, field, TEST_OPTIONS);
+              let actual = computeValue(obj, input, field, DEFAULT_OPTS);
               // NaNs don't compare
               if (actual !== actual && expected !== expected) {
                 actual = expected = 0;

@@ -4,12 +4,10 @@ import {
   getOperator,
   Options,
   PipelineOperator,
-  ProjectionOperator,
-  QueryOperator,
-  QueryOptions
+  ProjectionOperator
 } from "../../core";
 import { Iterator } from "../../lazy";
-import { Any, AnyObject, Callback } from "../../types";
+import { Any, AnyObject } from "../../types";
 import {
   assert,
   ensureArray,
@@ -23,7 +21,6 @@ import {
   isOperator,
   isString,
   merge,
-  normalize,
   removeValue,
   resolve,
   resolveGraph,
@@ -47,108 +44,9 @@ export const $project: PipelineOperator = (
   options: Options
 ): Iterator => {
   if (isEmpty(expr)) return collection;
-  checkExpression(expr, options);
-  return collection.map(createHandler(expr, options));
+  validateExpression(expr, options);
+  return collection.map(createHandler(expr, ComputeOptions.init(options)));
 };
-
-/**
- * Validate inclusion and exclusion values in expression
- *
- * @param {Object} expr The expression given for the projection
- */
-function checkExpression(expr: AnyObject, options: Options): void {
-  let exclusions = false;
-  let inclusions = false;
-  let positional = 0;
-  for (const [k, v] of Object.entries(expr)) {
-    assert(!k.startsWith("$"), "Field names may not start with '$'.");
-    if (k.endsWith(".$")) {
-      assert(
-        ++positional < 2,
-        "Cannot specify more than one positional projection per query."
-      );
-    }
-    if (k === options?.idKey) continue;
-    if (v === 0 || v === false) {
-      exclusions = true;
-    } else if (v === 1 || v === true) {
-      inclusions = true;
-    }
-    assert(
-      !(exclusions && inclusions),
-      "Projection cannot have a mix of inclusion and exclusion."
-    );
-  }
-}
-
-/**
- * Returns a callback that selects the first matching value for a positional query operator.
- * @param field The positional field from the projection expression excluding ".$" suffix.
- * @param cond The query condition expression in which to check for the 'field'.
- * @param options Options to the projection.
- * @returns
- */
-function getPositionalFilter(
-  field: string,
-  cond: AnyObject,
-  options: Options
-): Callback<void> {
-  // extract the queries for the field and siblings if part of an $and expression.
-  let operator: string;
-  let expr: Any;
-  let selector: string;
-  for (const key of Object.keys(cond)) {
-    if (key === field || key.startsWith(field + ".")) {
-      const entry = Object.entries(normalize(cond[key])).pop();
-      operator = entry[0];
-      expr = entry[1];
-      selector = key;
-    } else if (isOperator(key)) {
-      for (const val of cond[key] as AnyObject[]) {
-        try {
-          return getPositionalFilter(field, val, options);
-        } catch {
-          /*try each key*/
-        }
-      }
-    }
-  }
-  assert(!!operator && !!expr, `query must include array field '${field}'.`);
-  const call = getOperator("query", operator, options) as QueryOperator;
-  assert(!!call, `no query operator found for '${operator}'.`);
-
-  // handle two cases of nested fields. e.g. "a.b.c" can be.
-  //  1. {a:{b:[{c:1},{c:2}...]}}
-  //  2. {a:{b:{c:[...]}}}
-  // we split the selector into the (path, leaf) eg. "a.b.c" -> ["a.b", "c"].
-  // then we use the 'leaf' as the selector to the compiled predicate for the case of nested objects in array paths.
-  // since we always need to send an object to the predicate, for non-objects we wrap in an object with the 'leaf' as the key.
-  const sep = selector.lastIndexOf(".");
-  const path = selector.substring(0, sep) || selector;
-  const leaf = selector.substring(sep + 1);
-  const pred = call(leaf, expr, options);
-
-  return (o: AnyObject) => {
-    const pathVal = resolve(o, path);
-    const arr = isArray(pathVal)
-      ? pathVal
-      : (resolve(pathVal as Any[], leaf) as AnyObject[]);
-    const res = [];
-    for (const elem of arr as AnyObject[]) {
-      let item = elem;
-      if (operator === "$elemMatch") {
-        item = { [leaf]: [elem] };
-      } else if (!isObject(item)) {
-        item = { [leaf]: item };
-      }
-      if (pred(item)) {
-        res.push(elem);
-        break;
-      }
-    }
-    setValue(o, path, res);
-  };
-}
 
 type Handler = (_: AnyObject) => Any;
 
@@ -161,7 +59,7 @@ type Handler = (_: AnyObject) => Any;
  */
 function createHandler(
   expr: AnyObject,
-  options: Options,
+  options: ComputeOptions,
   isRoot: boolean = true
 ): Handler {
   const idKey = options.idKey;
@@ -169,8 +67,6 @@ function createHandler(
   const excludedKeys = new Array<string>();
   const includedKeys = new Array<string>();
   const handlers: Record<string, Handler> = {};
-  const positional: Record<string, Callback<void>> = {};
-  const copts = ComputeOptions.init(options);
 
   for (const key of expressionKeys) {
     // get expression associated with key
@@ -179,27 +75,13 @@ function createHandler(
     if (isNumber(subExpr) || isBoolean(subExpr)) {
       // positive number or true
       if (subExpr) {
-        // get predicate for field if used as a positional projection "<array>.$".
-        if (isRoot && key.endsWith(".$")) {
-          const field = key.substring(0, key.lastIndexOf(".$"));
-          // locate the query condition on the options object.
-          const condition =
-            options instanceof QueryOptions ? options.condition : undefined;
-          assert(
-            !!condition,
-            "query must be specified to support projection positional operator '$'."
-          );
-          positional[field] = getPositionalFilter(field, condition, options);
-          includedKeys.push(field);
-        } else {
-          includedKeys.push(key);
-        }
+        includedKeys.push(key);
       } else {
         excludedKeys.push(key);
       }
     } else if (isArray(subExpr)) {
       handlers[key] = (o: AnyObject) =>
-        subExpr.map(v => computeValue(o, v, null, copts.update(o)) ?? null);
+        subExpr.map(v => computeValue(o, v, null, options.update(o)) ?? null);
     } else if (isObject(subExpr)) {
       const subExprKeys = Object.keys(subExpr);
       const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
@@ -215,24 +97,24 @@ function createHandler(
         const foundSlice = operator === "$slice";
         if (foundSlice && !ensureArray(subExpr[operator]).every(isNumber)) {
           handlers[key] = (o: AnyObject) =>
-            computeValue(o, subExpr, key, copts.update(o));
+            computeValue(o, subExpr, key, options.update(o));
         } else {
           handlers[key] = (o: AnyObject) =>
-            projectFn(o, subExpr[operator], key, copts.update(o));
+            projectFn(o, subExpr[operator], key, options.update(o));
         }
       } else if (isOperator(operator)) {
         // pipelien projection
         handlers[key] = (o: AnyObject) =>
-          computeValue(o, subExpr[operator], operator, copts);
+          computeValue(o, subExpr[operator], operator, options);
       } else {
         // repeat for nested expression
-        checkExpression(subExpr as AnyObject, copts);
+        validateExpression(subExpr as AnyObject, options);
         handlers[key] = (o: AnyObject) => {
-          if (!has(o, key)) return computeValue(o, subExpr, null, copts);
+          if (!has(o, key)) return computeValue(o, subExpr, null, options);
           // ensure that the root object is passed down.
-          if (isRoot) copts.update(o);
+          if (isRoot) options.update(o);
           const target = resolve(o, key);
-          const fn = createHandler(subExpr as AnyObject, copts, false);
+          const fn = createHandler(subExpr as AnyObject, options, false);
           if (isArray(target)) return target.map(fn);
           if (isObject(target)) return fn(target as AnyObject);
           return fn(o);
@@ -241,7 +123,7 @@ function createHandler(
     } else {
       handlers[key] =
         isString(subExpr) && subExpr[0] === "$"
-          ? (o: AnyObject) => computeValue(o, subExpr, key, copts)
+          ? (o: AnyObject) => computeValue(o, subExpr, key, options)
           : (_: AnyObject) => subExpr;
     }
   }
@@ -291,10 +173,6 @@ function createHandler(
       const pathObj = resolveGraph(o, k, opts) ?? {};
       // add the value at the path
       merge(newObj, pathObj);
-      // handle positional projection fields.
-      if (has(positional, k)) {
-        positional[k](newObj);
-      }
     }
 
     // filter out all missing values preserved to support correct merging
@@ -315,4 +193,26 @@ function createHandler(
 
     return newObj;
   };
+}
+
+function validateExpression(expr: AnyObject, options: Options): void {
+  let exclusions = false;
+  let inclusions = false;
+  for (const [k, v] of Object.entries(expr)) {
+    assert(!k.startsWith("$"), "Field names may not start with '$'.");
+    assert(
+      !k.endsWith(".$"),
+      "Positional projection operator '$' is not supported."
+    );
+    if (k === options?.idKey) continue;
+    if (v === 0 || v === false) {
+      exclusions = true;
+    } else if (v === 1 || v === true) {
+      inclusions = true;
+    }
+    assert(
+      !(exclusions && inclusions),
+      "Projection cannot have a mix of inclusion and exclusion."
+    );
+  }
 }

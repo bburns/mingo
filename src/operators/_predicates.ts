@@ -58,7 +58,6 @@ export function createQueryOperator(predicate: Predicate<Any>): QueryOperator {
       return predicate(lhs, value, { ...options, depth });
     };
   };
-  f.op = "query";
   return f; // as QueryOperator;
 }
 

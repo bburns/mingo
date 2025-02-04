@@ -1,9 +1,7 @@
 import { Aggregator } from "../../aggregator";
-import { Options, PipelineOperator } from "../../core";
-import { Iterator, Lazy } from "../../lazy";
+import { Options, PipelineOperator, ProcessingMode } from "../../core";
+import { Iterator } from "../../lazy";
 import { AnyObject, Callback } from "../../types";
-import { cloneDeep } from "../../util";
-
 /**
  * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
  *
@@ -22,9 +20,10 @@ export const $facet: PipelineOperator = (
   return collection.transform(((array: AnyObject[]) => {
     const o: AnyObject = {};
     for (const [k, pipeline] of Object.entries(expr)) {
-      o[k] = new Aggregator(pipeline, options)
-        .stream(Lazy(array).map(cloneDeep))
-        .value();
+      o[k] = new Aggregator(pipeline, {
+        ...options,
+        processingMode: ProcessingMode.CLONE_INPUT
+      }).run(array);
     }
     return [o];
   }) as Callback<AnyObject[]>);
