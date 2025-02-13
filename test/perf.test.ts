@@ -94,22 +94,10 @@ describe("perf", () => {
       arrayToSort.push(makeid(128));
     }
 
-    const mingoSorter1 = new Aggregator(
-      [
-        {
-          $sort: {
-            number: 1
-          }
-        }
-      ],
-      {
-        collation: {
-          locale: "en",
-          strength: 1
-        }
-      }
-    );
-    const mingoSorter2 = new Aggregator([
+    const mingoSortLocale = new Aggregator([{ $sort: { number: 1 } }], {
+      collation: { locale: "en", strength: 1 }
+    });
+    const mingoSort = new Aggregator([
       {
         $sort: {
           number: 1
@@ -123,44 +111,55 @@ describe("perf", () => {
     const NATIVE_SORT_LOCALE = "NATIVE SORT WITH LOCALE";
 
     it("should complete in less than 1 sec", () => {
-      const measure = (cb: Callback<void>): number => {
+      const measure = (
+        cb: Callback<void, string[]>,
+        data: string[],
+        label: string
+      ): number => {
+        console.time(label);
         const start = performance.now();
-        cb();
+        cb(data);
         const end = performance.now();
+        console.timeEnd(label);
         return end - start;
       };
 
-      let ticks = measure(() => {
-        console.time(MINGO_SORT_LOCALE);
-        mingoSorter1.run(arrayToSort);
-        console.timeEnd(MINGO_SORT_LOCALE);
-      });
-      expect(ticks).toBeLessThan(1000);
+      // MINGO sort
+      expect(
+        measure(arr => mingoSort.run(arr), [...arrayToSort], MINGO_SORT)
+      ).toBeLessThan(500);
 
-      ticks = measure(() => {
-        console.time(MINGO_SORT);
-        mingoSorter2.run(arrayToSort);
-        console.timeEnd(MINGO_SORT);
-      });
-      expect(ticks).toBeLessThan(1000);
+      // with locale
+      expect(
+        measure(
+          arr => mingoSortLocale.run(arr),
+          [...arrayToSort],
+          MINGO_SORT_LOCALE
+        )
+      ).toBeLessThan(500);
 
-      const nativeSort = arrayToSort.concat();
-      const nativeLocaleSort = arrayToSort.concat();
+      // NATIVE code
+      expect(
+        measure(arr => arr.sort(), [...arrayToSort], NATIVE_SORT)
+      ).toBeLessThan(500);
 
-      console.time(NATIVE_SORT_LOCALE);
-      nativeLocaleSort.sort((a: string, b: string) => {
-        const r = a.localeCompare(b, "en", {
-          sensitivity: "base"
-        });
-        if (r < 0) return -1;
-        if (r > 0) return 1;
-        return 0;
-      });
-      console.timeEnd(NATIVE_SORT_LOCALE);
-
-      console.time(NATIVE_SORT);
-      nativeSort.sort();
-      console.timeEnd(NATIVE_SORT);
+      // with locale
+      expect(
+        measure(
+          arr => {
+            arr.sort((a: string, b: string) => {
+              const r = a.localeCompare(b, "en", {
+                sensitivity: "base"
+              });
+              if (r < 0) return -1;
+              if (r > 0) return 1;
+              return 0;
+            });
+          },
+          [...arrayToSort],
+          NATIVE_SORT_LOCALE
+        )
+      ).toBeLessThan(500);
     });
   });
 });
