@@ -36,10 +36,6 @@ const DEFAULT_HASH_FUNCTION: HashFunction = (value: Any): number => {
   return hash >>> 0;
 };
 
-const objectProto = Object.prototype;
-const arrayProto = Array.prototype;
-const getPrototypeOf = Object.getPrototypeOf;
-
 const isPrimitive = (v: Any): boolean =>
   (typeof v !== "object" && typeof v !== "function") || v === null;
 
@@ -195,7 +191,7 @@ export function assert(condition: boolean, message: string): void {
  * @param v Any value
  */
 export const typeOf = (v: Any): string => {
-  const s = objectProto.toString.call(v) as string;
+  const s = Object.prototype.toString.call(v) as string;
   const t = s.substring(8, s.length - 1).toLowerCase();
   if (t !== "object") return t;
   const ctor = v.constructor;
@@ -231,9 +227,9 @@ export const isEmpty = (x: Any): boolean =>
 export const ensureArray = <T>(x: T | T[]): T[] => (isArray(x) ? x : [x]);
 
 export const has = (obj: object, prop: string): boolean =>
-  !!obj && (objectProto.hasOwnProperty.call(obj, prop) as boolean);
+  !!obj && (Object.prototype.hasOwnProperty.call(obj, prop) as boolean);
 
-const isTypedArray = (v: Any): boolean =>
+const isTypedArray = (v: Any): v is ArrayBuffer =>
   typeof ArrayBuffer !== "undefined" && ArrayBuffer.isView(v);
 
 /**
@@ -350,6 +346,25 @@ export function flatten(xs: Any[], depth = 1): Any[] {
 }
 
 type Stringer = { toString(): string };
+/* eslint-disable-next-line @typescript-eslint/unbound-method */
+const objToString = Object.prototype.toString;
+function hasCustomToString(o: Any): boolean {
+  if (isTypedArray(o)) return true;
+  // Check if obj has a toString method
+  if (typeof o.toString === "function") {
+    // Get the prototype chain of the object
+    let proto = Object.getPrototypeOf(o) as object;
+    // Check if the toString method is from Object.prototype
+    while (proto !== null) {
+      if (has(proto, "toString") && proto.toString !== objToString) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto) as object;
+    }
+  }
+  // If no custom toString found
+  return false;
+}
 
 /**
  * Determine whether two values are the same or strictly equivalent.
@@ -357,41 +372,35 @@ type Stringer = { toString(): string };
  * For user-defined objects this checks for only referential equality so
  * two different instances with the same values are not equal.
  *
- * @param  {*}  a The first value
- * @param  {*}  b The second value
- * @return {Boolean} True if value contents are the same, false otherwise.
+ * @param a The first value
+ * @param b The second value
+ * @return True if values are equivalent, false otherwise.
  */
 export function isEqual(a: Any, b: Any): boolean {
   // strictly equal must be equal. matches referentially equal values.
   if (a === b || Object.is(a, b)) return true;
-  // get the constructor for non-nil values
-  const ctor = (!!a && a.constructor) || a;
-  // cannot be equal given first constraint
-  if (
-    a === null ||
-    b === null ||
-    a === undefined ||
-    b === undefined ||
-    ctor !== b.constructor ||
-    ctor === Function
-  ) {
-    return false;
-  }
-  // iterate array or object keys to compare them
+  if (a === null || b === null) return false;
+  if (typeof a !== typeof b) return false;
+  if (typeof a !== "object") return false;
+  if (a.constructor !== b.constructor) return false;
+  // common objects
+  if (a instanceof Date) return +a === +(b as Date);
+  if (a instanceof RegExp) return a.toString() === (b as RegExp).toString();
+  const ctor = a.constructor;
   if (ctor === Array || ctor === Object) {
-    const aKeys = Object.keys(a);
-    const bKeys = Object.keys(b);
+    const aKeys = Object.keys(a).sort();
+    const bKeys = Object.keys(b).sort();
     if (aKeys.length !== bKeys.length) return false;
-    if (new Set([...aKeys, ...bKeys]).size != aKeys.length) return false;
-    for (const k of aKeys) if (!isEqual(a[k], b[k])) return false;
+    for (let i = 0, k = aKeys[i]; i < aKeys.length; k = aKeys[++i]) {
+      if (k !== bKeys[i] || !isEqual(a[k], b[k])) return false;
+    }
     return true;
   }
   // toString() compare all supported types including custom ones.
-  const proto = getPrototypeOf(a) as object;
-  const cmp =
-    isTypedArray(a) ||
-    (proto !== objectProto && proto !== arrayProto && has(proto, "toString"));
-  return cmp && (a as Stringer).toString() === (b as Stringer).toString();
+  return (
+    hasCustomToString(a) &&
+    (a as Stringer).toString() === (b as Stringer).toString()
+  );
 }
 
 /**
@@ -435,12 +444,7 @@ export const stringify = (v: Any, refs?: Set<Any>): string => {
       return "{" + keys.map(k => `${k}:${stringify(v[k], refs)}`).join() + "}";
     }
     // use toString representation of custom-type
-    const proto = Object.getPrototypeOf(v) as object;
-    if (
-      proto !== objectProto &&
-      proto !== arrayProto &&
-      has(proto, "toString")
-    ) {
+    if (hasCustomToString(v)) {
       return typeOf(v) + "(" + JSON.stringify((v as Stringer).toString()) + ")";
     }
     throw new Error(
