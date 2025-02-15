@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.5.3 / 2025-02-14
+**Fixes**
+- Correct date equality checking. [#518](https://github.com/kofrasa/mingo/issues/518)
+- Run `sort`, `skip`, and `limit` in correct order on `Cursor`.
+- Test inheritance chain for `toString` on custom types.
+
+**Improvements**
+- Precompile `$project` operator for performance.
+
 ## 6.5.2 / 2025-01-19
 **Fixes**
 - `$slice`: handle negative skip values correctly. [#503](https://github.com/kofrasa/mingo/issues/503)
