@@ -569,12 +569,8 @@ function computeOperator(
 
   assert(isArray(obj), `arguments must resolve to array for ${operator}.`);
 
-  // for accumulators, we use the global options since the root is specific to each element within array.
-  return callAccumulator(
-    obj as Any[],
-    expr,
-    options.update(null, options.local) // reset the root object.
-  );
+  // accumulator must override the root accordingly. we pass the full context as is.
+  return callAccumulator(obj as Any[], expr, options);
 }
 
 const REDACT_ACTIONS = ["$$KEEP", "$$PRUNE", "$$DESCEND"] as const;

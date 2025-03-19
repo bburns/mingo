@@ -117,10 +117,14 @@ describe("core", () => {
             options
           );
           const avg = result[0].avg as number;
-          const diffs = collection.map(item => {
-            const v = (computeValue(item, expr, null, options) as number) - avg;
-            return v * v;
-          });
+          const nums = computeValue(
+            collection,
+            expr,
+            "$push",
+            options
+          ) as number[];
+          const diffs = nums.map(n => Math.pow(n - avg, 2));
+
           const variance =
             diffs.reduce((memo, val) => {
               return memo + val;
@@ -160,6 +164,33 @@ describe("core", () => {
       };
       expect(result.date).toBeInstanceOf(Date);
       expect(result.date.getTime()).toBeLessThanOrEqual(Date.now());
+    });
+
+    it("issues#526: passes root object down call stack", () => {
+      const obj = {
+        value10: 10,
+        value20: 20,
+        value30: 30,
+        value50: 50
+      };
+      const res = computeValue(
+        obj,
+        {
+          data: {
+            steps: [
+              { range: [{ $min: [9, "$value10"] }, "$value20"] },
+              { range: ["$value30", "$value50"] }
+            ]
+          }
+        },
+        null,
+        DEFAULT_OPTS
+      );
+      expect(res).toEqual({
+        data: {
+          steps: [{ range: [9, 20] }, { range: [30, 50] }]
+        }
+      });
     });
   });
 
