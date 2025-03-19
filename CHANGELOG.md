@@ -54,6 +54,7 @@
 - Removed caching of current timestamp for `$$NOW` variable in options.
 - Handle date inputs for `$subtract` operator.
 - Improve input validations for `$first`, `$last`, and `$ifNull`.
+- Enforce string arguments validation for `$concat`.
 - Update implementation of `$min` and `$max` to be consistent with new behaviour in latest MongoDB.
 
 ## 6.4.15 / 2024-04-16
