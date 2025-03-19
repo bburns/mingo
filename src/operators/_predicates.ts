@@ -212,20 +212,6 @@ export function $regex(a: Any, b: RegExp, options?: PredicateOptions): boolean {
 }
 
 /**
- * Matches documents that have the specified field.
- *
- * @param a
- * @param b
- * @returns {boolean}
- */
-export function $exists(a: Any, b: Any, _options?: PredicateOptions): boolean {
-  return (
-    ((b === false || b === 0) && a === undefined) ||
-    ((b === true || b === 1) && a !== undefined)
-  );
-}
-
-/**
  * Matches arrays that contain all elements specified in the query.
  *
  * @param values

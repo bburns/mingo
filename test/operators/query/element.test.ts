@@ -1,7 +1,9 @@
 import "../../../src/init/system";
 
 import { Query } from "../../../src";
+import { $exists } from "../../../src/operators/query";
 import { AnyObject } from "../../../src/types";
+import { DEFAULT_OPTS } from "../../support";
 
 describe("operators/query/element", () => {
   const obj = {
@@ -47,5 +49,36 @@ describe("operators/query/element", () => {
         expect(query.test(obj)).toEqual(true);
       });
     });
+  });
+
+  describe("$exists", () => {
+    const fixtures: [boolean, AnyObject, string, boolean][] = [
+      // top-level
+      [true, { a: 3 }, "a", true],
+      [false, { a: 3 }, "a", false],
+      // missing key is equivalent to a value of undefined.
+      [true, { a: undefined }, "a", false],
+      [true, { b: 2 }, "a", false],
+      // null value is considered to exist
+      [false, { a: null }, "a", false],
+      [true, { a: null }, "a", true],
+      // nested
+      [false, { arr: [{ a: 1 }, { a: 2 }] }, "arr.c", true],
+      [true, { arr: [{ a: 1 }, { a: 2 }] }, "arr.a", true],
+      [false, { arr: [{ a: 1 }, { a: 2 }] }, "arr.a", false],
+      [true, { arr: [{ a: 1 }, { a: 2 }] }, "arr.c", false],
+      [true, { arr: [{ a: 1 }, { a: 2 }] }, "arr.0.a", true],
+      [false, { arr: [{ a: 1 }, { a: 2 }] }, "arr.0.a", false],
+      [false, { arr: [{ a: 1 }, { a: 2, c: [] }] }, "arr.c", false],
+      [true, { arr: [{ a: 1 }, { a: 2, c: [] }] }, "arr.c", true]
+    ];
+
+    it.each(fixtures)(
+      "can apply $exists operator",
+      (expected, obj, selector, cond) => {
+        const actual = $exists(selector, cond, DEFAULT_OPTS)(obj);
+        expect(actual).toEqual(expected);
+      }
+    );
   });
 });
