@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.5.4 / 2025-03-19
+**Fixes**
+- Preserve root object for accumulator operators. closes [#526](https://github.com/kofrasa/mingo/issues/526)
+- Support nested elements in arrays for `$exists` operator. closes [#524](https://github.com/kofrasa/mingo/issues/524)
+
+
 ## 6.5.3 / 2025-02-14
 **Fixes**
 - Correct date equality checking. [#518](https://github.com/kofrasa/mingo/issues/518)
