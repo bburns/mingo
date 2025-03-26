@@ -10,8 +10,9 @@ import { isArray, resolve, resolveGraph } from "../../../util";
 export const $exists = (selector: string, value: Any, _options: Options) => {
   const nested = selector.includes(".");
   const b = !!value;
-  if (!nested) {
-    return (o: AnyObject) => (o[selector] !== undefined) === b;
+  // top-level keys and array elements.
+  if (!nested || selector.match(/\.\d+$/)) {
+    return (o: AnyObject) => (resolve(o, selector) !== undefined) === b;
   }
   // for nested keys we resolve the entire value path so we don't confuse array scalars with plural values.
   return (o: AnyObject) => {

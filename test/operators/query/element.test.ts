@@ -52,7 +52,8 @@ describe("operators/query/element", () => {
   });
 
   describe("$exists", () => {
-    const fixtures: [boolean, AnyObject, string, boolean][] = [
+    const fixtures: [boolean, AnyObject, string, boolean | number][] = [
+      // <result>, <object>, <selector>, <condition>
       // top-level
       [true, { a: 3 }, "a", true],
       [false, { a: 3 }, "a", false],
@@ -62,6 +63,11 @@ describe("operators/query/element", () => {
       // null value is considered to exist
       [false, { a: null }, "a", false],
       [true, { a: null }, "a", true],
+      // array elements
+      [true, { arr: [{ a: 1 }] }, "arr.0", true],
+      [false, { arr: [{ a: 1 }] }, "arr.0", false],
+      [false, { arr: [{ a: 1 }] }, "arr.1", 1],
+      [true, { arr: [{ a: 1 }] }, "arr.1", 0],
       // nested
       [false, { arr: [{ a: 1 }, { a: 2 }] }, "arr.c", true],
       [true, { arr: [{ a: 1 }, { a: 2 }] }, "arr.a", true],
