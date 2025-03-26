@@ -1,5 +1,9 @@
 # Changelog
 
+## 6.5.5 / 2025-03-xx (pending)
+**Fixes**
+- Handle array indices in `$exists` operators. Reverts regression introduced in `6.5.4`. closes [#528](https://github.com/kofrasa/mingo/issues/528)
+
 ## 6.5.4 / 2025-03-19
 **Fixes**
 - Preserve root object for accumulator operators. closes [#526](https://github.com/kofrasa/mingo/issues/526)
