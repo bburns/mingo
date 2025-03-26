@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.5.5 / 2025-03-xx (pending)
+## 6.5.5 / 2025-03-26
 **Fixes**
 - Handle array indices in `$exists` operators. Reverts regression introduced in `6.5.4`. closes [#528](https://github.com/kofrasa/mingo/issues/528)
 
