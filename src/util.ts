@@ -579,7 +579,7 @@ export function into(
  * @private
  */
 function getValue(obj: ArrayOrObject, key: string | number): Any {
-  return isArray(obj) || isObject(obj) ? obj[key] : undefined;
+  return isObjectLike(obj) ? obj[key] : undefined;
 }
 
 /**

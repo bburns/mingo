@@ -254,6 +254,37 @@ describe("util", () => {
     });
   });
 
+  describe("resolve", () => {
+    const doc = { a: 1, b: { c: 2, d: ["hello"], e: [1, 2, 3] } };
+    const sameDoc = cloneDeep(doc);
+
+    it("resolves the path to the selected field only", () => {
+      const result = resolve(doc, "b.e.1");
+      expect(result).toEqual(2);
+      expect(doc).toEqual(sameDoc);
+    });
+
+    it("resolves item in nested array by index", () => {
+      const result = resolve({ a: [5, { b: [10] }] }, "a.1.b.0");
+      expect(result).toEqual(10);
+    });
+
+    it("resolves value in a nested array", () => {
+      const result = resolve({ a: [{ b: [{ c: 1 }] }] }, "a.b.c");
+      expect(result).toEqual([[1]]);
+    });
+
+    it("resolves value in a nested array with index", () => {
+      const result = resolve({ a: [{ b: [{ c: 1 }] }] }, "a.0.b.c");
+      expect(result).toEqual([1]);
+    });
+
+    it("resolves value from custom object", () => {
+      const result = resolve(ObjectId("100") as Any as AnyObject, "_id");
+      expect(result).toEqual("100");
+    });
+  });
+
   describe("resolveGraph", () => {
     const doc = { a: 1, b: { c: 2, d: ["hello"], e: [1, 2, 3] } };
     const sameDoc = cloneDeep(doc);
