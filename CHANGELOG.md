@@ -1,5 +1,10 @@
 # Changelog
 
+## 6.5.6 / 2025-03-28
+**Fixes**
+- Fix field lookup on custom types. Regression introduced in `6.5.1`. closes [529](https://github.com/kofrasa/mingo/issues/529)
+- Fix default custom object string representation used for hashing. Regression introduced in `6.5.1`.
+
 ## 6.5.5 / 2025-03-26
 **Fixes**
 - Handle array indices in `$exists` operators. Reverts regression introduced in `6.5.4`. closes [#528](https://github.com/kofrasa/mingo/issues/528)
