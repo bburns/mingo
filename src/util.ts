@@ -68,7 +68,7 @@ const SORT_ORDER: Record<string, number> = {
 export const compare = <T = Any>(a: T, b: T): number => {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const [u, v] = [a, b].map(n => SORT_ORDER[typeOf(n)]);
+  const [u, v] = [a, b].map(n => SORT_ORDER[typeOf(n)] || 0);
   if (u !== v) return u - v;
   // check for equivalence equality
   if (isEqual(a, b)) return 0;
@@ -186,17 +186,26 @@ export function assert(condition: boolean, message: string): void {
   if (!condition) throw new MingoError(message);
 }
 
+/** Object.prototype.toString.call() representaions of common types.*/
+const STRING_REP: Record<string, string> = Object.keys(SORT_ORDER).reduce(
+  (memo, k) => {
+    memo["[object " + k[0].toUpperCase() + k.substring(1) + "]"] = k;
+    return memo;
+  },
+  {}
+);
+
 /**
- * Returns the name of type in lowercase.
+ * Returns the name of type in lowercase including custom types.
  * @param v Any value
  */
-export const typeOf = (v: Any): string => {
+export function typeOf(v: Any): string {
   const s = Object.prototype.toString.call(v) as string;
-  const t = s.substring(8, s.length - 1).toLowerCase();
-  if (t !== "object") return t;
-  const ctor = v.constructor;
-  return ctor == null || ctor === Object ? t : ctor.name;
-};
+  // when a custom object has a null constructor/prototype, it is considered a plain object.
+  return s === "[object Object]"
+    ? v?.constructor?.name?.toLowerCase() || "object"
+    : STRING_REP[s] || s.substring(8, s.length - 1).toLowerCase();
+}
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
 export const isString = (v: Any): v is string => typeof v === "string";
 export const isSymbol = (v: Any): boolean => typeof v === "symbol";
@@ -205,11 +214,11 @@ export const isNumber = (v: Any): v is number =>
 export const isNotNaN = (v: Any) =>
   !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
-export const isObject = (v: Any): v is object => {
+export function isObject(v: Any): v is object {
   if (!v) return false;
   const p = Object.getPrototypeOf(v) as Any;
   return (p === Object.prototype || p === null) && typeOf(v) === "object";
-};
+}
 //  objects, arrays, functions, date, custom object
 export const isObjectLike = (v: Any): boolean => !isPrimitive(v);
 export const isDate = (v: Any): v is Date => v instanceof Date;
@@ -345,24 +354,26 @@ export function flatten(xs: Any[], depth = 1): Any[] {
   return arr;
 }
 
-type Stringer = { toString(): string };
-/* eslint-disable-next-line @typescript-eslint/unbound-method */
-const objToString = Object.prototype.toString;
-function hasCustomToString(o: Any): boolean {
-  if (isTypedArray(o)) return true;
-  // Check if obj has a toString method
-  if (typeof o.toString === "function") {
-    // Get the prototype chain of the object
-    let proto = Object.getPrototypeOf(o) as object;
-    // Check if the toString method is from Object.prototype
-    while (proto !== null) {
-      if (has(proto, "toString") && proto.toString !== objToString) {
-        return true;
-      }
-      proto = Object.getPrototypeOf(proto) as object;
-    }
+/** Returns a map all members of the obect for generating a custom data representation. */
+function getMembersOf(o: Any): AnyObject {
+  const props = {} as AnyObject;
+  while (o) {
+    // Get all properties of the current object and add if not already included
+    for (const k of Object.getOwnPropertyNames(o))
+      if (!(k in props)) props[k] = o[k];
+    // Move to the prototype of the current object
+    o = Object.getPrototypeOf(o);
   }
-  // If no custom toString found
+  return props;
+}
+
+type Stringer = { toString(): string };
+function hasCustomString(o: Any): o is Stringer {
+  while (o) {
+    if (Object.getOwnPropertyNames(o).includes("toString"))
+      return o["toString"] !== Object.prototype.toString;
+    o = Object.getPrototypeOf(o);
+  }
   return false;
 }
 
@@ -398,7 +409,7 @@ export function isEqual(a: Any, b: Any): boolean {
   }
   // toString() compare all supported types including custom ones.
   return (
-    hasCustomToString(a) &&
+    hasCustomString(a) &&
     (a as Stringer).toString() === (b as Stringer).toString()
   );
 }
@@ -432,8 +443,6 @@ export const stringify = (v: Any, refs?: Set<Any>): string => {
   if (isDate(v)) return v.toISOString();
   if (isRegExp(v) || isSymbol(v) || isFunction(v))
     return (v as Stringer).toString();
-  if (isTypedArray(v))
-    return typeOf(v) + "[" + (v as Stringer).toString() + "]";
   if (!(refs instanceof Set)) refs = new Set();
   if (refs.has(v)) throw CYCLE_FOUND_ERROR;
   try {
@@ -444,12 +453,10 @@ export const stringify = (v: Any, refs?: Set<Any>): string => {
       return "{" + keys.map(k => `${k}:${stringify(v[k], refs)}`).join() + "}";
     }
     // use toString representation of custom-type
-    if (hasCustomToString(v)) {
-      return typeOf(v) + "(" + JSON.stringify((v as Stringer).toString()) + ")";
-    }
-    throw new Error(
-      "mingo: cannot stringify custom type without explicit toString() method."
-    );
+    const s = hasCustomString(v)
+      ? v.toString()
+      : stringify(getMembersOf(v), refs);
+    return typeOf(v) + "(" + s + ")";
   } finally {
     refs.delete(v);
   }

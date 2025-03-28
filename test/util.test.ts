@@ -55,9 +55,6 @@ describe("util", () => {
 
   class Custom {
     constructor(readonly _id: string) {}
-    toString() {
-      return this._id;
-    }
   }
 
   describe("typeOf", () => {
@@ -75,7 +72,7 @@ describe("util", () => {
       ["array", []],
       ["object", {}],
       ["arraybuffer", new ArrayBuffer(0)],
-      ["Custom", new Custom("abc")]
+      ["custom", new Custom("abc")]
     ])("should expect %p for %p", (res, input) => {
       expect(typeOf(input)).toEqual(res);
     });
@@ -132,13 +129,14 @@ describe("util", () => {
       [[1, "a"], '[1,"a"]'],
       [new Date("2001-01-01T00:00:00.000Z"), "2001-01-01T00:00:00.000Z"],
       [(id: Any) => id, "(id) => id"],
-      [new Uint8Array([5, 2]), "uint8array[5,2]"],
-      [new Float32Array([1.5, 2.5]), "float32array[1.5,2.5]"],
+      [new Uint8Array([5, 2]), "uint8array(5,2)"],
+      [new Float32Array([1.5, 2.5]), "float32array(1.5,2.5)"],
       [{ a: a, b: a }, "{a:[1,2,3],b:[1,2,3]}"],
       [[a, a], "[[1,2,3],[1,2,3]]"],
       [[a, b], "[[1,2,3],[4,5,6]]"],
       [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"],
-      [ObjectId("1234567890"), 'objectId("1234567890")']
+      [ObjectId("123"), "objectid(123)"],
+      [new Custom("123"), 'custom({_id:"123"})']
     ])("should pass: %p => %p", (input, output) => {
       expect(stringify(input)).toEqual(output);
     });
