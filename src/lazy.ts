@@ -118,8 +118,6 @@ function createCallback(
               --r.count;
               if (!r.count) dropItem(iteratees, i);
               continue outer;
-            default:
-              break outer;
           }
         }
 

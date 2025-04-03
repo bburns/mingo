@@ -65,7 +65,7 @@ const SORT_ORDER: Record<string, number> = {
  * @param b The second value
  * @returns {Number}
  */
-export const compare = <T = Any>(a: T, b: T): number => {
+export function compare<T = Any>(a: T, b: T): number {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
   const [u, v] = [a, b].map(n => SORT_ORDER[typeOf(n)] || 0);
@@ -76,7 +76,7 @@ export const compare = <T = Any>(a: T, b: T): number => {
   if ((a as string) > (b as string)) return 1;
   // if we get here we are comparing a type that does not make sense.
   return 0;
-};
+}
 
 /**
  * A map implementation that uses value comparison for keys instead of referential identity.
@@ -211,8 +211,6 @@ export const isString = (v: Any): v is string => typeof v === "string";
 export const isSymbol = (v: Any): boolean => typeof v === "symbol";
 export const isNumber = (v: Any): v is number =>
   !isNaN(v as number) && typeof v === "number";
-export const isNotNaN = (v: Any) =>
-  !(isNaN(v as number) && typeof v === "number");
 export const isArray = Array.isArray;
 export function isObject(v: Any): v is object {
   if (!v) return false;
@@ -436,7 +434,7 @@ export function unique(
  * @param value The value to convert to a string representation.
  * @returns {string}
  */
-export const stringify = (v: Any, refs?: Set<Any>): string => {
+export function stringify(v: Any, refs?: Set<Any>): string {
   if (v === null) return "null";
   if (v === undefined) return "undefined";
   if (isString(v) || isNumber(v) || isBoolean(v)) return JSON.stringify(v);
@@ -460,7 +458,7 @@ export const stringify = (v: Any, refs?: Set<Any>): string => {
   } finally {
     refs.delete(v);
   }
-};
+}
 
 /**
  * Generate hash code.
@@ -513,62 +511,17 @@ export function groupBy(
         ? lookup.get(hash).find(k => isEqual(k, key))
         : null;
 
-      // collision detected or first time seeing key
-      if (isNil(existingKey)) {
+      if (existingKey !== null) {
+        result.get(existingKey).push(obj);
+      } else {
         // collision detected or first entry so we create a new group.
         result.set(key, [obj]);
-        // upload the lookup with the collided key
-        if (lookup.has(hash)) {
-          lookup.get(hash).push(key);
-        } else {
-          lookup.set(hash, [key]);
-        }
-      } else {
-        // key exists
-        result.get(existingKey).push(obj);
+        lookup.set(hash, (lookup.get(hash) ?? []).concat([key]));
       }
     }
   }
 
   return result;
-}
-
-// max elements to push.
-// See argument limit https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
-const MAX_ARRAY_PUSH = 50000;
-
-/**
- * Merge elements into the dest
- *
- * @param {*} target The target object
- * @param {*} rest The array of elements to merge into dest
- * @private
- */
-export function into(
-  target: ArrayOrObject,
-  ...rest: ArrayOrObject[]
-): ArrayOrObject {
-  if (isArray(target)) {
-    for (const arr of rest as Any[][]) {
-      // push arrary in batches to handle large inputs
-      let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
-      let begin = 0;
-      while (i-- > 0) {
-        Array.prototype.push.apply(
-          target,
-          arr.slice(begin, begin + MAX_ARRAY_PUSH)
-        );
-        begin += MAX_ARRAY_PUSH;
-      }
-    }
-    return target;
-  } else {
-    // merge objects. same behaviour as Object.assign
-    return rest.filter(isObjectLike).reduce((acc, item) => {
-      Object.assign(acc, item);
-      return acc;
-    }, target);
-  }
 }
 
 /**
