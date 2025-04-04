@@ -208,13 +208,13 @@ describe("util", () => {
       [{ a: 1 }, true, "object literal with value"],
       [Object.create(null), true, "object from null proto"],
       [Object.create(OBJECT_PROTO), true, "object from object proto"],
-      [fooWithNullProto, true, "custom type with null proto"],
-      [fooWithObjectProto, true, "custom type with object proto"],
-      [arrayWithObjectProto, false, "array with object proto"],
-      [arrayWithNullProto, false, "array with null proto"],
-      [Object.create({}), false, "object with object literal as proto"],
-      [[3, 2, 1], false, "array instance"],
-      [new Foo(), false, "custom object instance"]
+      [Object.create({}), true, "object with new object literal as proto"],
+      [fooWithNullProto, true, "custom class with null proto"],
+      [fooWithObjectProto, true, "custom class with object proto"],
+      [arrayWithObjectProto, false, "NOT array with object proto"],
+      [arrayWithNullProto, false, "NOT array with null proto"],
+      [[3, 2, 1], false, "NOT array instance"],
+      [new Foo(), false, "NOT custom class instance"]
     ];
 
     fixtures.forEach(arr => {

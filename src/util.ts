@@ -186,25 +186,24 @@ export function assert(condition: boolean, message: string): void {
   if (!condition) throw new MingoError(message);
 }
 
-/** Object.prototype.toString.call() representaions of common types.*/
-const STRING_REP: Record<string, string> = Object.keys(SORT_ORDER).reduce(
-  (memo, k) => {
-    memo["[object " + k[0].toUpperCase() + k.substring(1) + "]"] = k;
-    return memo;
-  },
-  {}
-);
-
 /**
  * Returns the name of type in lowercase including custom types.
  * @param v Any value
  */
 export function typeOf(v: Any): string {
+  if (v === null) return "null";
+  const t = typeof v;
+  // primitives
+  if (t !== "object" && t in SORT_ORDER) return t;
+  // fast path for common types
+  if (isArray(v)) return "array";
+  if (isDate(v)) return "date";
+  if (isRegExp(v)) return "regexp";
+  // native objects and custom types
   const s = Object.prototype.toString.call(v) as string;
-  // when a custom object has a null constructor/prototype, it is considered a plain object.
   return s === "[object Object]"
     ? v?.constructor?.name?.toLowerCase() || "object"
-    : STRING_REP[s] || s.substring(8, s.length - 1).toLowerCase();
+    : s.substring(8, s.length - 1).toLowerCase();
 }
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
 export const isString = (v: Any): v is string => typeof v === "string";
@@ -212,11 +211,7 @@ export const isSymbol = (v: Any): boolean => typeof v === "symbol";
 export const isNumber = (v: Any): v is number =>
   !isNaN(v as number) && typeof v === "number";
 export const isArray = Array.isArray;
-export function isObject(v: Any): v is object {
-  if (!v) return false;
-  const p = Object.getPrototypeOf(v) as Any;
-  return (p === Object.prototype || p === null) && typeOf(v) === "object";
-}
+export const isObject = (v: Any): v is object => typeOf(v) === "object";
 //  objects, arrays, functions, date, custom object
 export const isObjectLike = (v: Any): boolean => !isPrimitive(v);
 export const isDate = (v: Any): v is Date => v instanceof Date;
@@ -366,14 +361,8 @@ function getMembersOf(o: Any): AnyObject {
 }
 
 type Stringer = { toString(): string };
-function hasCustomString(o: Any): o is Stringer {
-  while (o) {
-    if (Object.getOwnPropertyNames(o).includes("toString"))
-      return o["toString"] !== Object.prototype.toString;
-    o = Object.getPrototypeOf(o);
-  }
-  return false;
-}
+const hasCustomString = (o: Any): o is Stringer =>
+  o !== null && o !== undefined && o["toString"] !== Object.prototype.toString;
 
 /**
  * Determine whether two values are the same or strictly equivalent.
@@ -389,27 +378,34 @@ export function isEqual(a: Any, b: Any): boolean {
   // strictly equal must be equal. matches referentially equal values.
   if (a === b || Object.is(a, b)) return true;
   if (a === null || b === null) return false;
+  // primitives types
   if (typeof a !== typeof b) return false;
   if (typeof a !== "object") return false;
-  if (a.constructor !== b.constructor) return false;
-  // common objects
-  if (a instanceof Date) return +a === +(b as Date);
-  if (a instanceof RegExp) return a.toString() === (b as RegExp).toString();
-  const ctor = a.constructor;
-  if (ctor === Array || ctor === Object) {
-    const aKeys = Object.keys(a).sort();
-    const bKeys = Object.keys(b).sort();
-    if (aKeys.length !== bKeys.length) return false;
-    for (let i = 0, k = aKeys[i]; i < aKeys.length; k = aKeys[++i]) {
-      if (k !== bKeys[i] || !isEqual(a[k], b[k])) return false;
+  if (isDate(a)) return isDate(b) && +a === +b;
+  if (isRegExp(a)) return isRegExp(b) && a.toString() === b.toString();
+  const t = typeOf(a);
+  if (t !== typeOf(b)) return false;
+  switch (t) {
+    case "array":
+      if ((a as Any[]).length !== (b as Any[]).length) return false;
+      for (let i = 0, size = (a as Any[]).length; i < size; i++) {
+        if (!isEqual(a[i], b[i])) return false;
+      }
+      return true;
+    case "object": {
+      const ka = Object.keys(a);
+      const kb = Object.keys(b);
+      if (ka.length !== kb.length) return false;
+      for (const k of ka) {
+        if (!(k in (b as AnyObject) && isEqual(a[k], b[k]))) return false;
+      }
+      return true;
     }
-    return true;
+    default:
+      // toString() compare all supported types including custom ones.
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return hasCustomString(a) && a.toString() === b.toString();
   }
-  // toString() compare all supported types including custom ones.
-  return (
-    hasCustomString(a) &&
-    (a as Stringer).toString() === (b as Stringer).toString()
-  );
 }
 
 /**
