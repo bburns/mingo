@@ -6,8 +6,8 @@ import {
   ProcessingMode
 } from "./core";
 import { Iterator, Lazy, Source } from "./lazy";
-import { AnyObject } from "./types";
-import { assert, cloneDeep, isEmpty } from "./util";
+import { Any, AnyObject } from "./types";
+import { assert, cloneDeep } from "./util";
 
 /**
  * Provides functionality for the mongoDB aggregation pipeline
@@ -36,25 +36,28 @@ export class Aggregator {
     const opts = options ?? this.#options;
     const mode = opts.processingMode;
 
+    // clone the input collection if requested.
     if (mode & ProcessingMode.CLONE_INPUT) iter.map(cloneDeep);
 
-    const stages = new Array<string>();
-
-    if (!isEmpty(this.#pipeline)) {
-      // run aggregation pipeline
-      for (const opExpr of this.#pipeline) {
-        const opKeys = Object.keys(opExpr);
-        const opName = opKeys[0];
-        const call = getOperator("pipeline", opName, opts) as PipelineOperator;
-
+    // validate and build pipeline
+    iter = this.#pipeline
+      .map<[PipelineOperator, Any]>((stage, i) => {
+        const keys = Object.keys(stage);
         assert(
-          opKeys.length === 1 && !!call,
-          `invalid pipeline operator ${opName}`
+          keys.length === 1,
+          `aggregation stage must have single operator, got ${keys.toString()}.`
         );
-        stages.push(opName);
-        iter = call(iter, opExpr[opName], opts);
-      }
-    }
+        const name = keys[0];
+        // may contain only one $documents operator which must be first in the pipeline.
+        assert(
+          name !== "$documents" || i == 0,
+          "$documents must be first stage in pipeline."
+        );
+        const op = getOperator("pipeline", name, opts) as PipelineOperator;
+        assert(!!op, `unregistered pipeline operator ${name}.`);
+        return [op, stage[name]];
+      })
+      .reduce((acc, [op, expr]) => op(acc, expr, opts), iter);
 
     // operators that may share object graphs of inputs.
     if (mode & ProcessingMode.CLONE_OUTPUT) iter.map(cloneDeep);
