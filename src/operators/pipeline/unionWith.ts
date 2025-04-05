@@ -2,10 +2,11 @@ import { Aggregator } from "../../aggregator";
 import { Options, PipelineOperator } from "../../core";
 import { concat, Iterator, Lazy } from "../../lazy";
 import { AnyObject } from "../../types";
-import { isString } from "../../util";
+import { assert, isArray, isString } from "../../util";
+import { filterDocumentsStage } from "./_internal";
 
 interface InputExpr {
-  readonly coll: AnyObject[];
+  readonly coll: string | AnyObject[];
   readonly pipeline?: AnyObject[];
 }
 
@@ -20,19 +21,22 @@ interface InputExpr {
  */
 export const $unionWith: PipelineOperator = (
   collection: Iterator,
-  expr: InputExpr,
+  expr: InputExpr | string | AnyObject[],
   options: Options
 ): Iterator => {
-  const array = isString(expr.coll)
-    ? options.collectionResolver(expr.coll)
-    : expr.coll;
-
-  const iterators = [collection];
-  iterators.push(
-    expr.pipeline
-      ? new Aggregator(expr.pipeline, options).stream(array)
-      : Lazy(array)
+  const { coll, pipeline: p } =
+    isString(expr) || isArray(expr) ? { coll: expr } : expr;
+  const arr = isString(coll) ? options.collectionResolver(coll) : coll;
+  const { documents, pipeline } = filterDocumentsStage(p, options);
+  assert(
+    !arr !== !documents,
+    "$unionWith: must specify single collection input with `expr.coll` or `expr.pipeline`."
   );
 
-  return concat(...iterators);
+  const xs = arr ?? documents;
+
+  return concat(
+    collection,
+    pipeline ? new Aggregator(pipeline, options).stream(xs) : Lazy(xs)
+  );
 };

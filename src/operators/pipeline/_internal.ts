@@ -1,4 +1,7 @@
-import { Any, TimeUnit } from "../../types";
+import { Options } from "../../core";
+import { Lazy } from "../../lazy";
+import { Any, AnyObject, TimeUnit } from "../../types";
+import { $documents } from "./documents";
 
 export type Boundary = "current" | "unbounded" | number;
 
@@ -34,3 +37,22 @@ export const isUnbounded = (window: WindowOutputOption): boolean => {
     !boundary || (boundary[0] === "unbounded" && boundary[1] === "unbounded")
   );
 };
+
+export function filterDocumentsStage(
+  pipeline: AnyObject[],
+  options: Options
+): {
+  documents?: AnyObject[];
+  pipeline: AnyObject[];
+} {
+  return !(pipeline && pipeline[0]?.$documents)
+    ? { pipeline: pipeline ?? [] }
+    : {
+        pipeline: pipeline.slice(1),
+        documents: $documents(
+          Lazy([]),
+          pipeline[0].$documents,
+          options
+        ).value<AnyObject>()
+      };
+}
