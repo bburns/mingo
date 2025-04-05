@@ -3,6 +3,7 @@ import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
 import { Any, AnyObject } from "../../types";
 import {
+  assert,
   ensureArray,
   flatten,
   isArray,
@@ -10,6 +11,7 @@ import {
   resolve,
   ValueMap
 } from "../../util";
+import { filterDocumentsStage } from "./_internal";
 
 interface InputExpr {
   /** Specifies the collection in the same database to perform the join with. */
@@ -40,18 +42,32 @@ export const $lookup: PipelineOperator = (
   expr: InputExpr,
   options: Options
 ): Iterator => {
-  const joinColl = isString(expr.from)
+  let joinColl = isString(expr.from)
     ? options?.collectionResolver(expr.from)
     : expr.from;
 
-  const { let: letExpr, pipeline, foreignField, localField } = expr;
-
-  // rewrite pipeline to use a custom $match predicates.
-  const subQueryPipeline = pipeline || [];
+  const { let: letExpr, foreignField, localField } = expr;
 
   // we default to a valid equality match.
   // returns [match_found:boolean, matched_items:array]
   let lookupEq = (_: AnyObject): [boolean, Any[]] => [true, []];
+
+  const { documents, pipeline } = filterDocumentsStage(
+    expr.pipeline ?? [],
+    options
+  );
+  // must provide one of expr.from or pipeline.$documents
+  assert(
+    !joinColl !== !documents,
+    "$lookup: must specify single join input with `expr.from` or `expr.pipeline`."
+  );
+
+  joinColl = joinColl ?? documents;
+
+  assert(
+    isArray(joinColl),
+    "$lookup: join collection must resolve to an array."
+  );
 
   // handle direct key fields
   if (foreignField && localField) {
@@ -73,7 +89,7 @@ export const $lookup: PipelineOperator = (
       const local = resolve(o, localField) ?? null;
       if (isArray(local)) {
         // only return the predicate result with no values since there is more to check.
-        if (subQueryPipeline.length) {
+        if (pipeline.length) {
           // check that matches exist for this object.
           return [local.some(v => map.has(v)), null];
         }
@@ -87,7 +103,7 @@ export const $lookup: PipelineOperator = (
       return [result !== null, result ?? []];
     };
 
-    if (subQueryPipeline.length === 0) {
+    if (pipeline.length === 0) {
       return collection.map((obj: AnyObject) => {
         return {
           ...obj,
@@ -98,7 +114,7 @@ export const $lookup: PipelineOperator = (
   }
 
   // options to use for processing each stage.
-  const agg = new Aggregator(subQueryPipeline, options);
+  const agg = new Aggregator(pipeline, options);
   const opts = { ...options };
   return collection.map((obj: AnyObject) => {
     const vars = computeValue(obj, letExpr, null, options) as AnyObject;
