@@ -27,7 +27,7 @@ export const $unionWith: PipelineOperator = (
   const { coll, pipeline: p } =
     isString(expr) || isArray(expr) ? { coll: expr } : expr;
   const arr = isString(coll) ? options.collectionResolver(coll) : coll;
-  const { documents, pipeline } = filterDocumentsStage(p, options);
+  const { documents, pipeline } = filterDocumentsStage(p ?? [], options);
   assert(
     !arr !== !documents,
     "$unionWith: must specify single collection input with `expr.coll` or `expr.pipeline`."
