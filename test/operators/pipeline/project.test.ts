@@ -58,6 +58,26 @@ samples.runTestPipeline("operators/pipeline/project", [
   },
 
   {
+    message: "can project literal data for any type except number",
+    input: [
+      {
+        _id: 1
+      }
+    ],
+    pipeline: [
+      { $project: { name: "John", re: /abc/, time: new Date("2000-01-01") } }
+    ],
+    expected: [
+      {
+        _id: 1,
+        name: "John",
+        re: /abc/,
+        time: new Date("2000-01-01")
+      }
+    ]
+  },
+
+  {
     input: productsData,
     // $cmp
     pipeline: [

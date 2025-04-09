@@ -82,9 +82,7 @@ export const $setWindowFields: PipelineOperator = (
     if (outputExpr?.window) {
       const { documents, range } = outputExpr.window;
       assert(
-        (!!documents && !range) ||
-          (!documents && !!range) ||
-          (!documents && !range),
+        (+!!documents ^ +!!range) === 1,
         "'window' option supports only one of 'documents' or 'range'."
       );
     }

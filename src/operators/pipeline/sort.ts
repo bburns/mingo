@@ -95,7 +95,7 @@ function collationComparator(spec: CollationSpec): Comparator<Any> {
   };
 
   // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
-  if ((spec.caseLevel || false) === true) {
+  if (spec.caseLevel === true) {
     if (localeOpt.sensitivity === "base") localeOpt.sensitivity = "case";
     if (localeOpt.sensitivity === "accent") localeOpt.sensitivity = "variant";
   }
