@@ -1,5 +1,4 @@
 import { Options } from "../../core";
-import { Lazy } from "../../lazy";
 import { Any, AnyObject, TimeUnit } from "../../types";
 import { $documents } from "./documents";
 
@@ -45,14 +44,10 @@ export function filterDocumentsStage(
   documents?: AnyObject[];
   pipeline: AnyObject[];
 } {
-  return !(pipeline && pipeline[0]?.$documents)
-    ? { pipeline: pipeline ?? [] }
-    : {
-        pipeline: pipeline.slice(1),
-        documents: $documents(
-          Lazy([]),
-          pipeline[0].$documents,
-          options
-        ).value<AnyObject>()
-      };
+  const docs = !!pipeline && pipeline[0]?.$documents;
+  if (!docs) return { pipeline };
+  return {
+    documents: $documents(null, docs, options).value(),
+    pipeline: pipeline.slice(1)
+  };
 }
