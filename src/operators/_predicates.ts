@@ -33,7 +33,6 @@ import {
   isOperator,
   isRegExp,
   isString,
-  MingoError,
   resolve,
   truthy,
   typeOf
@@ -41,7 +40,7 @@ import {
 
 type PredicateOptions = Options & { depth: number };
 
-type ConversionType = number | JsType | BsonType;
+type ConversionType = number | Exclude<JsType, "function"> | BsonType;
 
 /**
  * Returns a query operator created from the predicate
@@ -321,9 +320,6 @@ const compareFuncs: Record<ConversionType, Predicate<Any>> = {
   string: isString,
   // added for completeness
   undefined: isNil, // deprecated
-  function: (_: Any) => {
-    throw new MingoError("unsupported type key `function`.");
-  },
   // Mongo identifiers
   1: isNumber, //double
   2: isString,
