@@ -3,9 +3,9 @@ import { runTest, testPath } from "../../../support";
 const fixtures: [number | null, string, string?][] = [
   // [<Results>, <Args>,...]
   // [<result>, date, ?timezone]
-  [0, "Jan 1, 2016"],
-  [1, "2016-01-04"],
-  [33, "August 14, 2011", "America/Chicago"]
+  [0, "2016-01-01T00:00:00Z"],
+  [1, "2016-01-04T00:00:00Z"],
+  [32, "2011-08-14T00:00:00Z", "America/Chicago"]
   // FIXME: these tests are failing
   // [44, "1998-11-07T00:00:00Z"],
   // [43, "1998-11-07T00:00:00Z", "-0500"]
