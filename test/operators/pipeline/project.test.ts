@@ -480,5 +480,46 @@ samples.runTestPipeline("operators/pipeline/project", [
         title: "mingo is cool"
       }
     ]
+  },
+
+  {
+    message: "should breakdown date field into parts",
+    input: [
+      {
+        _id: 1,
+        date: new Date("2014-01-01T08:15:39.736Z")
+      }
+    ],
+    pipeline: [
+      {
+        $project: {
+          year: { $year: "$date" },
+          month: { $month: "$date" },
+          day: { $dayOfMonth: "$date" },
+          hour: { $hour: "$date" },
+          minutes: { $minute: "$date" },
+          seconds: { $second: "$date" },
+          milliseconds: { $millisecond: "$date" },
+          dayOfYear: { $dayOfYear: "$date" },
+          dayOfWeek: { $dayOfWeek: "$date" },
+          week: { $week: "$date" }
+        }
+      }
+    ],
+    expected: [
+      {
+        _id: 1,
+        year: 2014,
+        month: 1,
+        day: 1,
+        hour: 8,
+        minutes: 15,
+        seconds: 39,
+        milliseconds: 736,
+        dayOfYear: 1,
+        dayOfWeek: 4,
+        week: 0
+      }
+    ]
   }
 ]);
