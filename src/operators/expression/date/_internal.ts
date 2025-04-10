@@ -154,7 +154,7 @@ export const DATE_SYM_TABLE = Object.freeze({
   },
   "%B": {
     name: "full_month",
-    padding: 3,
+    padding: 0,
     re: new RegExp("(" + MONTHS.join("|") + ")", "i")
   },
   "%Y": { name: "year", padding: 4, re: /([0-9]{4})/ },
@@ -179,8 +179,8 @@ export const DATE_SYM_TABLE = Object.freeze({
     padding: 2,
     re: /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/
   },
-  "%Z": { name: "minute_offset", padding: 3, re: /([+-][0-9]{3})/ }
-  // "%%": "%",
+  "%Z": { name: "minute_offset", padding: 3, re: /([+-][0-9]{3})/ },
+  "%%": { name: "percent_literal", padding: 1, re: /%%/ }
 }) as Record<string, DatePartFormatter>;
 
 export const DATE_FORMAT_SYM_RE = new RegExp(

@@ -13,9 +13,9 @@ const fixture = (d: string, ...parts: number[]) => [
     day: parts[2],
     hour: parts[3],
     minute: parts[4],
-    second: parts[5],
+    second: parts[5]
   },
-  new Date(d),
+  new Date(d)
 ];
 
 const fixtureWithTz = (d: string, tz: string, ...parts: number[]) => {
@@ -32,10 +32,11 @@ runTest(testPath(__filename), {
     fixture("2022-02-28T00:00:00Z", 2022, 3, 0),
     fixture("2021-12-01T00:00:00Z", 2022, 0, 1),
     fixture("2021-12-31T00:00:00Z", 2022, 1, 0),
+    fixture("2016-02-29T00:00:00Z", 2016, 2, 29), // leap year
     // MongoDB examples
     fixture("2017-02-08T12:00:00Z", 2017, 2, 8, 12),
     fixture("2018-02-01T12:00:00Z", 2017, 14, 1, 12),
     fixture("2017-01-31T12:00:00Z", 2017, 2, 0, 12),
-    fixtureWithTz("2017-01-01T04:46:12Z", "-0500", 2016, 12, 31, 23, 46, 12),
-  ],
+    fixtureWithTz("2017-01-01T04:46:12Z", "-0500", 2016, 12, 31, 23, 46, 12)
+  ]
 });

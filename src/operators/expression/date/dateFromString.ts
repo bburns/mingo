@@ -6,6 +6,7 @@ import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
   DATE_FORMAT,
+  DATE_FORMAT_SYM_RE,
   DATE_SYM_TABLE,
   MINUTES_PER_HOUR,
   parseTimezone
@@ -41,6 +42,8 @@ interface InputExpr {
   onNull?: Any;
 }
 
+const FORMAT_SEP_RE = new RegExp(Object.keys(DATE_SYM_TABLE).join("|"));
+
 /**
  * Converts a date/time string to a date object.
  * @param obj
@@ -60,12 +63,10 @@ export const $dateFromString: ExpressionOperator<Any> = (
   if (isNil(dateString)) return args.onNull;
 
   // collect all separators of the format string
-  const separators = args.format.split(/%[YGmdHMSLuVzZ]/);
+  const separators = args.format.split(FORMAT_SEP_RE);
   separators.reverse();
 
-  const matches = args.format.match(
-    /(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g
-  );
+  const matches = args.format.match(DATE_FORMAT_SYM_RE);
 
   const dateParts: {
     year?: number;
@@ -76,7 +77,7 @@ export const $dateFromString: ExpressionOperator<Any> = (
     second?: number;
     millisecond?: number;
     timezone?: string;
-    minuteOffset?: string;
+    minute_offset?: string;
   } = {};
 
   // holds the valid regex of parts that matches input date string
