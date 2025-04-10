@@ -26,6 +26,6 @@ export const $firstN: ExpressionOperator = (
   if (isArray(obj)) return __firstN(obj, expr, options);
   const { input, n } = computeValue(obj, expr, null, options) as InputExpr;
   if (isNil(input)) return null;
-  assert(isArray(input), "Must resolve to an array/null or missing");
+  assert(isArray(input), "$firstN: 'input' must resolve to an array.");
   return __firstN(input as AnyObject[], { n, input: "$$this" }, options);
 };

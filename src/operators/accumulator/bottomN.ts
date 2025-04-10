@@ -31,16 +31,8 @@ export const $bottomN: AccumulatorOperator<Any[]> = (
   options: Options
 ): Any[] => {
   const copts = ComputeOptions.init(options);
-  const { n, sortBy } = computeValue(
-    copts.local.groupId,
-    expr,
-    null,
-    copts
-  ) as Pick<InputExpr, "n" | "sortBy">;
-
-  const result = $sort(Lazy(collection), sortBy, options).value();
-
+  const n = computeValue(copts.local.groupId, expr.n, null, copts) as number;
+  const result = $sort(Lazy(collection), expr.sortBy, options).value();
   const m = result.length;
-  const p = n as number;
-  return $push(m <= p ? result : result.slice(m - p), expr.output, copts);
+  return $push(m <= n ? result : result.slice(m - n), expr.output, copts);
 };

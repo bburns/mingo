@@ -26,6 +26,6 @@ export const $minN: ExpressionOperator = (
   if (isArray(obj)) return __minN(obj, expr, options);
   const { input, n } = computeValue(obj, expr, null, options) as InputExpr;
   if (isNil(input)) return null;
-  assert(isArray(input), "Must resolve to an array/null or missing");
+  assert(isArray(input), "$minN: 'input' must resolve to an array.");
   return __minN(input as AnyObject[], { n, input: "$$this" }, options);
 };

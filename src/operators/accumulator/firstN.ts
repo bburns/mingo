@@ -6,6 +6,7 @@ import {
   Options
 } from "../../core";
 import { Any, AnyObject } from "../../types";
+import { assert } from "../../util";
 import { $push } from "./push";
 
 interface InputExpr {
@@ -30,6 +31,7 @@ export const $firstN: AccumulatorOperator = (
   const copts = ComputeOptions.init(options);
   const m = collection.length;
   const n = computeValue(copts?.local?.groupId, expr.n, null, copts) as number;
+  assert(n > 0, "$firstN: 'n' must resolve to a positive integer.");
   return $push(
     m <= n ? collection : collection.slice(0, n),
     expr.input,
