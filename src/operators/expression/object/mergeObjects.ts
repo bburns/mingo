@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil } from "../../../util";
+import { $mergeObjects as __mergeObjects } from "../../accumulator/mergeObjects";
 
 /**
  * Combines multiple documents into a single document.
@@ -17,13 +17,5 @@ export const $mergeObjects: ExpressionOperator<AnyObject> = (
   options: Options
 ): AnyObject => {
   const docs = (computeValue(obj, expr, null, options) ?? []) as AnyObject[];
-  const acc = {} as AnyObject;
-  for (const o of docs) {
-    // filter out nil values
-    if (isNil(o)) continue;
-    for (const k of Object.keys(o)) {
-      if (o[k] !== undefined) acc[k] = o[k];
-    }
-  }
-  return acc;
+  return __mergeObjects(docs, expr, options);
 };

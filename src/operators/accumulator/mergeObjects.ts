@@ -1,6 +1,6 @@
-import { AccumulatorOperator, computeValue, Options } from "../../core";
+import { AccumulatorOperator, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
-import { $mergeObjects as __mergeObjects } from "../expression/object/mergeObjects";
+import { isNil } from "../../util";
 
 /**
  * Combines multiple documents into a single document.
@@ -10,11 +10,18 @@ import { $mergeObjects as __mergeObjects } from "../expression/object/mergeObjec
  * @param {Options} options The options to use for this operation
  * @returns {Array|*}
  */
-export const $mergeObjects: AccumulatorOperator = (
+export const $mergeObjects: AccumulatorOperator<AnyObject> = (
   collection: AnyObject[],
-  expr: Any,
-  options: Options
+  _expr: Any,
+  _options: Options
 ): AnyObject => {
-  const arr = computeValue(collection, expr, null, options);
-  return __mergeObjects(null, arr, options);
+  const acc = {} as AnyObject;
+  for (const o of collection) {
+    // filter out nil values
+    if (isNil(o)) continue;
+    for (const k of Object.keys(o)) {
+      if (o[k] !== undefined) acc[k] = o[k];
+    }
+  }
+  return acc;
 };
