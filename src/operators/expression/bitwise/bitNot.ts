@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil, isNumber, MingoError } from "../../../util";
+import { assert, isNil, isNumber } from "../../../util";
 
 /**
  * Returns the result of a bitwise not operation on a single argument or an array that contains a single int or long value.
@@ -18,6 +18,6 @@ export const $bitNot: ExpressionOperator = (
 ): Any => {
   const n = computeValue(obj, expr, null, options) as number;
   if (isNil(n)) return null;
-  if (isNumber(n)) return ~n;
-  throw new MingoError("$bitNot: expression must evaluate to a number.");
+  assert(isNumber(n), "$bitNot: expression must evaluate to a number.");
+  return ~n;
 };
