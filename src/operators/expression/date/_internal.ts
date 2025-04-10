@@ -1,6 +1,6 @@
 import { computeValue, Options } from "../../../core";
 import { Any, TimeUnit } from "../../../types";
-import { isDate, isNil, isNumber, MingoError } from "../../../util";
+import { assert, isDate, isNil, isNumber } from "../../../util";
 
 export const LEAP_YEAR_REF_POINT = -1000000000;
 export const DAYS_PER_WEEK = 7;
@@ -9,16 +9,6 @@ export const isLeapYear = (y: number): boolean =>
   (y & 3) == 0 && (y % 100 != 0 || y % 400 == 0);
 
 const DAYS_IN_YEAR = [365 /*common*/, 366 /*leap*/] as const;
-export const daysInYear = (year: number): number =>
-  DAYS_IN_YEAR[+isLeapYear(year)];
-
-// common months of year. 0-based month
-const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
-export const daysInMonth = (d: Date): number =>
-  DAYS_IN_MONTH[d.getUTCMonth()] +
-  Number(
-    d.getUTCMonth() === 1 && isLeapYear(d.getUTCFullYear())
-  ); /*leap adjust for FEB*/
 
 const YEAR_DAYS_OFFSET = [
   [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334] as const /*common*/,
@@ -205,9 +195,7 @@ export function parseTimezone(tzstr?: string): number {
   }
 
   const m = DATE_SYM_TABLE["%z"].re.exec(tzstr);
-  if (!m) {
-    throw new MingoError(`Timezone '${tzstr}' is invalid or not supported`);
-  }
+  assert(!!m, `timezone '${tzstr}' is invalid or not supported.`);
 
   const hr = parseInt(m[2]) || 0;
   const min = parseInt(m[3]) || 0;
@@ -253,17 +241,15 @@ export function computeDate(obj: Any, expr: Any, options: Options): Date {
   // timestamp is in seconds
   if (isNumber(d)) return new Date(d * 1000);
 
-  if (d.date) {
-    const date = isDate(d.date) ? new Date(d.date) : new Date(d.date * 1000);
+  assert(!!d?.date, `cannot convert ${JSON.stringify(expr)} to date`);
 
-    if (d.timezone) {
-      adjustDate(date, parseTimezone(d.timezone));
-    }
+  const date = isDate(d.date) ? new Date(d.date) : new Date(d.date * 1000);
 
-    return date;
+  if (d.timezone) {
+    adjustDate(date, parseTimezone(d.timezone));
   }
 
-  throw Error(`cannot convert ${JSON.stringify(expr)} to date`);
+  return date;
 }
 
 export function padDigits(n: number, digits: number): string {
