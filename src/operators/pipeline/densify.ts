@@ -107,22 +107,10 @@ export const $densify: PipelineOperator = (
   const isValidUnit = !!unit && TIME_UNITS.includes(unit);
   const getFieldValue = (o: AnyObject): DateOrNumber => {
     const v = resolve(o, expr.field);
-    // return nil values
-    if (isNil(v)) return v as DateOrNumber;
-
-    if (isNumber(v)) {
-      assert(
-        !isValidUnit,
-        "$densify: Encountered non-date value in collection when step has a date unit."
-      );
-    } else if (isDate(v)) {
-      assert(
-        isValidUnit,
-        "$densify: Encountered date value in collection when step does not have a date unit."
-      );
-    } else {
-      assert(false, "$densify: Densify field type must be numeric or a date");
-    }
+    assert(
+      isNil(v) || (isDate(v) && isValidUnit) || (isNumber(v) && !isValidUnit),
+      "$densify: Densify field type must be numeric with 'unit' unspecified, or a date with 'unit' specified."
+    );
     return v as DateOrNumber;
   };
 

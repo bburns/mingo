@@ -32,7 +32,8 @@ export const $bucket: PipelineOperator = (
   const upper = bounds[bounds.length - 1]; // exclusive
   const outputExpr = expr.output || { count: { $sum: 1 } };
 
-  assert(bounds.length > 1, "$bucket must specify at least two boundaries.");
+  // validations
+  assert(bounds.length > 1, "$bucket: must specify at least two boundaries.");
   const isValid = bounds.every(
     (v, i) =>
       i === 0 ||
@@ -42,13 +43,13 @@ export const $bucket: PipelineOperator = (
     isValid,
     `$bucket: bounds must be of same type and in ascending order`
   );
-
-  if (!isNil(defaultKey) && typeOf(defaultKey) === typeOf(lower)) {
-    assert(
-      compare(defaultKey, upper) >= 0 || compare(defaultKey, lower) < 0,
-      "$bucket 'default' expression must be out of boundaries range"
-    );
-  }
+  assert(
+    isNil(defaultKey) ||
+      typeOf(defaultKey) !== typeOf(lower) ||
+      compare(defaultKey, upper) >= 0 ||
+      compare(defaultKey, lower) < 0,
+    "$bucket: 'default' expression must be out of boundaries range"
+  );
 
   const createBuckets = () => {
     const buckets = new Map<Any, Any[]>();

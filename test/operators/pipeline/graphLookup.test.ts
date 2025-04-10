@@ -1,4 +1,4 @@
-import { aggregate, testPath } from "../../support";
+import { aggregate, DEFAULT_OPTS, testPath } from "../../support";
 
 describe(testPath(__filename), () => {
   const employees = [
@@ -242,33 +242,39 @@ describe(testPath(__filename), () => {
       }
     ];
 
-    const result = aggregate(people, [
-      { $match: { name: "Tanya Jordan" } },
-      {
-        $graphLookup: {
-          from: people,
-          startWith: "$friends",
-          connectFromField: "friends",
-          connectToField: "name",
-          as: "golfers",
-          restrictSearchWithMatch: { hobbies: "golf" }
-        }
-      },
-      {
-        $project: {
-          name: 1,
-          friends: 1,
-          golfer_connections: "$golfers.name"
-        }
-      },
-      {
-        $addFields: {
-          golfer_connections: {
-            $sortArray: { input: "$golfer_connections", sortBy: 1 }
+    const collectionResolver = (_: string) => people;
+
+    const result = aggregate(
+      people,
+      [
+        { $match: { name: "Tanya Jordan" } },
+        {
+          $graphLookup: {
+            from: "people",
+            startWith: "$friends",
+            connectFromField: "friends",
+            connectToField: "name",
+            as: "golfers",
+            restrictSearchWithMatch: { hobbies: "golf" }
+          }
+        },
+        {
+          $project: {
+            name: 1,
+            friends: 1,
+            golfer_connections: "$golfers.name"
+          }
+        },
+        {
+          $addFields: {
+            golfer_connections: {
+              $sortArray: { input: "$golfer_connections", sortBy: 1 }
+            }
           }
         }
-      }
-    ]);
+      ],
+      { ...DEFAULT_OPTS, collectionResolver }
+    );
 
     expect(result).toEqual([
       {
