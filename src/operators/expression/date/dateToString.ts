@@ -16,6 +16,8 @@ import {
   parseTimezone
 } from "./_internal";
 import { $dayOfMonth } from "./dayOfMonth";
+import { $dayOfWeek } from "./dayOfWeek";
+import { $dayOfYear } from "./dayOfYear";
 import { $hour } from "./hour";
 import { $isoDayOfWeek } from "./isoDayOfWeek";
 import { $isoWeek } from "./isoWeek";
@@ -45,7 +47,9 @@ const DATE_FUNCTIONS: Record<string, ExpressionOperator<number>> = {
   "%L": $millisecond,
   "%u": $isoDayOfWeek,
   "%U": $week,
-  "%V": $isoWeek
+  "%V": $isoWeek,
+  "%j": $dayOfYear,
+  "%w": (o: AnyObject, e: Any, p: Options) => $dayOfWeek(o, e, p) - 1
 };
 
 /**
@@ -54,12 +58,14 @@ const DATE_FUNCTIONS: Record<string, ExpressionOperator<number>> = {
  * %d	Day of Month (2 digits, zero padded)	01-31
  * %G	Year in ISO 8601 format	0000-9999
  * %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
+ * %j Day of year (3 digits, zero padded) 001-366
  * %L	Millisecond (3 digits, zero padded)	000-999
  * %m	Month (2 digits, zero padded)	01-12
  * %M	Minute (2 digits, zero padded)	00-59
  * %S	Second (2 digits, zero padded)	00-60
  * %u	Day of week number in ISO 8601 format (1-Monday, 7-Sunday)	1-7
  * %V	Week of Year in ISO 8601 format	1-53
+ * %w Day of week as an integer (0-Sunday, 6-Saturday) 0-6
  * %Y	Year (4 digits, zero padded)	0000-9999
  * %z	The timezone offset from UTC.	+/-[hh][mm]
  * %Z	The minutes offset from UTC as a number. For example, if the timezone offset (+/-[hhmm]) was +0445, the minutes offset is +285.	+/-mmm
@@ -93,17 +99,17 @@ export const $dateToString: ExpressionOperator<string> = (
       `$dateToString: invalid format specifier ${formatSpecifier}`
     );
     const { name, padding } = DATE_SYM_TABLE[formatSpecifier];
-    const operatorFn = DATE_FUNCTIONS[formatSpecifier];
+    const fn = DATE_FUNCTIONS[formatSpecifier];
     let value: string | DatePartFormatter;
 
-    if (operatorFn) {
-      value = padDigits(operatorFn(obj, date, options), padding);
+    if (fn) {
+      value = padDigits(fn(obj, date, options), padding);
     } else {
       switch (name) {
         case "timezone":
           value = formatTimezone(minuteOffset);
           break;
-        case "minuteOffset":
+        case "minute_offset":
           value = minuteOffset.toString();
           break;
         case "abbr_month":
@@ -112,8 +118,6 @@ export const $dateToString: ExpressionOperator<string> = (
           value = s.substring(0, name.startsWith("abbr") ? 3 : 10);
           break;
         }
-        default:
-          value = null;
       }
     }
     // replace the match with resolved value

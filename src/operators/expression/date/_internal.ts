@@ -161,19 +161,25 @@ export const DATE_SYM_TABLE = Object.freeze({
   "%G": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%m": { name: "month", padding: 2, re: /(0[1-9]|1[012])/ },
   "%d": { name: "day", padding: 2, re: /(0[1-9]|[12][0-9]|3[01])/ },
+  "%j": {
+    name: "day_of_year",
+    padding: 3,
+    re: /(0[0-9][1-9]|[12][0-9]{2}|3[0-5][0-9]|36[0-6])/
+  },
   "%H": { name: "hour", padding: 2, re: /([01][0-9]|2[0-3])/ },
   "%M": { name: "minute", padding: 2, re: /([0-5][0-9])/ },
   "%S": { name: "second", padding: 2, re: /([0-5][0-9]|60)/ },
   "%L": { name: "millisecond", padding: 3, re: /([0-9]{3})/ },
-  "%u": { name: "weekday", padding: 1, re: /([1-7])/ },
-  "%U": { name: "week", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
-  "%V": { name: "isoWeek", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
+  "%w": { name: "day_of_week", padding: 1, re: /([0-6])/ },
+  "%u": { name: "day_of_week_iso", padding: 1, re: /([1-7])/ },
+  "%U": { name: "week_of_year", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
+  "%V": { name: "week_of_year_iso", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
   "%z": {
     name: "timezone",
     padding: 2,
     re: /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/
   },
-  "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ }
+  "%Z": { name: "minute_offset", padding: 3, re: /([+-][0-9]{3})/ }
   // "%%": "%",
 }) as Record<string, DatePartFormatter>;
 

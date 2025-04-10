@@ -53,6 +53,13 @@ runTest(testPath(__filename), {
     [{ format: "%b", date, timezone: "+04:30" }, "Jan"],
 
     // full_month
-    [{ format: "%B", date, timezone: "+04:30" }, "January"]
+    [{ format: "%B", date, timezone: "+04:30" }, "January"],
+
+    // day_of_year
+    [{ format: "%j", date }, "001"],
+    [{ format: "%j", date: new Date("2023-02-08T12:00:00Z") }, "039"],
+
+    // day of week (0-6) - wednesday (3)
+    [{ format: "%w", date }, "3"]
   ]
 });
