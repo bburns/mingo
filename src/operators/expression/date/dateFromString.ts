@@ -96,9 +96,7 @@ export const $dateFromString: ExpressionOperator<Any> = (
       if (m !== null) {
         // store and cut out matched part
         dateParts[props.name] = /^\d+$/.exec(m[0]) ? parseInt(m[0]) : m[0];
-        dateString =
-          dateString.substr(0, m.index) +
-          dateString.substr(m.index + m[0].length);
+        dateString = dateString.substring(m.index + m[0].length + 1);
 
         // construct expected pattern
         expectedPattern +=

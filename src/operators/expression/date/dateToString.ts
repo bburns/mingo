@@ -2,14 +2,16 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isNil, isObject } from "../../../util";
+import { assert, isNil } from "../../../util";
 import {
   adjustDate,
   computeDate,
   DATE_FORMAT,
+  DATE_FORMAT_SYM_RE,
   DATE_SYM_TABLE,
   DatePartFormatter,
   formatTimezone,
+  MONTHS,
   padDigits,
   parseTimezone
 } from "./_internal";
@@ -79,29 +81,39 @@ export const $dateToString: ExpressionOperator<string> = (
   const date = computeDate(obj, args.date, options);
   let format = args.format || DATE_FORMAT;
   const minuteOffset = parseTimezone(args.timezone);
-  const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%U|%V|%z|%Z)/g);
+  const matches = format.match(DATE_FORMAT_SYM_RE);
 
   // adjust the date to reflect timezone
   adjustDate(date, minuteOffset);
 
   for (let i = 0, len = matches.length; i < len; i++) {
     const formatSpecifier = matches[i];
-    const props = DATE_SYM_TABLE[formatSpecifier];
+    assert(
+      formatSpecifier in DATE_SYM_TABLE,
+      `$dateToString: invalid format specifier ${formatSpecifier}`
+    );
+    const { name, padding } = DATE_SYM_TABLE[formatSpecifier];
     const operatorFn = DATE_FUNCTIONS[formatSpecifier];
     let value: string | DatePartFormatter;
 
-    if (isObject(props)) {
-      // reuse date
-      if (props.name === "timezone") {
-        value = formatTimezone(minuteOffset);
-      } else if (props.name === "minuteOffset") {
-        value = minuteOffset.toString();
-      } else {
-        assert(
-          !!operatorFn,
-          `unsupported date format specifier '${formatSpecifier}'`
-        );
-        value = padDigits(operatorFn(obj, date, options), props.padding);
+    if (operatorFn) {
+      value = padDigits(operatorFn(obj, date, options), padding);
+    } else {
+      switch (name) {
+        case "timezone":
+          value = formatTimezone(minuteOffset);
+          break;
+        case "minuteOffset":
+          value = minuteOffset.toString();
+          break;
+        case "abbr_month":
+        case "full_month": {
+          const s = MONTHS[date.getUTCMonth()];
+          value = s.substring(0, name.startsWith("abbr") ? 3 : 10);
+          break;
+        }
+        default:
+          value = null;
       }
     }
     // replace the match with resolved value

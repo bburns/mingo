@@ -127,8 +127,36 @@ export interface DatePartFormatter {
   re: RegExp;
 }
 
+export const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
+] as const;
+
 // used for formatting dates in $dateToString operator
 export const DATE_SYM_TABLE = Object.freeze({
+  "%b": {
+    name: "abbr_month",
+    padding: 3,
+    re: new RegExp(
+      "(" + MONTHS.map(m => m.substring(0, 3)).join("|") + ")",
+      "i"
+    )
+  },
+  "%B": {
+    name: "full_month",
+    padding: 3,
+    re: new RegExp("(" + MONTHS.join("|") + ")", "i")
+  },
   "%Y": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%G": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%m": { name: "month", padding: 2, re: /(0[1-9]|1[012])/ },
@@ -148,6 +176,11 @@ export const DATE_SYM_TABLE = Object.freeze({
   "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ }
   // "%%": "%",
 }) as Record<string, DatePartFormatter>;
+
+export const DATE_FORMAT_SYM_RE = new RegExp(
+  "(" + Object.keys(DATE_SYM_TABLE).join("|") + ")",
+  "g"
+);
 
 const TIMEZONE_RE = /^[a-zA-Z_]+\/[a-zA-Z_]+$/;
 
