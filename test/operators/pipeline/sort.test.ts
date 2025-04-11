@@ -1,6 +1,11 @@
-import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core";
-import { DEFAULT_OPTS, runTestPipeline, studentsData } from "../../support";
+import {
+  aggregate,
+  DEFAULT_OPTS,
+  runTestPipeline,
+  studentsData,
+  testPath
+} from "../../support";
 
 // english
 const english = [
@@ -21,13 +26,13 @@ const french = [
   { name: "A" }
 ];
 
-describe("operators/pipeline/sort", () => {
+describe(testPath(__filename), () => {
   it("can sort collection with $sort", () => {
-    const result = aggregate(
-      studentsData,
-      [{ $sort: { _id: -1 } }, { $limit: 1 }, { $project: { _id: 1 } }],
-      DEFAULT_OPTS
-    );
+    const result = aggregate(studentsData, [
+      { $sort: { _id: -1 } },
+      { $limit: 1 },
+      { $project: { _id: 1 } }
+    ]);
     expect(result).toStrictEqual([{ _id: 199 }]);
   });
 
@@ -38,8 +43,7 @@ describe("operators/pipeline/sort", () => {
         { _id: "a", date: new Date(2017, 1, 1) },
         { _id: "b", date: new Date(2017, 1, 1) }
       ],
-      [{ $sort: { date: 1 } }],
-      DEFAULT_OPTS
+      [{ $sort: { date: 1 } }]
     );
     expect(result).toStrictEqual([
       { _id: "a", date: new Date(2017, 1, 1) },
@@ -109,6 +113,72 @@ describe("operators/pipeline/sort", () => {
       { name: "Bob" },
       { name: "peggy" },
       { name: "Tom" }
+    ]);
+  });
+
+  const input = [
+    { _id: 4, name: "Bob" },
+    { _id: 5, name: "charlie" },
+    { _id: 1, name: "alice" },
+    { _id: 2, name: "Alice" },
+    { _id: 6, name: "Charlie" },
+    { _id: 3, name: "bob" }
+  ];
+
+  it("can sort with collation caseLevel with default 'caseFirst' (lower)", () => {
+    const res = aggregate(
+      input,
+      [
+        {
+          $sort: { name: 1 } // Sort documents by the 'name' field in ascending order
+        }
+      ],
+      {
+        ...DEFAULT_OPTS,
+        collation: {
+          locale: "en",
+          caseLevel: true,
+          strength: 2
+        }
+      }
+    );
+
+    expect(res).toEqual([
+      { _id: 1, name: "alice" },
+      { _id: 2, name: "Alice" },
+      { _id: 3, name: "bob" },
+      { _id: 4, name: "Bob" },
+      { _id: 5, name: "charlie" },
+      { _id: 6, name: "Charlie" }
+    ]);
+  });
+
+  it("can sort with collation caseLevel with default 'caseFirst' (lower)", () => {
+    const res = aggregate(
+      input,
+      [
+        {
+          $sort: { name: 1 }
+        }
+      ],
+      {
+        ...DEFAULT_OPTS,
+        collation: {
+          locale: "en",
+          caseLevel: true,
+          caseFirst: "upper",
+          strength: 1
+        }
+      }
+    );
+
+    expect(res).toEqual([
+      { _id: 2, name: "Alice" },
+      { _id: 1, name: "alice" },
+      { _id: 4, name: "Bob" },
+      { _id: 3, name: "bob" },
+      { _id: 6, name: "Charlie" },
+      { _id: 5, name: "charlie" }
     ]);
   });
 });
