@@ -11,6 +11,7 @@ import {
   isObject,
   isObjectLike,
   normalize,
+  removeValue,
   resolve,
   resolveGraph,
   stringify,
@@ -82,7 +83,28 @@ describe("util", () => {
     });
   });
 
-  // describe("removeValue", () => {});
+  describe("removeValue", () => {
+    for (const [path, res, opts] of [
+      ["a.b.1", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
+      ["a.0.b.1", { a: [{ b: [{ c: 0 }, { c: 2 }] }] }],
+      ["a.b.1", { a: [{ b: [{ c: 0 }, { c: 2 }] }] }, { descendArray: true }],
+      ["a.b.1.c", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
+      ["a.0.b.1.c", { a: [{ b: [{ c: 0 }, {}, { c: 2 }] }] }],
+      [
+        "a.b.1.c",
+        { a: [{ b: [{ c: 0 }, {}, { c: 2 }] }] },
+        { descendArray: true }
+      ],
+      ["a.0.b.c", { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] }],
+      ["a.b.c", { a: [{ b: [{}, {}, {}] }] }, { descendArray: true }]
+    ] as const) {
+      const obj = { a: [{ b: [{ c: 0 }, { c: 1 }, { c: 2 }] }] };
+      it(`should remove ${path} from ${JSON.stringify(obj)} => ${JSON.stringify(res)}, with ${JSON.stringify(opts ?? {})}`, () => {
+        removeValue(obj, path, opts);
+        expect(obj).toEqual(res);
+      });
+    }
+  });
 
   describe("typeOf", () => {
     it.each([
