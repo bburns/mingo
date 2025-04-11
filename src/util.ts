@@ -782,15 +782,7 @@ export function removeValue(
     selector,
     ((item: Any, key: string) => {
       if (isArray(item)) {
-        if (/^\d+$/.test(key)) {
-          item.splice(parseInt(key), 1);
-        } else if (options && options.descendArray) {
-          for (const elem of item) {
-            if (isObject(elem)) {
-              delete (elem as AnyObject)[key];
-            }
-          }
-        }
+        item.splice(parseInt(key), 1);
       } else if (isObject(item)) {
         delete item[key];
       }
