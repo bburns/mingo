@@ -22,12 +22,41 @@ import {
 } from "../src/util";
 import { ObjectId } from "./support";
 
+class Custom {
+  constructor(readonly _id: string) {}
+}
+
 describe("util", () => {
   describe("compare", () => {
-    it("can compare less than, greater than, and equal to", () => {
-      expect(compare(1, 5)).toBe(-1);
-      expect(compare(5, 1)).toBe(1);
-      expect(compare(1, 1)).toBe(0);
+    const items = [
+      undefined,
+      null,
+      1,
+      "a",
+      Symbol(),
+      {},
+      [],
+      new Uint8Array(0),
+      false,
+      new Date(),
+      /a/,
+      () => void 0
+    ] as const;
+
+    for (let i = 1; i < items.length; i++) {
+      const [a, b] = items.slice(i - 1, i + 1) as Any[];
+      it(`should compare by sort order (${typeOf(a)} < ${typeOf(b)})`, () => {
+        expect(compare(a, a)).toBe(0);
+        expect(compare(a, b)).toBe(-1);
+        expect(compare(b, a)).toBe(1);
+      });
+    }
+
+    it("should stringify custom types for comparison", () => {
+      const [a, b] = ["0", "1"].map(n => new Custom(n));
+      expect(compare(a, a)).toBe(0);
+      expect(compare(a, b)).toBe(-1);
+      expect(compare(b, a)).toBe(1);
     });
   });
 
@@ -53,9 +82,7 @@ describe("util", () => {
     });
   });
 
-  class Custom {
-    constructor(readonly _id: string) {}
-  }
+  // describe("removeValue", () => {});
 
   describe("typeOf", () => {
     it.each([

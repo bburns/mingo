@@ -68,14 +68,20 @@ const SORT_ORDER: Record<string, number> = {
 export function compare<T = Any>(a: T, b: T): number {
   if (a === MISSING) a = undefined;
   if (b === MISSING) b = undefined;
-  const [u, v] = [a, b].map(n => SORT_ORDER[typeOf(n)] || 0);
+  const customOrder = 100;
+  const [u, v] = [a, b].map(
+    n =>
+      SORT_ORDER[isTypedArray(n) ? "arraybuffer" : typeOf(n)] ??
+      customOrder /*custom objects have highest sort order*/
+  );
+  // non-equal types compare with sort-order
   if (u !== v) return u - v;
-  // check for equivalence equality
-  if (isEqual(a, b)) return 0;
-  if ((a as string) < (b as string)) return -1;
-  if ((a as string) > (b as string)) return 1;
-  // if we get here we are comparing a type that does not make sense.
-  return 0;
+  // stringify custom types for comparison
+  if (u === customOrder) {
+    a = stringify(a) as T;
+    b = stringify(b) as T;
+  }
+  return isEqual(a, b) ? 0 : a < b ? -1 : 1;
 }
 
 /**
