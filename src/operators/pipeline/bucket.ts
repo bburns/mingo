@@ -82,7 +82,12 @@ export const $bucket: PipelineOperator = (
 
     // upper bound is exclusive so we remove it
     bounds.pop();
-    if (!isNil(defaultKey)) bounds.push(defaultKey);
+
+    // add items in the default bucket if any
+    if (!isNil(defaultKey)) {
+      if (buckets.get(defaultKey).length) bounds.push(defaultKey);
+      else buckets.delete(defaultKey);
+    }
 
     assert(
       buckets.size === bounds.length,
