@@ -4,8 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isNil } from "../../../util";
-import { TypeConvertError } from "./_internal";
+import { assert, isNil } from "../../../util";
 import { $toBool } from "./toBool";
 import { $toDate } from "./toDate";
 import { $toDouble } from "./toDouble";
@@ -71,7 +70,6 @@ export const $convert: ExpressionOperator = (
     /*nothing to do*/
   }
 
-  if (args.onError !== undefined) return args.onError;
-
-  throw new TypeConvertError(`could not convert to type ${args.to}.`);
+  assert(args.onError !== undefined, `could not convert to type ${args.to}.`);
+  return args.onError;
 };

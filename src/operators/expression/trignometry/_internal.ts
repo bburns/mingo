@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject, Callback } from "../../../types";
-import { MingoError } from "../../../util";
+import { assert } from "../../../util";
 
 const FIXED_POINTS = {
   undefined: null,
@@ -27,12 +27,9 @@ export function createTrignometryOperator(
     const n = computeValue(obj, expr, null, options) as number;
     if (keySet.has(`${n}`)) {
       const res = fp[`${n}`];
-      if (res instanceof Error) {
-        throw new MingoError(
-          `cannot apply $${f.name} to -inf, value must in (-inf,inf)`
-        );
-      }
-      return res;
+      const err = res instanceof Error;
+      assert(!err, `cannot apply $${f.name} to -inf, value must in (-inf,inf)`);
+      return !err && res;
     }
     return f(n);
   };

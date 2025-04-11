@@ -1,11 +1,9 @@
 /**
  * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
  */
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { isDate, isNil, isNumber } from "../../../util";
-import { TypeConvertError } from "./_internal";
+import { assert, isDate, isNil, isNumber } from "../../../util";
 
 /**
  * Converts a value to a double. If the value cannot be converted to an double, $toDouble errors. If the value is null or missing, $toDouble returns null.
@@ -30,8 +28,6 @@ export const $toDouble: ExpressionOperator = (
   if (val === false) return 0;
 
   const n = Number(val);
-
-  if (isNumber(n)) return n;
-
-  throw new TypeConvertError(`cannot convert '${val}' to double/decimal`);
+  assert(isNumber(n), `cannot convert '${val}' to double/decimal`);
+  return n;
 };
