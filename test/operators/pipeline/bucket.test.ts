@@ -1,6 +1,66 @@
 import { aggregate, testPath } from "../../support";
 
 describe(testPath(__filename), () => {
+  it("Bucket with 'default' value greater than upper bound", () => {
+    const res = aggregate(
+      [
+        { _id: 1, name: "Alice", score: 20 },
+        { _id: 2, name: "Bob", score: 55 },
+        { _id: 3, name: "Charlie", score: 95 },
+        { _id: 4, name: "Daisy", score: 120 },
+        { _id: 5, name: "Eve", score: 75 }
+      ],
+      [
+        {
+          $bucket: {
+            groupBy: "$score", // Field to group by
+            boundaries: [0, 50, 100], // Bucket boundaries
+            default: 150, // Value that is greater than the upper bound (100) and of the same type (number)
+            output: {
+              count: { $sum: 1 } // Count documents in each bucket
+            }
+          }
+        }
+      ]
+    );
+
+    expect(res).toEqual([
+      { _id: 0, count: 1 }, // Bucket for scores [0, 50): Alice (score 20)
+      { _id: 50, count: 3 }, // Bucket for scores [50, 100): Bob, Charlie, Eve
+      { _id: 150, count: 1 } // Default bucket: Daisy (score 120)
+    ]);
+  });
+
+  it("Bucket with 'default' value smaller than lower bound", () => {
+    const res = aggregate(
+      [
+        { _id: 1, name: "Alice", score: 20 },
+        { _id: 2, name: "Bob", score: 55 },
+        { _id: 3, name: "Charlie", score: 120 },
+        { _id: 4, name: "Daisy", score: 170 },
+        { _id: 5, name: "Eve", score: 45 }
+      ],
+      [
+        {
+          $bucket: {
+            groupBy: "$score", // Field to group by
+            boundaries: [50, 100, 150], // New bucket boundaries
+            default: 0, // Value smaller than the lower boundary (50) and of the same type (number)
+            output: {
+              count: { $sum: 1 } // Count documents in each bucket
+            }
+          }
+        }
+      ]
+    );
+
+    expect(res).toEqual([
+      { _id: 50, count: 1 }, // Bucket for scores [50, 100): Bob
+      { _id: 100, count: 1 }, // Bucket for scores [100, 150): Charlie
+      { _id: 0, count: 3 } // Default bucket: Alice (score 20), Daisy (score 170), Eve (score 45)
+    ]);
+  });
+
   it("Bucket by Year and Filter Bycket Results", () => {
     const res = aggregate(
       [
