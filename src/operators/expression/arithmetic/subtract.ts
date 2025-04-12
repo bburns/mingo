@@ -2,7 +2,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isDate, isNumber } from "../../../util";
+import { assert, isArray, typeOf } from "../../../util";
 
 /**
  * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
@@ -17,8 +17,11 @@ export const $subtract: ExpressionOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  const [a, b] = computeValue(obj, expr, null, options) as (number | Date)[];
-  if ((isNumber(a) && isNumber(b)) || (isDate(a) && isDate(b))) return +a - +b;
-  if (isDate(a) && isNumber(b)) return new Date(+a - b);
-  assert(false, "$subtract: must resolve to number/date.");
+  const args = computeValue(obj, expr, null, options) as (number | Date)[];
+  const errMsg = "$subtract: must resolve to array(2) of numbers/dates";
+  assert(isArray(args) && args.length === 2, errMsg);
+  const t = args.map(typeOf).join("|");
+  if (t === "date|number") return new Date(+args[0] - +args[1]);
+  assert(t === "date|date" || t === "number|number", errMsg);
+  return +args[0] - +args[1];
 };

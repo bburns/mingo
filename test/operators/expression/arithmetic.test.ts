@@ -125,7 +125,11 @@ support.runTest("operators/expression/arithmetic", {
   $subtract: [
     [[-1, -1], 0],
     [[-1, 2], -3],
-    [[2, -1], 3]
+    [[2, -1], 3],
+    [
+      [new Date("2000-10-10T00:00:00Z"), 3600000],
+      new Date("2000-10-09T23:00:00Z")
+    ]
   ],
   $trunc: [
     [[NaN, 0], NaN],
