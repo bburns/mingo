@@ -25,6 +25,9 @@ export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
 // internal cache to store precomputed series once to avoid O(N^2) calls over the collection
 const memo = new WeakMap<Any[], AnyObject>();
 
+/** used for testing only. check that the collection and optional key is cached */
+export const cached = (xs: AnyObject[]) => memo.has(xs);
+
 /**
  * A utility function that manages memoization for window operators.
  * It caches intermediate results for a given collection and field,
@@ -34,17 +37,17 @@ const memo = new WeakMap<Any[], AnyObject>();
  * @template R - The return type of the callback function.
  * @param collection - The collection of documents being processed.
  * @param expr - The window operator input containing metadata such as the field name and document number.
- * @param cacheFn - A callback function that computes and returns the cached value for the field.
+ * @param initialize - A callback function that computes and returns the cached value for the field.
  * @param fn - A callback function that processes the cached value and returns the result.
  * @returns The result of the `fn` callback function.
  * @throws Any errors thrown by the `fn` callback function.
  */
 export function withMemo<T = Any, R = Any>(
   collection: AnyObject[],
-  expr: WindowOperatorInput,
-  cacheFn: Callback<T>,
+  expr: Pick<WindowOperatorInput, "field" | "documentNumber">,
+  initialize: Callback<T>,
   fn: Callback<R, T>
-) {
+): R {
   // add collection to working memory
   if (!memo.has(collection)) {
     memo.set(collection, {});
@@ -52,21 +55,22 @@ export function withMemo<T = Any, R = Any>(
   const data = memo.get(collection);
   // cache the computation for the field
   if (!(expr.field in data)) {
-    data[expr.field] = cacheFn();
+    data[expr.field] = initialize();
   }
 
-  let failed = false;
+  let ok = false;
   try {
-    return fn(data[expr.field] as T);
-  } catch {
-    failed = true;
+    const res = fn(data[expr.field] as T);
+    ok = true;
+    return res;
   } finally {
-    // cleanup on failure or last element in collection.
-    if (failed || expr.documentNumber === collection.length) {
+    // cleanup on failure
+    if (!ok) {
+      memo.delete(collection);
+    } else if (expr.documentNumber === collection.length) {
+      // cleanup on last document
       delete data[expr.field];
-      if (Object.keys(data).length === 0) {
-        memo.delete(collection);
-      }
+      if (Object.keys(data).length === 0) memo.delete(collection);
     }
   }
 }
