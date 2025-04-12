@@ -1,8 +1,8 @@
 import { aggregate } from "../../../src";
 import { ProcessingMode } from "../../../src/core";
-import { DEFAULT_OPTS, ISODate } from "../../support";
+import { DEFAULT_OPTS, ISODate, testPath } from "../../support";
 
-describe("operators/pipeline/setWindowFields", () => {
+describe(testPath(__filename), () => {
   const options = {
     ...DEFAULT_OPTS,
     processingMode: ProcessingMode.CLONE_INPUT,
