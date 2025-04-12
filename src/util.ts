@@ -490,39 +490,19 @@ export function groupBy(
 ): Map<Any, Any[]> {
   if (collection.length < 1) return new Map();
 
-  // map of hash to collided values
-  const lookup = new Map<number, Any[]>();
-  // map of raw key values to objects.
-  const result = new Map<Any, Any[]>();
-
+  // map of raw key values to matching objects of the same keyFn(obj).
+  const result = ValueMap.init<Any, Any[]>(hashFunction);
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
-    const key = keyFn(obj, i);
-    const hash = hashCode(key, hashFunction);
-
-    if (hash === null) {
-      if (result.has(null)) {
-        result.get(null).push(obj);
-      } else {
-        result.set(null, [obj]);
-      }
+    const key = keyFn(obj, i) ?? null;
+    let a = result.get(key);
+    if (!a) {
+      a = [obj];
+      result.set(key, a);
     } else {
-      // find if we can match a hash for which the value is equivalent.
-      // this is used to deal with collisions.
-      const existingKey = lookup.has(hash)
-        ? lookup.get(hash).find(k => isEqual(k, key))
-        : null;
-
-      if (existingKey !== null) {
-        result.get(existingKey).push(obj);
-      } else {
-        // collision detected or first entry so we create a new group.
-        result.set(key, [obj]);
-        lookup.set(hash, (lookup.get(hash) ?? []).concat([key]));
-      }
+      a.push(obj);
     }
   }
-
   return result;
 }
 
