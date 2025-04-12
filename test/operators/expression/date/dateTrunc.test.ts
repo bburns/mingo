@@ -38,7 +38,12 @@ const fixtures: [string, string, number?, string?, string?][] = [
   ["2009-12-20T00:00:00Z", "week", 13],
   ["2009-10-01T00:00:00Z", "month", 13],
   ["2009-10-01T00:00:00Z", "quarter", 13],
-  ["2000-01-01T00:00:00Z", "year", 13]
+  ["2000-01-01T00:00:00Z", "year", 13],
+  // week with overflowing binSizes
+  ["2009-11-24T00:00:00Z", "week", 12, undefined, "Tuesday"],
+  ["2009-10-14T00:00:00Z", "week", 17, undefined, "wednesday"],
+  ["2009-02-23T00:00:00Z", "week", 53, undefined, "mon"],
+  ["2009-07-04T00:00:00Z", "week", 31, undefined, "Sat"]
 ] as const;
 
 const fixturesWithTimezone = [
