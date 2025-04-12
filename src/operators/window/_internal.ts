@@ -9,7 +9,6 @@ import {
 import { groupBy, isEqual, MingoError } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
-import { isUnbounded } from "../pipeline/_internal";
 
 export type WindowTimeUnit = Exclude<TimeUnit, "year" | "quarter" | "month">;
 
@@ -24,11 +23,21 @@ export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
 };
 
 // internal cache to store precomputed series once to avoid O(N^2) calls over the collection
-const memo = new WeakMap<Any[], Any>();
+const memo = new WeakMap<Any[], AnyObject>();
 
 /**
- * Caches all computed values in a window sequence for reuse.
- * This is only useful for operations with unbounded documents.
+ * A utility function that manages memoization for window operators.
+ * It caches intermediate results for a given collection and field,
+ * and ensures proper cleanup after processing.
+ *
+ * @template T - The type of the cached value.
+ * @template R - The return type of the callback function.
+ * @param collection - The collection of documents being processed.
+ * @param expr - The window operator input containing metadata such as the field name and document number.
+ * @param cacheFn - A callback function that computes and returns the cached value for the field.
+ * @param fn - A callback function that processes the cached value and returns the result.
+ * @returns The result of the `fn` callback function.
+ * @throws Any errors thrown by the `fn` callback function.
  */
 export function withMemo<T = Any, R = Any>(
   collection: AnyObject[],
@@ -36,21 +45,16 @@ export function withMemo<T = Any, R = Any>(
   cacheFn: Callback<T>,
   fn: Callback<R, T>
 ) {
-  // no caching done for bounded inputs
-  if (!isUnbounded(expr.parentExpr.output[expr.field].window)) {
-    return fn(cacheFn());
-  }
-
-  // first time using collection
+  // add collection to working memory
   if (!memo.has(collection)) {
-    memo.set(collection, { [expr.field]: cacheFn() });
+    memo.set(collection, {});
   }
-  const data = memo.get(collection) as AnyObject;
-
-  // subsequent computations over the same collection.
-  if (data[expr.field] === undefined) {
+  const data = memo.get(collection);
+  // cache the computation for the field
+  if (!(expr.field in data)) {
     data[expr.field] = cacheFn();
   }
+
   let failed = false;
   try {
     return fn(data[expr.field] as T);
@@ -60,7 +64,9 @@ export function withMemo<T = Any, R = Any>(
     // cleanup on failure or last element in collection.
     if (failed || expr.documentNumber === collection.length) {
       delete data[expr.field];
-      if (Object.keys(data).length === 0) memo.delete(collection);
+      if (Object.keys(data).length === 0) {
+        memo.delete(collection);
+      }
     }
   }
 }
