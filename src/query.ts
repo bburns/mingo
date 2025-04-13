@@ -15,17 +15,30 @@ const TOP_LEVEL_OPS = new Set(
 );
 
 /**
- * An object used to filter input documents
+ * Represents a query object used to filter and match documents based on specified criteria.
  *
- * @param {AnyObject} condition The condition for constructing predicates
- * @param {Options} options Options for use by operators
- * @constructor
+ * The `Query` class provides methods to compile query conditions, test objects against
+ * the query criteria, and retrieve matching documents from a collection.
+ *
+ * @example
+ * ```typescript
+ * const query = new Query({ age: { $gt: 18 } });
+ * const result = query.test({ name: "John", age: 25 }); // true
+ * ```
+ *
+ * @template T - The type of objects being queried.
  */
 export class Query {
   #compiled: Predicate<Any>[];
   #options: Options;
   #condition: AnyObject;
 
+  /**
+   * Creates an instance of the query with the specified condition and options.
+   *
+   * @param condition - The query condition object used to define the criteria for matching documents.
+   * @param options - Optional configuration settings to customize the query behavior.
+   */
   constructor(condition: AnyObject, options?: Partial<Options>) {
     this.#condition = cloneDeep(condition);
     this.#options = initOptions(options);
@@ -81,21 +94,24 @@ export class Query {
   }
 
   /**
-   * Checks if the object passes the query criteria. Returns true if so, false otherwise.
+   * Tests whether the given object satisfies all compiled predicates.
    *
-   * @param obj The object to test
-   * @returns {boolean}
+   * @template T - The type of the object to test.
+   * @param obj - The object to be tested against the compiled predicates.
+   * @returns `true` if the object satisfies all predicates, otherwise `false`.
    */
   test<T>(obj: T): boolean {
     return this.#compiled.every(p => p(obj));
   }
 
   /**
-   * Returns a cursor to select matching documents from the input source.
+   * Returns a cursor for iterating over the items in the given collection that match the query criteria.
    *
-   * @param source A source providing a sequence of documents
-   * @param projection An optional projection criteria
-   * @returns {Cursor} A Cursor for iterating over the results
+   * @typeParam T - The type of the items in the resulting cursor.
+   * @param collection - The source collection to search through.
+   * @param projection - An optional object specifying fields to include or exclude
+   *                      in the returned items.
+   * @returns A `Cursor` instance for iterating over the matching items.
    */
   find<T>(collection: Source, projection?: AnyObject): Cursor<T> {
     return new Cursor<T>(
@@ -104,18 +120,5 @@ export class Query {
       projection || {},
       this.#options
     );
-  }
-
-  /**
-   * Remove matched documents from the collection returning the remainder
-   *
-   * @param collection An array of documents
-   * @returns {Array} A new array with matching elements removed
-   */
-  remove<T>(collection: T[]): T[] {
-    return collection.reduce<T[]>((acc: T[], obj: T) => {
-      if (!this.test(obj)) acc.push(obj);
-      return acc;
-    }, []);
   }
 }

@@ -11,26 +11,39 @@ import { Any, AnyObject } from "./types";
 import { assert, cloneDeep } from "./util";
 
 /**
- * Provides functionality for the mongoDB aggregation pipeline
- *
- * @param pipeline an Array of pipeline operators
- * @param options An optional Options to pass the aggregator
- * @constructor
+ * The `Aggregator` class provides functionality to process data collections
+ * through an aggregation pipeline. It supports streaming and executing
+ * aggregation operations with customizable options.
  */
 export class Aggregator {
   #pipeline: AnyObject[];
   #options: Options;
 
+  /**
+   * Creates an instance of the Aggregator class.
+   *
+   * @param pipeline - An array of objects representing the aggregation pipeline stages.
+   * @param options - Optional configuration settings for the aggregator.
+   */
   constructor(pipeline: AnyObject[], options?: Partial<Options>) {
     this.#pipeline = pipeline;
     this.#options = initOptions(options);
   }
 
   /**
-   * Returns an {@link Iterator} for lazy evaluation of the pipeline.
+   * Processes a collection through an aggregation pipeline and returns an iterator
+   * for the transformed results.
    *
-   * @param collection An array or iterator object
-   * @returns {Iterator} an iterator object
+   * @param collection - The input collection to process. This can be any source
+   *   that implements the `Source` interface.
+   * @param options - Optional configuration for processing. If not provided, the
+   *   default options of the aggregator instance will be used.
+   * @returns An iterator that yields the results of the aggregation pipeline.
+   *
+   * @throws Will throw an error if:
+   * - A pipeline stage contains more than one operator.
+   * - The `$documents` operator is not the first stage in the pipeline.
+   * - An unregistered pipeline operator is encountered.
    */
   stream(collection: Source, options?: Options): Iterator {
     let iter: Iterator = Lazy(collection);
@@ -67,9 +80,12 @@ export class Aggregator {
   }
 
   /**
-   * Return the results of the aggregation as an array.
+   * Executes the aggregation pipeline on the provided collection and returns the resulting array.
    *
-   * @param collection
+   * @template T - The type of the objects in the resulting array.
+   * @param collection - The input data source to run the aggregation on.
+   * @param options - Optional settings to customize the aggregation behavior.
+   * @returns An array of objects of type `T` resulting from the aggregation.
    */
   run<T extends AnyObject>(collection: Source, options?: Options): T[] {
     return this.stream(collection, options).value();

@@ -1,14 +1,6 @@
-import { find, Query, remove } from "../src";
+import { find, Query } from "../src";
 
 describe("Query", () => {
-  it("should remove matching conditions", () => {
-    const result = remove(
-      [{ name: "Colt" }, { name: "Ada" }, { name: "Xavier" }, { name: "Puma" }],
-      { name: { $regex: /a$/ } }
-    );
-    expect(result).toStrictEqual([{ name: "Colt" }, { name: "Xavier" }]);
-  });
-
   it("should query deeply nested arrays", () => {
     const query = new Query({ "children.children.flags": "foobar" });
     const result = query.test({
