@@ -4,6 +4,7 @@ import {
   computeValue,
   initOptions,
   Options,
+  OpType,
   PipelineOperator,
   ProcessingMode,
   redact,
@@ -91,7 +92,7 @@ describe("core", () => {
         };
       }
 
-      useOperators("query", { $between });
+      useOperators(OpType.QUERY, { $between });
 
       const coll = [
         { a: 1, b: 1 },

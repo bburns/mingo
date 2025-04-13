@@ -3,6 +3,7 @@ import {
   computeValue,
   getOperator,
   Options,
+  OpType,
   PipelineOperator,
   ProjectionOperator
 } from "../../core";
@@ -87,7 +88,7 @@ function createHandler(
       const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
       // first try projection operator as used in Query.find() queries
       const projectFn = getOperator(
-        "projection",
+        OpType.PROJECTION,
         operator,
         options
       ) as ProjectionOperator;

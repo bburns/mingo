@@ -233,7 +233,7 @@ export interface UpdateOptions {
 /**
  * The different groups of operators
  */
-export enum OperatorType {
+export enum OpType {
   ACCUMULATOR = "accumulator",
   EXPRESSION = "expression",
   PIPELINE = "pipeline",
@@ -241,6 +241,9 @@ export enum OperatorType {
   QUERY = "query",
   WINDOW = "window"
 }
+
+/** @deprecated use {@link OpType} */
+export type OperatorType = OpType;
 
 export type AccumulatorOperator<R = Any> = (
   collection: Any[],
@@ -303,15 +306,6 @@ type QueryOps = Record<string, QueryOperator>;
 type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
-/** Kinds of operators that can be registered. */
-export type OpType =
-  | "accumulator"
-  | "expression"
-  | "pipeline"
-  | "projection"
-  | "query"
-  | "window";
-
 export class Context {
   #operators = new Map<OpType, Record<string, Operator>>();
 
@@ -347,38 +341,57 @@ export class Context {
   }
 
   addAccumulatorOps(ops: AccumulatorOps) {
-    return this.addOperators("accumulator", ops);
+    return this.addOperators(OpType.ACCUMULATOR, ops);
   }
 
   addExpressionOps(ops: ExpressionOps) {
-    return this.addOperators("expression", ops);
+    return this.addOperators(OpType.EXPRESSION, ops);
   }
 
   addQueryOps(ops: QueryOps) {
-    return this.addOperators("query", ops);
+    return this.addOperators(OpType.QUERY, ops);
   }
 
   addPipelineOps(ops: PipelineOps) {
-    return this.addOperators("pipeline", ops);
+    return this.addOperators(OpType.PIPELINE, ops);
   }
 
   addProjectionOps(ops: ProjectionOps) {
-    return this.addOperators("projection", ops);
+    return this.addOperators(OpType.PROJECTION, ops);
   }
 
   addWindowOps(ops: WindowOps) {
-    return this.addOperators("window", ops);
+    return this.addOperators(OpType.WINDOW, ops);
   }
 }
 
+type RegistryFunc = Callback<void, Record<string, Operator>>;
 // global context
-const GLOBAL_CONTEXT = Context.init();
+const GC = Context.init();
+const GC_REGISTRY: Record<OpType, RegistryFunc> = {
+  [OpType.ACCUMULATOR]: GC.addAccumulatorOps.bind(GC) as RegistryFunc,
+  [OpType.EXPRESSION]: GC.addExpressionOps.bind(GC) as RegistryFunc,
+  [OpType.PIPELINE]: GC.addPipelineOps.bind(GC) as RegistryFunc,
+  [OpType.PROJECTION]: GC.addProjectionOps.bind(GC) as RegistryFunc,
+  [OpType.QUERY]: GC.addQueryOps.bind(GC) as RegistryFunc,
+  [OpType.WINDOW]: GC.addWindowOps.bind(GC) as RegistryFunc
+};
 
 /**
- * Register global operators that are available when {@link Options.useGlobalContext} is enabled.
+ * Registers a set of operators for a specific operator type.
  *
- * @param type Operator type
- * @param operators Map of operator name to functions
+ * This function validates the provided operators to ensure that each operator
+ * name is valid and its corresponding function is a valid operator function.
+ * It also ensures that an operator cannot be redefined once it has been registered.
+ *
+ * @param type - The type of operators to register (e.g., aggregation, query, etc.).
+ * @param operators - A record of operator names and their corresponding functions.
+ *
+ * @throws Will throw an error if:
+ * - An operator name is invalid.
+ * - An operator function is not valid.
+ * - An operator with the same name is already registered for the given type
+ *   and the function differs from the existing one.
  */
 export function useOperators(
   type: OpType,
@@ -395,27 +408,8 @@ export function useOperators(
       `${name} already exists for '${type}' operators. Cannot change operator function once registered.`
     );
   }
-  // toss the operator salad :)
-  switch (type) {
-    case "accumulator":
-      GLOBAL_CONTEXT.addAccumulatorOps(operators as AccumulatorOps);
-      break;
-    case "expression":
-      GLOBAL_CONTEXT.addExpressionOps(operators as ExpressionOps);
-      break;
-    case "pipeline":
-      GLOBAL_CONTEXT.addPipelineOps(operators as PipelineOps);
-      break;
-    case "projection":
-      GLOBAL_CONTEXT.addProjectionOps(operators as ProjectionOps);
-      break;
-    case "query":
-      GLOBAL_CONTEXT.addQueryOps(operators as QueryOps);
-      break;
-    case "window":
-      GLOBAL_CONTEXT.addWindowOps(operators as WindowOps);
-      break;
-  }
+  // add to registry
+  GC_REGISTRY[type](operators);
 }
 
 /**
@@ -431,7 +425,7 @@ export function getOperator(
 ): Operator {
   const { context: ctx, useGlobalContext: fallback } = options || {};
   const fn = ctx ? (ctx.getOperator(type, name) as Operator) : null;
-  return !fn && fallback ? GLOBAL_CONTEXT.getOperator(type, name) : fn;
+  return !fn && fallback ? GC.getOperator(type, name) : fn;
 }
 
 /**
@@ -545,7 +539,7 @@ function computeOperator(
 ): Any {
   // if the field of the object is a valid operator
   const callExpression = getOperator(
-    "expression",
+    OpType.EXPRESSION,
     operator,
     options
   ) as ExpressionOperator;
@@ -553,7 +547,7 @@ function computeOperator(
 
   // handle accumulators
   const callAccumulator = getOperator(
-    "accumulator",
+    OpType.ACCUMULATOR,
     operator,
     options
   ) as AccumulatorOperator;

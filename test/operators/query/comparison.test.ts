@@ -1,7 +1,7 @@
 import "../../../src/init/system";
 
 import { find, Query } from "../../../src";
-import { OperatorType, useOperators } from "../../../src/core";
+import { OpType, useOperators } from "../../../src/core";
 import { $where } from "../../../src/operators/query/evaluation/where";
 import { Any, AnyObject } from "../../../src/types";
 import { ObjectId, personData } from "../../support";
@@ -11,7 +11,7 @@ import { ObjectId, personData } from "../../support";
 const objectId = ObjectId("123456789abe");
 const obj = Object.assign({}, personData, { _id: objectId });
 
-useOperators(OperatorType.QUERY, { $where });
+useOperators(OpType.QUERY, { $where });
 
 describe("operators/query/comparison", () => {
   const queries = [

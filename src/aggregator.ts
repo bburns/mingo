@@ -2,6 +2,7 @@ import {
   getOperator,
   initOptions,
   Options,
+  OpType,
   PipelineOperator,
   ProcessingMode
 } from "./core";
@@ -53,7 +54,7 @@ export class Aggregator {
           name !== "$documents" || i == 0,
           "$documents must be first stage in pipeline."
         );
-        const op = getOperator("pipeline", name, opts) as PipelineOperator;
+        const op = getOperator(OpType.PIPELINE, name, opts) as PipelineOperator;
         assert(!!op, `unregistered pipeline operator ${name}.`);
         return [op, stage[name]];
       })
