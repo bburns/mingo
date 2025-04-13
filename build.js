@@ -15,15 +15,27 @@ const NPM_IGNORE = [".*", "*.tgz", "node_modules", "package-lock.json"];
 
 /** Builds */
 function build() {
-  // generate minified output
+  // node
   for (const format of ["esm", "cjs"]) {
     esbuild.buildSync({
       entryPoints: SRC_FILES,
       outdir: path.join(OUT_DIR, "dist", format),
       format: format,
-      platform: "node"
+      platform: "node",
+      treeShaking: true
     });
   }
+
+  // browser
+  esbuild.buildSync({
+    globalName: "mingo",
+    entryPoints: ["./browser.ts"],
+    outfile: path.join(OUT_DIR, "dist", "mingo.min.js"),
+    platform: "browser",
+    minify: true,
+    bundle: true,
+    sourcemap: true
+  });
 }
 
 /**

@@ -7,5 +7,5 @@
     "noEmit": true,
     "declarationDir": "./build/dist/types"
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "browser.ts"]
 }
