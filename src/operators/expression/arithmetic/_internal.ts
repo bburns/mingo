@@ -13,7 +13,7 @@ export function truncate(
   num = Math.abs(num);
 
   let result = Math.trunc(num);
-  const decimals = parseFloat((num - result).toFixed(places + 1));
+  const decimals = parseFloat((num - result).toFixed(Math.abs(places) + 1));
 
   if (places === 0) {
     const firstDigit = Math.trunc(10 * decimals);
@@ -47,7 +47,7 @@ export function truncate(
     // for negative values the absolute must increase so we round up the last digit if >= 5
     if (roundOff && sign === -1) {
       while (excess > 10) {
-        excess -= excess % 10;
+        excess -= excess / 10;
       }
       if (result > 0 && excess >= 5) {
         result += offset;

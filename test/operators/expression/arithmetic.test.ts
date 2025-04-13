@@ -94,6 +94,8 @@ support.runTest("operators/expression/arithmetic", {
     [[28.73, -1], 20],
     [[34.32, -1], 30],
     [[-45.39, -1], -50],
+    [[-1234567.8912, -3], -1.235e6],
+    [[1234, -2], 1200],
     // rounded to the whole integer
     [[19.25], 19],
     [[28.73], 29],
