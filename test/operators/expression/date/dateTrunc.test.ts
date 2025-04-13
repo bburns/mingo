@@ -1,4 +1,5 @@
-import { runTest, testPath } from "../../../support";
+import { $dateTrunc } from "../../../../src/operators/expression";
+import { DEFAULT_OPTS, runTest, testPath } from "../../../support";
 
 const fixtures: [string, string, number?, string?, string?][] = [
   // [<Results>, <Args>,...]
@@ -77,4 +78,21 @@ runTest(testPath(__filename), {
       new Date(result)
     ])
     .concat(fixturesWithTimezone)
+});
+
+describe("$dateTrunc", () => {
+  it("handles dates before refPoint when `remaineder < 0` in distanceToBinLowerBound()", () => {
+    const res = $dateTrunc(
+      {},
+      {
+        date: new Date("1989-01-01T00:00:00Z"),
+        unit: "week",
+        binSize: 4,
+        startOfWeek: "thu"
+      },
+      DEFAULT_OPTS
+    );
+
+    expect(res).toEqual(new Date("1988-12-22T00:00:00Z"));
+  });
 });

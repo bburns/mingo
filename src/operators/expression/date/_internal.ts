@@ -19,10 +19,7 @@ export const dayOfYear = (d: Date) =>
   d.getUTCDate();
 
 /** Returns the ISO day of week. Mon=1,Tue=2,...,Sun=7 */
-export const isoWeekday = (
-  date: Date,
-  startOfWeek: DayOfWeek = "sun"
-): number => {
+export const isoWeekday = (date: Date, startOfWeek: DayOfWeek): number => {
   const dow = date.getUTCDay() || 7;
   return (dow - ISO_WEEKDAY_MAP[startOfWeek] + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 };

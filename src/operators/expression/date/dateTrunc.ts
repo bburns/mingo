@@ -1,5 +1,5 @@
 import { computeValue, ExpressionOperator, Options } from "../../../core";
-import { Any, AnyObject, TIME_UNITS, TimeUnit } from "../../../types";
+import { AnyObject, TIME_UNITS, TimeUnit } from "../../../types";
 import { assert, isDate, isNil } from "../../../util";
 import {
   adjustDate,
@@ -43,6 +43,14 @@ const DATE_DIFF_FN = {
   year: dateDiffYear
 };
 
+interface InputExpr {
+  date: Date;
+  unit: TimeUnit;
+  binSize?: number;
+  timezone?: string;
+  startOfWeek?: DayOfWeek;
+}
+
 /**
  * Truncates a date.
  *
@@ -55,7 +63,7 @@ const DATE_DIFF_FN = {
  */
 export const $dateTrunc: ExpressionOperator<Date> = (
   obj: AnyObject,
-  expr: Any,
+  expr: InputExpr,
   options: Options
 ): Date => {
   const {
@@ -64,13 +72,7 @@ export const $dateTrunc: ExpressionOperator<Date> = (
     binSize: optBinSize,
     timezone,
     startOfWeek: optStartOfWeek
-  } = computeValue(obj, expr, null, options) as {
-    date: Date;
-    unit: TimeUnit;
-    binSize?: number;
-    timezone?: string;
-    startOfWeek?: DayOfWeek;
-  };
+  } = computeValue(obj, expr, null, options) as InputExpr;
 
   // if any of the required input fields except startOfWeek is missing or set to null
   if (isNil(date) || isNil(unit)) return null;
