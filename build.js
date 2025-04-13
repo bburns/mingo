@@ -33,8 +33,7 @@ function build() {
     outfile: path.join(OUT_DIR, "dist", "mingo.min.js"),
     platform: "browser",
     minify: true,
-    bundle: true,
-    sourcemap: true
+    bundle: true
   });
 }
 
