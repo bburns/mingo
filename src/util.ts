@@ -306,14 +306,14 @@ export function merge(target: Any, input: Any): Any {
  * Returns the intersection of multiple arrays.
  *
  * @param  {Array} input An array of arrays from which to find intersection.
- * @param  {Function} hashFunction Custom function to hash values, default the hashCode method
+ * @param  {Function} hashFunc Custom function to hash values, default the hashCode method
  * @return {Array} Array of intersecting values.
  */
 export function intersection(
   input: Any[][],
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
+  hashFunc: HashFunction = DEFAULT_HASH_FUNCTION
 ): Any[] {
-  const vmaps = [ValueMap.init(hashFunction), ValueMap.init(hashFunction)];
+  const vmaps = [ValueMap.init(hashFunc), ValueMap.init(hashFunc)];
   if (input.length === 0) return [];
   if (input.some(arr => arr.length === 0)) return [];
   if (input.length === 1) return [...input];
@@ -421,9 +421,9 @@ export function isEqual(a: Any, b: Any): boolean {
  */
 export function unique(
   input: Any[],
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
+  hashFunc: HashFunction = DEFAULT_HASH_FUNCTION
 ): Any[] {
-  const m = ValueMap.init(hashFunction);
+  const m = ValueMap.init(hashFunc);
   input.forEach(v => m.set(v, true));
   return Array.from(m.keys());
 }
@@ -470,31 +470,31 @@ export function stringify(v: Any, refs?: Set<Any>): string {
  * @param value
  * @returns {number|null}
  */
-export function hashCode(value: Any, hashFunction?: HashFunction): number {
+export function hashCode(value: Any, hashFunc?: HashFunction): number {
   if (isNil(value)) return null;
-  hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
-  return hashFunction(value);
+  hashFunc = hashFunc || DEFAULT_HASH_FUNCTION;
+  return hashFunc(value);
 }
 
 /**
  * Groups the collection into sets by the returned key
  *
  * @param collection
- * @param keyFn {Function} to compute the group key of an item in the collection
+ * @param keyFunc {Function} to compute the group key of an item in the collection
  * @returns {Map<Any, Any[]>}
  */
 export function groupBy(
   collection: Any[],
-  keyFn: Callback<Any>,
-  hashFunction: HashFunction = DEFAULT_HASH_FUNCTION
+  keyFunc: Callback<Any>,
+  hashFunc: HashFunction = DEFAULT_HASH_FUNCTION
 ): Map<Any, Any[]> {
   if (collection.length < 1) return new Map();
 
   // map of raw key values to matching objects of the same keyFn(obj).
-  const result = ValueMap.init<Any, Any[]>(hashFunction);
+  const result = ValueMap.init<Any, Any[]>(hashFunc);
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
-    const key = keyFn(obj, i) ?? null;
+    const key = keyFunc(obj, i) ?? null;
     let a = result.get(key);
     if (!a) {
       a = [obj];
