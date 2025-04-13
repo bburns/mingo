@@ -2,7 +2,7 @@
 
 import { Options } from "../../../core";
 import { Any, AnyObject, Predicate } from "../../../types";
-import { MingoError } from "../../../util";
+import { assert } from "../../../util";
 
 /**
  * Validate documents against the given JSON Schema.
@@ -16,11 +16,10 @@ export function $jsonSchema(
   schema: Any,
   options: Options
 ): Predicate<Any> {
-  if (!options?.jsonSchemaValidator) {
-    throw new MingoError(
-      "Missing option 'jsonSchemaValidator'. Configure to use '$jsonSchema' operator."
-    );
-  }
+  assert(
+    !!options?.jsonSchemaValidator,
+    "$jsonSchema: must configure 'jsonSchemaValidator' option to this operator."
+  );
   const validate = options?.jsonSchemaValidator(schema as AnyObject);
   return (obj: AnyObject) => validate(obj);
 }

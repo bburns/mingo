@@ -1,5 +1,5 @@
 import { Any, AnyObject, Callback, Predicate } from "./types";
-import { isArray, MingoError } from "./util";
+import { assert, isArray, isFunction } from "./util";
 
 interface Iteratee {
   action: Action;
@@ -178,8 +178,9 @@ export class Iterator {
         if (index < size) return data[index++];
         throw DONE;
       };
-    } else if (!(source instanceof Function)) {
-      throw new MingoError(
+    } else {
+      assert(
+        isFunction(source),
         `Lazy must be initialized with an array, generator, or function.`
       );
     }

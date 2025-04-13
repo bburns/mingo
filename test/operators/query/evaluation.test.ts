@@ -1,5 +1,6 @@
 import "../../../src/init/system";
 
+/* eslint-disable no-restricted-imports */
 import Ajv, { Schema } from "ajv";
 
 import { aggregate, find } from "../../../src";
@@ -273,7 +274,7 @@ describe("operators/query/evaluation", () => {
 
     it("throws error on invalid JsonSchemaValidator", () => {
       expect(() => find(docs, { $jsonSchema: schema }, {})).toThrow(
-        /Missing option 'jsonSchemaValidator'/
+        /'jsonSchemaValidator'/
       );
     });
   });
