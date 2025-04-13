@@ -45,16 +45,18 @@ export interface CollationSpec {
 export type JsonSchemaValidator = (schema: AnyObject) => Predicate<AnyObject>;
 
 /**
- * Specified how input and output documents are processed.
+ * Enum representing the processing modes for handling input and output documents.
+ * This determines whether cloning is applied to maintain immutability or ensure
+ * distinct object references.
  */
 export enum ProcessingMode {
-  /** Do not clone inputs or outputs. Resulting documents may share references. @default */
+  /** Do not clone inputs or outputs. Resulting documents may share references. This is the default mode. */
   CLONE_OFF = 0,
-  /** Clone input documents to maintain immutability of original input. */
+  /** Clone input documents to maintain immutability of the original input. */
   CLONE_INPUT = 1,
   /** Clone output documents to ensure distinct objects without shared references. */
   CLONE_OUTPUT = 2,
-  /** Clone input and output documents. */
+  /** Clone both input and output documents. Combines `CLONE_INPUT` and `CLONE_OUTPUT`.*/
   CLONE_ALL = CLONE_INPUT | CLONE_OUTPUT
 }
 

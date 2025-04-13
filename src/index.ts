@@ -10,6 +10,7 @@ import { AnyObject } from "./types";
 import { createUpdater, update } from "./updater";
 
 export { Aggregator } from "./aggregator";
+export { ProcessingMode } from "./core";
 export { Query } from "./query";
 export { createUpdater, update } from "./updater";
 
