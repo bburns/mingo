@@ -6,7 +6,7 @@ import {
   TimeUnit,
   WindowOperatorInput
 } from "../../types";
-import { groupBy, isEqual, MingoError } from "../../util";
+import { groupBy } from "../../util";
 import { $push } from "../accumulator";
 import { MILLIS_PER_DAY } from "../expression/date/_internal";
 
@@ -94,31 +94,22 @@ export function rank(
         ((_: AnyObject, n: number) => values[n]) as Callback,
         options.hashFunction
       );
-      return { values, groups };
-    },
-    input => {
-      const { values, groups: partitions } = input;
-      // same number of paritions as length means all sort keys are unique
-      if (partitions.size == collection.length) {
-        return expr.documentNumber;
-      }
-
-      const current = values[expr.documentNumber - 1];
-
       let i = 0;
       let offset = 0;
-      // partition keys are already dense so just return the value on match
-      for (const key of partitions.keys()) {
-        if (isEqual(current, key)) {
-          return dense ? i + 1 : offset + 1;
-        }
-        i++;
-        offset += partitions.get(key).length;
+      for (const key of groups.keys()) {
+        // capture length before overriding
+        const len = groups.get(key).length;
+        groups.set(key, [i++, offset]);
+        offset += len;
       }
-      // should be unreachable
-      throw new MingoError(
-        "rank: invalid return value. please submit a bug report."
-      );
+      return { values, groups };
+    },
+    ({ values, groups }) => {
+      // same number of partitions as length means all sort keys are unique
+      if (groups.size == collection.length) return expr.documentNumber;
+      const current = values[expr.documentNumber - 1];
+      const [i, n] = groups.get(current) as number[];
+      return (dense ? i : n) + 1;
     }
   );
 }
