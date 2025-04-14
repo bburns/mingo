@@ -1,31 +1,71 @@
 # Changelog
 
+## 6.6.0 / 2025-xx-xx
+
+**Changed**
+
+- Handle comparison of custom types for stability of results.
+- Treat native objects with object literal prototypes as plain object.
+- Improve `$rank` performance by precomputing over entire window.
+
+**Added**
+
+- Support `$documents` pipeline operator. Closes [#533](https://github.com/kofrasa/mingo/issues/533).
+- Support new `$dateToString` formatters.
+  - `%b` (abbreviated month)
+  - `%B` (full month)
+  - `%j` (day of year)
+  - `%w` (day of week)
+- Export `ProcessingMode` so it is included in browser bundle.
+- Add minified bundle in `dist/mingo.min.js` for use directly in browser.
+
+**Fixed**
+
+- `$bucket`: Do not add default bucket to final output if empty.
+- `$round`: Avoid potential infinite loop when rounding to negative places.
+- `$setWindowFields`: Bubble up errors thrown in memoization helper.
+
+**Removed**
+
+- **BREAKING**: No longer support `mingo.remove()` and `Query.remove()` functions.
+- Removed `dist/esm` build since the `cjs` output is ESM compatible.
+
 ## 6.5.6 / 2025-03-28
+
 **Fixes**
+
 - Fix field lookup on custom types. Regression introduced in `6.5.1`. closes [529](https://github.com/kofrasa/mingo/issues/529)
 - Fix default custom object string representation used for hashing. Regression introduced in `6.5.1`.
 
 ## 6.5.5 / 2025-03-26
+
 **Fixes**
+
 - Handle array indices in `$exists` operators. Reverts regression introduced in `6.5.4`. closes [#528](https://github.com/kofrasa/mingo/issues/528)
 
 ## 6.5.4 / 2025-03-19
+
 **Fixes**
+
 - Preserve root object for accumulator operators. closes [#526](https://github.com/kofrasa/mingo/issues/526)
 - Support nested elements in arrays for `$exists` operator. closes [#524](https://github.com/kofrasa/mingo/issues/524)
 
-
 ## 6.5.3 / 2025-02-14
+
 **Fixes**
+
 - Correct date equality checking. [#518](https://github.com/kofrasa/mingo/issues/518)
 - Run `sort`, `skip`, and `limit` in correct order on `Cursor`.
 - Test inheritance chain for `toString` on custom types.
 
 **Improvements**
+
 - Precompile `$project` operator for performance.
 
 ## 6.5.2 / 2025-01-19
+
 **Fixes**
+
 - `$slice`: handle negative skip values correctly. [#503](https://github.com/kofrasa/mingo/issues/503)
 - `$setField`: modify correct input object when adding new field.
 - `$convert`: add missing BSON type strings.
