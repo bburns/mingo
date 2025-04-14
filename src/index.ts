@@ -2,7 +2,7 @@
 import "./init/basic";
 
 import { Aggregator } from "./aggregator";
-import { Options } from "./core";
+import { Options, ProcessingMode } from "./core";
 import { Cursor } from "./cursor";
 import { Source } from "./lazy";
 import { Query } from "./query";
@@ -49,9 +49,10 @@ export function aggregate(
   return new Aggregator(pipeline, options).run(collection);
 }
 
-// default interface
+// default interface for ES6 modules
 export default {
   Aggregator,
+  ProcessingMode,
   Query,
   aggregate,
   createUpdater,
