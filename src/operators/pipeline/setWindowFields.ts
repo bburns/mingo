@@ -195,11 +195,9 @@ export const $setWindowFields: PipelineOperator = (
 
         if (window) {
           const { documents, range, unit } = window;
-          // TODO: fix the meaning of numeric values in range.
           //  See definition: https://www.mongodb.com/docs/manual/reference/operator/aggregation/setWindowFields/#std-label-setWindowFields-range
           //  - A number to add to the value of the sortBy field for the current document.
           //  - A document is in the window if the sortBy field value is inclusively within the lower and upper boundaries.
-          // TODO: Need to reconcile the two above statments from the doc to implement 'range' option correctly.
           const boundary = documents || range;
 
           if (!isUnbounded(window)) {
@@ -252,15 +250,16 @@ export const $setWindowFields: PipelineOperator = (
                 upper = isNumber(end) ? currentValue + end : Infinity;
               }
 
-              let array: AnyObject[] = items;
-              if (begin == "current") array = items.slice(index);
-              if (end == "current") array = items.slice(0, index + 1);
-
+              let i = begin == "current" ? index : 0;
+              const sliceEnd = end == "current" ? index + 1 : items.length;
               // look within the boundary and filter down
-              return array.filter((o: AnyObject) => {
+              const array = new Array<AnyObject>();
+              while (i < sliceEnd) {
+                const o = items[i++];
                 const n = +o[sortKey];
-                return n >= lower && n <= upper;
-              });
+                if (n >= lower && n <= upper) array.push(o);
+              }
+              return array;
             };
 
             windowResultMap[field] = makeResultFunc(getItems);
