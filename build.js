@@ -16,13 +16,15 @@ const NPM_IGNORE = [".*", "*.tgz", "node_modules", "package-lock.json"];
 /** Builds */
 function build() {
   // node
-  esbuild.buildSync({
-    entryPoints: SRC_FILES,
-    outdir: path.join(OUT_DIR, "dist", "cjs"),
-    format: "cjs",
-    platform: "node",
-    treeShaking: true
-  });
+  for (const format of ["esm", "cjs"]) {
+    esbuild.buildSync({
+      entryPoints: SRC_FILES,
+      outdir: path.join(OUT_DIR, "dist", format),
+      format: format,
+      platform: "node",
+      treeShaking: true
+    });
+  }
 
   // browser
   esbuild.buildSync({

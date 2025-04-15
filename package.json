@@ -3,6 +3,7 @@
   "version": "6.5.6",
   "description": "MongoDB query language for in-memory objects",
   "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "browser": "./dist/mingo.min.js",
   "types": "./dist/types/index.d.ts",
   "scripts": {
