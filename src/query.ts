@@ -10,9 +10,7 @@ import { Source } from "./lazy";
 import { Any, AnyObject, Predicate } from "./types";
 import { assert, cloneDeep, isObject, isOperator, normalize } from "./util";
 
-const TOP_LEVEL_OPS = new Set(
-  Array.from(["$and", "$or", "$nor", "$expr", "$jsonSchema"])
-);
+const TOP_LEVEL_RE = /^\$(and|or|nor|expr|jsonSchema)$/;
 
 /**
  * Represents a query object used to filter and match documents based on specified criteria.
@@ -61,7 +59,7 @@ export class Query {
           "$where operator requires 'scriptEnabled' option to be true."
         );
         Object.assign(whereOperator, { field: field, expr: expr });
-      } else if (TOP_LEVEL_OPS.has(field)) {
+      } else if (TOP_LEVEL_RE.test(field)) {
         this.processOperator(field, field, expr);
       } else {
         // normalize expression

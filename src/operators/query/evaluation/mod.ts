@@ -1,8 +1,14 @@
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 
-import { $mod as __mod, createQueryOperator } from "../../_predicates";
+import { Options, QueryOperator } from "../../../core";
+import { Any } from "../../../types";
+import { $mod as __mod, processQuery } from "../../_predicates";
 
 /**
  * Performs a modulo operation on the value of a field and selects documents with a specified result.
  */
-export const $mod = createQueryOperator(__mod);
+export const $mod: QueryOperator = (
+  selector: string,
+  value: Any,
+  options: Options
+) => processQuery(selector, value, options, __mod);

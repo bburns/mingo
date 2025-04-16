@@ -33,8 +33,6 @@ interface InputExpr {
 
 type DateOrNumber = number | Date;
 
-const EMPTY_OBJECT = Object.freeze({}) as Readonly<AnyObject>;
-
 /**
  * Creates new documents in a sequence of documents where certain values in a field are missing.
  *
@@ -97,11 +95,7 @@ export const $densify: PipelineOperator = (
   const computeNextValue = (value: DateOrNumber) => {
     return isNumber(value)
       ? value + step
-      : $dateAdd(
-          EMPTY_OBJECT,
-          { startDate: value, unit, amount: step },
-          nilOptions
-        );
+      : $dateAdd(null, { startDate: value, unit, amount: step }, nilOptions);
   };
 
   const isValidUnit = !!unit && TIME_UNITS.includes(unit);

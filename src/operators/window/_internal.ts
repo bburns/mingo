@@ -8,19 +8,8 @@ import {
 } from "../../types";
 import { groupBy } from "../../util";
 import { $push } from "../accumulator";
-import { MILLIS_PER_DAY } from "../expression/date/_internal";
 
 export type WindowTimeUnit = Exclude<TimeUnit, "year" | "quarter" | "month">;
-
-// millis map to diffirent time units
-export const MILLIS_PER_UNIT: Record<WindowTimeUnit, number> = {
-  week: MILLIS_PER_DAY * 7,
-  day: MILLIS_PER_DAY,
-  hour: MILLIS_PER_DAY / 24,
-  minute: 60000,
-  second: 1000,
-  millisecond: 1
-};
 
 // internal cache to store precomputed series once to avoid O(N^2) calls over the collection
 const memo = new WeakMap<Any[], AnyObject>();

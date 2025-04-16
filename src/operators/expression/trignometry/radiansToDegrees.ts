@@ -1,14 +1,18 @@
 // Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
 
-import { createTrignometryOperator } from "./_internal";
+import { ExpressionOperator, Options } from "../../../core";
+import { Any, AnyObject } from "../../../types";
+import { processOperator } from "./_internal";
 
-const DEGREES_FACTOR = 180 / Math.PI;
+const radiansToDegrees = (n: number) => n * (180 / Math.PI);
 
 /** Converts a value from radians to degrees. */
-export const $radiansToDegrees = createTrignometryOperator(
-  (n: number) => n * DEGREES_FACTOR,
-  {
+export const $radiansToDegrees: ExpressionOperator = (
+  obj: AnyObject,
+  expr: Any,
+  options: Options
+): Any =>
+  processOperator(obj, expr, options, radiansToDegrees, {
     Infinity: Infinity,
-    "-Infinity": -Infinity
-  }
-);
+    "-Infinity": Infinity
+  });

@@ -1,8 +1,9 @@
 import { Options, WindowOperator } from "../../core";
 import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
-import { $push } from "../accumulator";
-import { MILLIS_PER_UNIT, WindowTimeUnit } from "./_internal";
+import { $push } from "../accumulator/push";
+import { TIMEUNIT_IN_MILLIS } from "../expression/date/_internal";
+import { WindowTimeUnit } from "./_internal";
 
 /**
  * Returns the average rate of change within the specified window
@@ -31,7 +32,7 @@ export const $derivative: WindowOperator = (
 
   const [[x1, y1], [x2, y2]] = points;
   // convert from millis to the unit.
-  const deltaX = (x2 - x1) / (MILLIS_PER_UNIT[unit] || 1);
+  const deltaX = (x2 - x1) / (TIMEUNIT_IN_MILLIS[unit] || 1);
 
   return (y2 - y1) / deltaX;
 };

@@ -1,8 +1,14 @@
 // Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
 
-import { $gte as __gte, createExpressionOperator } from "../../_predicates";
+import { ExpressionOperator, Options } from "../../../core";
+import { Any, AnyObject } from "../../../types";
+import { $gte as __gte, processExpression } from "../../_predicates";
 
 /**
- * 	Matches values that are greater than or equal to a specified value.
+ * Matches values that are greater than or equal to a specified value.
  */
-export const $gte = createExpressionOperator(__gte);
+export const $gte: ExpressionOperator = (
+  obj: AnyObject,
+  expr: Any,
+  options: Options
+) => processExpression(obj, expr, options, __gte);

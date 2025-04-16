@@ -15,10 +15,7 @@ export class MingoError extends Error {}
 
 // special value to identify missing items. treated differently from undefined
 const MISSING = Symbol("missing");
-
-const CYCLE_FOUND_ERROR = Object.freeze(
-  new Error("mingo: cycle detected while processing object/array")
-) as Error;
+const ERR_CYCLE_FOUND = "mingo: cycle detected while processing object/array";
 
 type Constructor = new (...args: Any[]) => Any;
 
@@ -253,7 +250,7 @@ export const cloneDeep = <T>(v: T, refs?: Set<Any>): T => {
     return new ctor(v) as T;
   }
   if (!(refs instanceof Set)) refs = new Set();
-  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
+  if (refs.has(v)) throw new Error(ERR_CYCLE_FOUND);
   refs.add(v);
   try {
     if (isArray(v)) {
@@ -444,7 +441,7 @@ export function stringify(v: Any, refs?: Set<Any>): string {
   if (isRegExp(v) || isSymbol(v) || isFunction(v))
     return (v as Stringer).toString();
   if (!(refs instanceof Set)) refs = new Set();
-  if (refs.has(v)) throw CYCLE_FOUND_ERROR;
+  if (refs.has(v)) throw new Error(ERR_CYCLE_FOUND);
   try {
     refs.add(v);
     if (isArray(v)) return "[" + v.map(s => stringify(s, refs)).join(",") + "]";

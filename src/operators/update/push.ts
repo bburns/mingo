@@ -9,12 +9,7 @@ import {
   walkExpression
 } from "./_internal";
 
-const OPERATOR_MODIFIERS = Object.freeze([
-  "$each",
-  "$slice",
-  "$sort",
-  "$position"
-]);
+const MODIFIERS = ["$each", "$slice", "$sort", "$position"] as const;
 
 /** Appends a specified value to an array. */
 export const $push = (
@@ -33,10 +28,7 @@ export const $push = (
       $each: [val]
     };
 
-    if (
-      isObject(val) &&
-      OPERATOR_MODIFIERS.some(m => has(val as AnyObject, m))
-    ) {
+    if (isObject(val) && MODIFIERS.some(m => has(val as AnyObject, m))) {
       Object.assign(args, val);
     }
 

@@ -10,7 +10,6 @@ import {
   dateDiffWeek,
   dateDiffYear,
   DayOfWeek,
-  DAYS_OF_WEEK_SET,
   DAYS_PER_WEEK,
   isoWeekday,
   parseTimezone,
@@ -51,6 +50,9 @@ interface InputExpr {
   startOfWeek?: DayOfWeek;
 }
 
+const DAYS_OF_WEEK_RE =
+  /(mon(day)?|tue(sday)?|wed(nesday)?|thu(rsday)?|fri(day)?|sat(urday)?|sun(day)?)/i;
+
 /**
  * Truncates a date.
  *
@@ -87,7 +89,7 @@ export const $dateTrunc: ExpressionOperator<Date> = (
   );
   assert(TIME_UNITS.includes(unit), "$dateTrunc: unit is invalid.");
   assert(
-    unit != "week" || DAYS_OF_WEEK_SET.has(startOfWeek),
+    unit != "week" || DAYS_OF_WEEK_RE.test(startOfWeek),
     `$dateTrunc: startOfWeek '${startOfWeek}' is not a valid.`
   );
   assert(

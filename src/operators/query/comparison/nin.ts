@@ -1,8 +1,14 @@
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 
-import { $nin as __nin, createQueryOperator } from "../../_predicates";
+import { Options, QueryOperator } from "../../../core";
+import { Any } from "../../../types";
+import { $nin as __nin, processQuery } from "../../_predicates";
 
 /**
  * Matches values that do not exist in an array specified to the query.
  */
-export const $nin = createQueryOperator(__nin);
+export const $nin: QueryOperator = (
+  selector: string,
+  value: Any,
+  options: Options
+) => processQuery(selector, value, options, __nin);

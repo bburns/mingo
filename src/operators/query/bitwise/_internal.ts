@@ -1,14 +1,19 @@
-import { Options, QueryOperator } from "../../../core";
+import { Any } from "../../../types";
 import { isArray } from "../../../util";
-import { createQueryOperator } from "../../_predicates";
+import { processQuery } from "../../_predicates";
 
 type Bitmask = number | number[];
 
-export const createBitwiseOperator = (
+export const processBitwiseQuery = (
+  selector: string,
+  value: Any,
   predicate: (_1: number, _2: number) => boolean
-): QueryOperator => {
-  return createQueryOperator(
-    (value: number, mask: Bitmask, _options: Options): boolean => {
+) => {
+  return processQuery(
+    selector,
+    value,
+    null,
+    (value: number, mask: Bitmask): boolean => {
       let b = 0;
       if (isArray(mask)) {
         for (const n of mask) b = b | (1 << n);

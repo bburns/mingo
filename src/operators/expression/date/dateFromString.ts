@@ -6,33 +6,29 @@ import { assert, isNil, isObject } from "../../../util";
 import {
   adjustDate,
   DATE_FORMAT,
+  DATE_FORMAT_SEP_RE,
   DATE_FORMAT_SYM_RE,
   DATE_SYM_TABLE,
   MINUTES_PER_HOUR,
   parseTimezone
 } from "./_internal";
 
-const buildMap = (letters: string, sign: number): Record<string, number> => {
-  const h: Record<string, number> = {};
-  letters.split("").forEach((v, i) => (h[v] = sign * (i + 1)));
-  return h;
-};
-const TZ_LETTER_OFFSETS = {
-  ...buildMap("ABCDEFGHIKLM", 1),
-  ...buildMap("NOPQRSTUVWXY", -1),
-  Z: 0
-};
+function tzLetterOffset(c: string): number {
+  if (c === "Z") return 0;
+  if (c >= "A" && c < "N") return c.charCodeAt(0) - 64; // [A, M] => [1, 12]
+  return 77 - c.charCodeAt(0); // [N, Y] => [-1, -12]
+}
 
 const regexStrip = (s: string): string =>
   s.replace(/^\//, "").replace(/\/$/, "");
 
 const REGEX_SPECIAL_CHARS = ["^", ".", "-", "*", "?", "$"] as const;
-const regexQuote = (s: string): string => {
+function regexQuote(s: string): string {
   REGEX_SPECIAL_CHARS.forEach((c: string) => {
     s = s.replace(c, `\\${c}`);
   });
   return s;
-};
+}
 
 interface InputExpr {
   dateString?: string;
@@ -41,8 +37,6 @@ interface InputExpr {
   onError?: Any;
   onNull?: Any;
 }
-
-const FORMAT_SEP_RE = new RegExp(Object.keys(DATE_SYM_TABLE).join("|"));
 
 /**
  * Converts a date/time string to a date object.
@@ -63,7 +57,7 @@ export const $dateFromString: ExpressionOperator<Any> = (
   if (isNil(dateString)) return args.onNull;
 
   // collect all separators of the format string
-  const separators = args.format.split(FORMAT_SEP_RE);
+  const separators = args.format.split(DATE_FORMAT_SEP_RE);
   separators.reverse();
 
   const matches = args.format.match(DATE_FORMAT_SYM_RE);
@@ -129,7 +123,7 @@ export const $dateFromString: ExpressionOperator<Any> = (
   );
 
   const minuteOffset = m
-    ? TZ_LETTER_OFFSETS[m[0]] * MINUTES_PER_HOUR
+    ? tzLetterOffset(m[0]) * MINUTES_PER_HOUR
     : parseTimezone(args.timezone);
 
   // create the date. month is 0-based in Date

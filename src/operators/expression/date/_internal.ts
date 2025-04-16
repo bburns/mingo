@@ -2,6 +2,27 @@ import { computeValue, Options } from "../../../core";
 import { Any, TimeUnit } from "../../../types";
 import { assert, isDate, isNil, isNumber } from "../../../util";
 
+const ISO_WEEKDAYS = [
+  "mon" /*ignore by using .lastIndexOf()*/,
+  "mon",
+  "tue",
+  "wed",
+  "thu",
+  "fri",
+  "sat",
+  "sun"
+] as const;
+
+export type DayOfWeek =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday"
+  | (typeof ISO_WEEKDAYS)[number];
+
 export const LEAP_YEAR_REF_POINT = -1000000000;
 export const DAYS_PER_WEEK = 7;
 
@@ -21,7 +42,10 @@ export const dayOfYear = (d: Date) =>
 /** Returns the ISO day of week. Mon=1,Tue=2,...,Sun=7 */
 export const isoWeekday = (date: Date, startOfWeek: DayOfWeek): number => {
   const dow = date.getUTCDay() || 7;
-  return (dow - ISO_WEEKDAY_MAP[startOfWeek] + DAYS_PER_WEEK) % DAYS_PER_WEEK;
+  const name = (startOfWeek as string)
+    .toLowerCase()
+    .substring(0, 3) as (typeof ISO_WEEKDAYS)[number];
+  return (dow - ISO_WEEKDAYS.lastIndexOf(name) + DAYS_PER_WEEK) % DAYS_PER_WEEK;
 };
 
 // https://en.wikipedia.org/wiki/ISO_week_date
@@ -47,52 +71,16 @@ export function isoWeekYear(d: Date): number {
 }
 
 export const MINUTES_PER_HOUR = 60;
-export const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
-export const TIMEUNIT_IN_MILLIS: Record<
-  Exclude<TimeUnit, "year" | "quarter" | "month">,
-  number
+export const TIMEUNIT_IN_MILLIS: Readonly<
+  Record<Exclude<TimeUnit, "year" | "quarter" | "month">, number>
 > = {
-  week: MILLIS_PER_DAY * DAYS_PER_WEEK,
-  day: MILLIS_PER_DAY,
-  hour: 1000 * 60 * 60,
-  minute: 1000 * 60,
+  week: 604800000,
+  day: 86400000,
+  hour: 3600000,
+  minute: 60000,
   second: 1000,
   millisecond: 1
 };
-
-export const DAYS_OF_WEEK = [
-  "monday",
-  "mon",
-  "tuesday",
-  "tue",
-  "wednesday",
-  "wed",
-  "thursday",
-  "thu",
-  "friday",
-  "fri",
-  "saturday",
-  "sat",
-  "sunday",
-  "sun"
-] as const;
-
-export type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
-
-export const DAYS_OF_WEEK_SET = new Set(DAYS_OF_WEEK);
-
-const ISO_WEEKDAY_MAP: Record<
-  Extract<DayOfWeek, "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun">,
-  number
-> = Object.freeze({
-  mon: 1,
-  tue: 2,
-  wed: 3,
-  thu: 4,
-  fri: 5,
-  sat: 6,
-  sun: 7
-});
 
 // default format if unspecified
 export const DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ";
@@ -129,20 +117,17 @@ export const MONTHS = [
   "December"
 ] as const;
 
-// used for formatting dates in $dateToString operator
-export const DATE_SYM_TABLE = Object.freeze({
+/** Table of date format specifiers. Defined statically to support tree-shaking. */
+export const DATE_SYM_TABLE: Readonly<Record<string, DatePartFormatter>> = {
   "%b": {
     name: "abbr_month",
     padding: 3,
-    re: new RegExp(
-      "(" + MONTHS.map(m => m.substring(0, 3)).join("|") + ")",
-      "i"
-    )
+    re: /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/i
   },
   "%B": {
     name: "full_month",
     padding: 0,
-    re: new RegExp("(" + MONTHS.join("|") + ")", "i")
+    re: /(January|February|March|April|May|June|July|August|September|October|November|December)/i
   },
   "%Y": { name: "year", padding: 4, re: /([0-9]{4})/ },
   "%G": { name: "year", padding: 4, re: /([0-9]{4})/ },
@@ -168,12 +153,12 @@ export const DATE_SYM_TABLE = Object.freeze({
   },
   "%Z": { name: "minute_offset", padding: 3, re: /([+-][0-9]{3})/ },
   "%%": { name: "percent_literal", padding: 1, re: /%%/ }
-}) as Record<string, DatePartFormatter>;
+};
 
-export const DATE_FORMAT_SYM_RE = new RegExp(
-  "(" + Object.keys(DATE_SYM_TABLE).join("|") + ")",
-  "g"
-);
+/** Regex for capturing format specifiers in groups. Defined statically to support tree-shaking.  */
+export const DATE_FORMAT_SYM_RE = /(%[bBYGmdjHMSLwuUVzZ%])/g;
+/** Regex for splitting date string by format specifiers. Defined statically for tree-shaking.  */
+export const DATE_FORMAT_SEP_RE = /%[bBYGmdjHMSLwuUVzZ%]/;
 
 const TIMEZONE_RE = /^[a-zA-Z_]+\/[a-zA-Z_]+$/;
 

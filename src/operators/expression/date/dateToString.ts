@@ -11,7 +11,6 @@ import {
   DATE_SYM_TABLE,
   DatePartFormatter,
   formatTimezone,
-  MONTHS,
   padDigits,
   parseTimezone
 } from "./_internal";
@@ -114,8 +113,8 @@ export const $dateToString: ExpressionOperator<string> = (
           break;
         case "abbr_month":
         case "full_month": {
-          const s = MONTHS[date.getUTCMonth()];
-          value = s.substring(0, name.startsWith("abbr") ? 3 : 10);
+          const format = name.startsWith("abbr") ? "short" : "long";
+          value = date.toLocaleString("en-US", { month: format });
           break;
         }
       }

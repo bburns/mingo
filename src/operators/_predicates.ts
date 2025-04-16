@@ -2,12 +2,7 @@
  * Predicates used for Query and Expression operators.
  */
 
-import {
-  computeValue,
-  ExpressionOperator,
-  Options,
-  QueryOperator
-} from "../core";
+import { computeValue, Options } from "../core";
 import { Query } from "../query";
 import {
   Any,
@@ -42,36 +37,29 @@ type PredicateOptions = Options & { depth: number };
 
 type ConversionType = number | Exclude<JsType, "function"> | BsonType;
 
-/**
- * Returns a query operator created from the predicate
- *
- * @param predicate Predicate function
- */
-export function createQueryOperator(predicate: Predicate<Any>): QueryOperator {
-  const f = (selector: string, value: Any, options: Options) => {
-    const opts = { unwrapArray: true };
-    const depth = Math.max(1, selector.split(".").length - 1);
-    return (obj: AnyObject): boolean => {
-      // value of field must be fully resolved.
-      const lhs = resolve(obj, selector, opts);
-      return predicate(lhs, value, { ...options, depth });
-    };
+export function processQuery(
+  selector: string,
+  value: Any,
+  options: Options,
+  predicate: Predicate<Any>
+): (_: AnyObject) => boolean {
+  const opts = { unwrapArray: true };
+  const depth = Math.max(1, selector.split(".").length - 1);
+  return (o: AnyObject): boolean => {
+    // value of field must be fully resolved.
+    const lhs = resolve(o, selector, opts);
+    return predicate(lhs, value, { ...options, depth });
   };
-  return f; // as QueryOperator;
 }
 
-/**
- * Returns an expression operator created from the predicate
- *
- * @param predicate Predicate function
- */
-export function createExpressionOperator(
+export function processExpression(
+  obj: AnyObject,
+  expr: Any,
+  options: Options,
   predicate: Predicate<Any>
-): ExpressionOperator {
-  return (obj: AnyObject, expr: Any, options: Options) => {
-    const args = computeValue(obj, expr, null, options) as Any[];
-    return predicate(...args);
-  };
+): boolean {
+  const args = computeValue(obj, expr, null, options) as Any[];
+  return predicate(...args);
 }
 
 /**

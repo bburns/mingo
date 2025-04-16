@@ -4,8 +4,8 @@ import { assert, isDate, isNil, isNumber, isString } from "../../../util";
 
 export const MAX_INT = 2147483647;
 export const MIN_INT = -2147483648;
-export const MAX_LONG = Number.MAX_SAFE_INTEGER;
-export const MIN_LONG = Number.MIN_SAFE_INTEGER;
+export const MAX_LONG = 9007199254740991;
+export const MIN_LONG = -9007199254740991;
 
 export function toInteger(
   obj: AnyObject,

@@ -249,7 +249,7 @@ function granularityPowerOfTwo(
 }
 
 type PreferredSeries = Exclude<Granularity, "POWERSOF2">;
-const PREFERRED_NUMBERS: Record<PreferredSeries, number[]> = Object.freeze({
+const PREFERRED_NUMBERS: Readonly<Record<PreferredSeries, number[]>> = {
   // "Least rounded" Renard number series, taken from Wikipedia page on preferred
   // numbers: https://en.wikipedia.org/wiki/Preferred_number#Renard_numbers
   R5: [10, 16, 25, 40, 63] as const,
@@ -308,7 +308,7 @@ const PREFERRED_NUMBERS: Record<PreferredSeries, number[]> = Object.freeze({
     723, 732, 741, 750, 759, 768, 777, 787, 796, 806, 816, 825, 835, 845, 856,
     866, 876, 887, 898, 909, 920, 931, 942, 953, 965, 976, 988
   ] as const
-});
+};
 
 /**
  * Rounds up to the next preferred number.
