@@ -64,31 +64,21 @@ function createModule() {
   packageJson.devDependencies = {};
 
   // add exports explicitly
-  const files = Array.from(
-    new Set(
-      SRC_FILES.filter(s => !s.includes("_")).map(s => {
-        const d = path.dirname(s);
-        if (d === "src") return path.basename(s).slice(0, -3);
-        if (d.includes("init")) return s.slice(4, -3);
-        return d.slice(4);
-      })
-    )
-  );
-
   packageJson.exports = {
     "./package.json": "./package.json"
   };
 
-  files.forEach(name => {
-    const [outFile, key] =
-      name == "index" // root
-        ? [name, "."]
-        : name.startsWith("init") // side-effects
-          ? [name, `./${name}`]
-          : !name.includes("/") // top-level
-            ? [name, `./${name}`]
-            : [`${name}/index`, `./${name}`]; //nested parents
-
+  SRC_FILES.filter(s => !s.includes("_")).forEach(s => {
+    // strip "src/" (prefix) and ".ts" (suffix)
+    s = s.slice(4, -3);
+    const isRoot = s === "index";
+    const isLeaf = !s.endsWith("/index");
+    const name = isRoot ? "." : isLeaf ? s : s.slice(0, -6);
+    const outFile = isRoot ? "index" : s;
+    const key = isRoot ? "." : "./" + name;
+    // exclude distinct operator functions
+    if (isLeaf && name.includes("operators")) return
+    // create distributions
     const typesPath = `./dist/types/${outFile}.d.ts`;
     const cjsPath = `./dist/cjs/${outFile}.js`;
     const esmPath = `./dist/esm/${outFile}.js`;
