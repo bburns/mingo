@@ -66,8 +66,8 @@ To support tree-shaking for client side bundles, you can import and register spe
 
 ```js
 import { useOperators } from "mingo/core";
-import { $trunc } from "mingo/operators/expression/trunc";
-import { $bucket } from "mingo/operators/pipeline/bucket";
+import { $trunc } from "mingo/operators/expression";
+import { $bucket } from "mingo/operators/pipeline";
 
 useOperators("expression", { $trunc });
 useOperators("pipeline", { $bucket });
@@ -77,8 +77,8 @@ useOperators("pipeline", { $bucket });
 
 ```js
 const core = require("mingo/core").useOperators;
-const $trunc = require("mingo/operators/expression/trunc").$trunc;
-const $bucket = require("mingo/operators/pipeline/bucket").$bucket;
+const $trunc = require("mingo/operators/expression").$trunc;
+const $bucket = require("mingo/operators/pipeline").$bucket;
 
 useOperators("expression", { $trunc });
 useOperators("pipeline", { $bucket });

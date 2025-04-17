@@ -1,6 +1,6 @@
 # Changelog
 
-## 6.6.0 / 2025-xx-xx
+## 6.6.0 / 2025-04-16
 
 **Changed**
 
@@ -26,12 +26,10 @@
 - `$bucket`: Do not add default bucket to final output if empty.
 - `$round`: Avoid potential infinite loop when rounding to negative places.
 - `$setWindowFields`: Bubble up errors thrown in memoization helper.
-- Generate exports for all operator functions.
 
 **Removed**
 
 - **BREAKING**: No longer support `mingo.remove()` and `Query.remove()` functions.
-- Removed `dist/esm` build since the `cjs` output is ESM compatible.
 
 ## 6.5.6 / 2025-03-28
 
