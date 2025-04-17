@@ -7,11 +7,13 @@
 - Handle comparison of custom types for stability of results.
 - Treat native objects with object literal prototypes as plain object.
 - Improve `$rank` performance by precomputing over entire window.
+- Refactor to improve tree-shaking from CJS imports.
 
 **Added**
 
 - Support `$documents` pipeline operator. Closes [#533](https://github.com/kofrasa/mingo/issues/533).
-- Support new `$dateToString` formatters.
+- Support `$tanh` trignometry operator.
+- Support `$dateToString` formatters.
   - `%b` (abbreviated month)
   - `%B` (full month)
   - `%j` (day of year)
@@ -24,6 +26,7 @@
 - `$bucket`: Do not add default bucket to final output if empty.
 - `$round`: Avoid potential infinite loop when rounding to negative places.
 - `$setWindowFields`: Bubble up errors thrown in memoization helper.
+- Generate exports for all operator functions.
 
 **Removed**
 
