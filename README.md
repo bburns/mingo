@@ -76,7 +76,7 @@ useOperators("pipeline", { $bucket });
 ### CommonJS
 
 ```js
-const core = require("mingo/core").useOperators;
+const useOperators = require("mingo/core").useOperators;
 const $trunc = require("mingo/operators/expression").$trunc;
 const $bucket = require("mingo/operators/pipeline").$bucket;
 
