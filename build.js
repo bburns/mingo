@@ -76,8 +76,7 @@ function createModule() {
     const name = isRoot ? "." : isLeaf ? s : s.slice(0, -6);
     const outFile = isRoot ? "index" : s;
     const key = isRoot ? "." : "./" + name;
-    // exclude distinct operator functions
-    if (isLeaf && name.includes("operators")) return
+
     // create distributions
     const typesPath = `./dist/types/${outFile}.d.ts`;
     const cjsPath = `./dist/cjs/${outFile}.js`;
