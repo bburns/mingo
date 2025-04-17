@@ -7,7 +7,6 @@
 - Handle comparison of custom types for stability of results.
 - Treat native objects with object literal prototypes as plain object.
 - Improve `$rank` performance by precomputing over entire window.
-- Refactor to improve tree-shaking from CJS imports.
 
 **Added**
 
