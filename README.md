@@ -31,7 +31,7 @@ For more documentation on how to use operators see [mongodb](http://docs.mongodb
 
 [API Documentation](http://kofrasa.github.io/mingo/).
 
-A minified version with full operator support is availble under [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) on NPM since `6.6.0` (**pending release**).
+A minified version with full operator support is availble under [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) on NPM since `6.6.0`.
 
 ## Usage
 
