@@ -210,7 +210,7 @@ export class Iterator {
    * @param {*} f a reducing function
    * @param {*} initialValue
    */
-  reduce<T = Any>(f: Callback<T>, initialValue?: Any): T {
+  reduce<T = Any>(f: Callback<T>, initialValue?: T): T {
     let o = this.next();
 
     if (initialValue === undefined && !o.done) {
@@ -223,7 +223,7 @@ export class Iterator {
       o = this.next();
     }
 
-    return initialValue as T;
+    return initialValue;
   }
 
   /**

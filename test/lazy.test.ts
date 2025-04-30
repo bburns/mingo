@@ -7,6 +7,23 @@ function isEven(n: number) {
 }
 
 describe("lazy", () => {
+  it("can create from stream object", () => {
+    let i = 0;
+    const max = 10;
+    const stream = {
+      next() {
+        if (i == max) return { done: true };
+        return { value: i++, done: false };
+      }
+    };
+
+    const res = Lazy(stream).reduce<number>(
+      (acc, n) => (acc as number) + (n as number)
+    );
+    expect(res).toBe(45);
+    expect(i).toBe(max);
+  });
+
   it("can map", () => {
     const result = Lazy(data)
       .map(n => (n as number) * 3)
@@ -30,9 +47,12 @@ describe("lazy", () => {
   });
 
   // terminal method tests
-  expect(
-    Lazy(data).reduce<number>((acc, n) => (acc as number) + (n as number))
-  ).toBe(45);
+  it("can reduce", () => {
+    const result = Lazy(data).reduce(
+      (acc, n) => (acc as number) + (n as number)
+    );
+    expect(result).toBe(45);
+  });
 
   it("can iterate with each", () => {
     const arr: number[] = [];
