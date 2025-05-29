@@ -3,14 +3,14 @@ import { concat, Iterator, IteratorResult, Lazy } from "../../lazy";
 import { AnyObject, TIME_UNITS, TimeUnit } from "../../types";
 import {
   assert,
+  HashMap,
   isArray,
   isDate,
   isNil,
   isNumber,
   isObject,
   isString,
-  resolve,
-  ValueMap
+  resolve
 } from "../../util";
 import { $dateAdd } from "../expression/date/dateAdd";
 import { $sort } from "./sort";
@@ -133,7 +133,7 @@ export const $densify: PipelineOperator = (
   // We cannot use $group to partition fields here since we need extract the raw fields and validate their values.
   // Rather than try to partition upfront, process the collection in sorted order and compute the next document using
   // the last value for the given partition.
-  const nextDensifyValueMap = ValueMap.init<string[], DateOrNumber>(
+  const nextDensifyValueMap = HashMap.init<string[], DateOrNumber>(
     options.hashFunction
   );
 

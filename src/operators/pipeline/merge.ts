@@ -10,11 +10,11 @@ import { AnyObject } from "../../types";
 import {
   assert,
   hashCode,
+  HashMap,
   isArray,
   isString,
   MingoError,
-  resolve,
-  ValueMap
+  resolve
 } from "../../util";
 import { $mergeObjects } from "../expression";
 
@@ -69,7 +69,7 @@ export const $merge: PipelineOperator = (
     : (o: AnyObject) =>
         hashCode(onField.map(s => resolve(o, s), options.hashFunction));
 
-  const map = ValueMap.init<number, [AnyObject, number]>();
+  const map = HashMap.init<number, [AnyObject, number]>();
 
   // we assuming the lookup expressions are unique
   for (let i = 0; i < output.length; i++) {

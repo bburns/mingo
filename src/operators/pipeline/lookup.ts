@@ -6,10 +6,10 @@ import {
   assert,
   ensureArray,
   flatten,
+  HashMap,
   isArray,
   isString,
-  resolve,
-  ValueMap
+  resolve
 } from "../../util";
 import { filterDocumentsStage } from "./_internal";
 
@@ -72,7 +72,7 @@ export const $lookup: PipelineOperator = (
   // handle direct key fields
   if (foreignField && localField) {
     // compute hashtable for joined collection
-    const map = ValueMap.init<Any, Any[]>(options.hashFunction);
+    const map = HashMap.init<Any, Any[]>(options.hashFunction);
     for (const doc of joinColl) {
       // add object for each value in the array.
       ensureArray(resolve(doc, foreignField) ?? null).forEach(v => {

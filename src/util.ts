@@ -87,7 +87,7 @@ export function compare<T = Any>(a: T, b: T): number {
  * IMPORTANT! we assume objects are never modified once the hash is computed and put in the Map.
  * Modifying an object after adding to the Map will cause incorrect behaviour.
  */
-export class ValueMap<K, V> extends Map<K, V> {
+export class HashMap<K, V> extends Map<K, V> {
   // The hash function
   #hashFn = DEFAULT_HASH_FUNCTION;
   // maps the hashcode to key set
@@ -103,11 +103,11 @@ export class ValueMap<K, V> extends Map<K, V> {
   }
 
   /**
-   * Returns a new {@link ValueMap} object.
+   * Returns a new {@link HashMap} object.
    * @param fn An optional custom hash function
    */
   static init<K, V>(fn?: HashFunction) {
-    const m = new ValueMap<K, V>();
+    const m = new HashMap<K, V>();
     if (fn) m.#hashFn = fn;
     return m;
   }
@@ -310,7 +310,7 @@ export function intersection(
   input: Any[][],
   hashFunc: HashFunction = DEFAULT_HASH_FUNCTION
 ): Any[] {
-  const vmaps = [ValueMap.init(hashFunc), ValueMap.init(hashFunc)];
+  const vmaps = [HashMap.init(hashFunc), HashMap.init(hashFunc)];
   if (input.length === 0) return [];
   if (input.some(arr => arr.length === 0)) return [];
   if (input.length === 1) return [...input];
@@ -420,7 +420,7 @@ export function unique(
   input: Any[],
   hashFunc: HashFunction = DEFAULT_HASH_FUNCTION
 ): Any[] {
-  const m = ValueMap.init(hashFunc);
+  const m = HashMap.init(hashFunc);
   input.forEach(v => m.set(v, true));
   return Array.from(m.keys());
 }
@@ -488,7 +488,7 @@ export function groupBy(
   if (collection.length < 1) return new Map();
 
   // map of raw key values to matching objects of the same keyFn(obj).
-  const result = ValueMap.init<Any, Any[]>(hashFunc);
+  const result = HashMap.init<Any, Any[]>(hashFunc);
   for (let i = 0; i < collection.length; i++) {
     const obj = collection[i];
     const key = keyFunc(obj, i) ?? null;

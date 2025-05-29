@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isArray, isNil, ValueMap } from "../../../util";
+import { assert, HashMap, isArray, isNil } from "../../../util";
 
 /**
  * Returns elements of a set that do not appear in a second set.
@@ -25,7 +25,7 @@ export const $setDifference: ExpressionOperator = (
   assert(args.length == 2, `$setDifference takes exactly 2 arguments.`);
   assert(args.every(isArray), "$setDifference operands must be arrays.");
 
-  const m = ValueMap.init(options.hashFunction);
+  const m = HashMap.init(options.hashFunction);
   args[0].forEach(v => m.set(v, true));
   args[1].forEach(v => m.delete(v));
   return Array.from(m.keys());

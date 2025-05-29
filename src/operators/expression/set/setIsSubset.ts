@@ -4,7 +4,7 @@
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
-import { assert, isArray, ValueMap } from "../../../util";
+import { assert, HashMap, isArray } from "../../../util";
 
 /**
  * Takes two arrays and returns true when the first array is a subset of the second,
@@ -25,7 +25,7 @@ export const $setIsSubset: ExpressionOperator = (
   );
   const first = args[0];
   const second = args[1];
-  const map = ValueMap.init<Any, number>();
+  const map = HashMap.init<Any, number>();
   const set = new Set<number>();
 
   first.every((v, i) => map.set(v, i));

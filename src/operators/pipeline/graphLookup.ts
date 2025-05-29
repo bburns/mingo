@@ -1,7 +1,7 @@
 import { computeValue, Options, PipelineOperator } from "../../core";
 import { Iterator, Lazy } from "../../lazy";
 import { Any, AnyObject } from "../../types";
-import { flatten, isNil, isString, setValue, ValueMap } from "../../util";
+import { flatten, HashMap, isNil, isString, setValue } from "../../util";
 import { $lookup } from "./lookup";
 
 interface InputExpr {
@@ -65,7 +65,7 @@ export const $graphLookup: PipelineOperator = (
     );
     let matches: AnyObject[] = [matchObj];
     let i = -1;
-    const map = ValueMap.init<AnyObject, number>(options.hashFunction);
+    const map = HashMap.init<AnyObject, number>(options.hashFunction);
     do {
       i++;
       matches = flatten(
