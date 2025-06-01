@@ -5,6 +5,7 @@ import {
   groupBy,
   has,
   hashCode,
+  HashMap,
   intersection,
   isEmpty,
   isEqual,
@@ -18,7 +19,6 @@ import {
   truthy,
   typeOf,
   unique,
-  ValueMap,
   walk
 } from "../src/util";
 import { ObjectId } from "./support";
@@ -523,9 +523,9 @@ describe("util", () => {
     });
   });
 
-  describe("ValueMap", () => {
+  describe("HashMap", () => {
     it("should process map methods correctly", () => {
-      const m = ValueMap.init();
+      const m = HashMap.init();
 
       // set
       m.set(100, 100)
@@ -572,7 +572,7 @@ describe("util", () => {
         const r = hashCode(v);
         return r == null ? 0 : Number(r);
       };
-      const m = ValueMap.init(badHashFn);
+      const m = HashMap.init(badHashFn);
       m.set({ a: 1 }, "A");
       m.set({ a: 2 }, "B");
       m.set({ a: 3 }, "C");
