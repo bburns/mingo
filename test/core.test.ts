@@ -2,6 +2,7 @@ import { aggregate, Aggregator, find } from "../src";
 import {
   ComputeOptions,
   computeValue,
+  Context,
   initOptions,
   Options,
   OpType,
@@ -11,6 +12,7 @@ import {
   useOperators
 } from "../src/core";
 import { Iterator } from "../src/lazy";
+import { $match } from "../src/operators/pipeline/match";
 import { Any, AnyObject } from "../src/types";
 import { isNumber, resolve } from "../src/util";
 import { complexGradesData, DEFAULT_OPTS } from "./support";
@@ -20,6 +22,19 @@ const copts = ComputeOptions.init(DEFAULT_OPTS);
 describe("core", () => {
   afterEach(() => {
     copts.update();
+  });
+
+  describe("Context", () => {
+    it("should clone context using Context.from()", () => {
+      const ctx = Context.init();
+      expect(ctx.getOperator(OpType.PIPELINE, "$match")).toBeNull();
+
+      ctx.addPipelineOps({ $match });
+      expect(ctx.getOperator(OpType.PIPELINE, "$match")).toEqual($match);
+
+      const clone = Context.from(ctx);
+      expect(clone.getOperator(OpType.PIPELINE, "$match")).toEqual($match);
+    });
   });
 
   describe("ComputeOptions", () => {
