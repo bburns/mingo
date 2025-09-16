@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/topN/#mongodb-group-grp.-topN
 import {
   AccumulatorOperator,
   ComputeOptions,

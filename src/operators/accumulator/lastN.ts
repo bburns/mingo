@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/lastN/
 import {
   AccumulatorOperator,
   ComputeOptions,

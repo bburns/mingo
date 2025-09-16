@@ -1,5 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/minN-array-element/
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { assert, isArray, isNil } from "../../../util";

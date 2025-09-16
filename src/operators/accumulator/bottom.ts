@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/bottom/#mongodb-group-grp.-bottom
 import { AccumulatorOperator, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
 import { $bottomN } from "./bottomN";

@@ -1,4 +1,3 @@
-// Bitwise Operators: https://www.mongodb.com/docs/manual/reference/operator/aggregation/bitAnd/#mongodb-expression-exp
 import { ExpressionOperator, Options } from "../../../core";
 import { AnyObject } from "../../../types";
 import { processBitwise } from "./_internal";

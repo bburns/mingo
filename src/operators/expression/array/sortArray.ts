@@ -1,5 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortArray/#mongodb-expression-exp.-sortArray
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Lazy } from "../../../lazy";
 import { Any, AnyObject } from "../../../types";

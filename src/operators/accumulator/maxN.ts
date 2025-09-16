@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/maxN
 import {
   AccumulatorOperator,
   ComputeOptions,

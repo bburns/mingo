@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/percentile/
 import { AccumulatorOperator, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
 import { assert, findInsertIndex, isNumber } from "../../util";

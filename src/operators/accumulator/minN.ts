@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/minN
 import {
   AccumulatorOperator,
   ComputeOptions,

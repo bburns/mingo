@@ -1,4 +1,3 @@
-// https://www.mongodb.com/docs/manual/reference/operator/aggregation/median
 import { AccumulatorOperator, Options } from "../../core";
 import { Any, AnyObject } from "../../types";
 import { $percentile } from "./percentile";
