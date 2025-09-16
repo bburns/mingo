@@ -768,15 +768,13 @@ export function removeValue(
   );
 }
 
-const OPERATOR_NAME_PATTERN = /^\$[a-zA-Z0-9_]+$/;
 /**
  * Check whether the given name passes for an operator. We assume AnyVal field name starting with '$' is an operator.
  * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
  * @param {String} name
  */
-export function isOperator(name: string): boolean {
-  return OPERATOR_NAME_PATTERN.test(name);
-}
+export const isOperator = (name: string): boolean =>
+  /^\$[a-zA-Z0-9_]+$/.test(name);
 
 /**
  * Simplify expression for easy evaluation with query operators map
