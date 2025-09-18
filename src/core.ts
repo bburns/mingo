@@ -1,12 +1,12 @@
 import { Iterator } from "./lazy";
+import type { WindowOperatorInput } from "./operators/pipeline/setWindowFields";
 import {
   Any,
   AnyObject,
   ArrayOrObject,
   Callback,
   HashFunction,
-  Predicate,
-  WindowOperatorInput
+  Predicate
 } from "./types";
 import {
   assert,

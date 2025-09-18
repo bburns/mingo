@@ -8,21 +8,41 @@ import {
   WindowOperator
 } from "../../core";
 import { concat, Iterator, Lazy } from "../../lazy";
-import {
-  Any,
-  AnyObject,
-  Boundary,
-  Callback,
-  SetWindowFieldsInput,
-  WindowOutputOption
-} from "../../types";
+import { Any, AnyObject, Callback, TimeUnit } from "../../types";
 import { assert, isNumber, isOperator, isString } from "../../util";
 import { $function } from "../expression/custom/function";
 import { $dateAdd } from "../expression/date/dateAdd";
-import { isUnbounded } from "./_internal";
 import { $addFields } from "./addFields";
 import { $group } from "./group";
 import { $sort } from "./sort";
+
+// Window operator types.
+type Boundary = "current" | "unbounded" | number;
+
+interface WindowOutputOption {
+  readonly documents?: [Boundary, Boundary];
+  readonly range?: [Boundary, Boundary];
+  readonly unit?: TimeUnit;
+}
+
+interface SetWindowFieldsInput {
+  readonly partitionBy?: Any;
+  readonly sortBy: Record<string, 1 | -1>;
+  readonly output: Record<
+    string,
+    {
+      [x: string]: Any;
+      window?: WindowOutputOption;
+    }
+  >;
+}
+
+export interface WindowOperatorInput {
+  readonly parentExpr: SetWindowFieldsInput;
+  readonly inputExpr: Any;
+  readonly documentNumber: number;
+  readonly field: string;
+}
 
 // Operators that require 'sortBy' option.
 const SORT_REQUIRED_OPS = new Set([
@@ -44,6 +64,14 @@ const WINDOW_UNBOUNDED_OPS = new Set([
   "$rank",
   "$shift"
 ]);
+
+/** Checks whether the specified window is unbounded. */
+const isUnbounded = (window: WindowOutputOption): boolean => {
+  const boundary = window?.documents || window?.range;
+  return (
+    !boundary || (boundary[0] === "unbounded" && boundary[1] === "unbounded")
+  );
+};
 
 /**
  * Groups documents into windows and applies one or more operators to the documents in each window.
