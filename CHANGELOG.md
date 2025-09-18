@@ -1,8 +1,20 @@
 # Changelog
 
+## 6.7.0
+
+**New**
+
+- Added `$minMaxScaler` window operator.
+- Added `$toHashedIndexKey` expression operator.
+
+**Fixes**
+
+- Fix `$isArray` to support top-level expression arguments and improve validation.
+
 ## 6.6.1 / 2025-04-30
 
 **Fixed**
+
 - Restore `"node"` key in `package.json` exports to support Deno runtime. Closes [#541](https://github.com/kofrasa/mingo/issues/541).
 
 ## 6.6.0 / 2025-04-16
