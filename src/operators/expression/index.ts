@@ -13,6 +13,7 @@ export * from "./object";
 export * from "./percentile";
 export * from "./set";
 export * from "./string";
+export * from "./toHashedIndexKey";
 export * from "./trignometry";
 export * from "./type";
 export * from "./variable";
