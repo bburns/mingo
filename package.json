@@ -9,13 +9,13 @@
   "scripts": {
     "prepare": "husky install",
     "docs": "typedoc --entryPointStrategy expand src/ && touch docs/.nojekyll",
-    "build": "npm run clean && node ./build.js",
+    "build": "npm run clean && node ./build.mjs",
     "postbuild": "tsc",
     "clean": "rm -fr build",
     "test": "jest",
     "release": "npm run test && npm run build && cd build && npm publish",
     "prepublishOnly": "echo \"use 'npm run release'\" && false",
-    "postinstall": "node ./build.js install"
+    "postinstall": "node ./build.mjs install"
   },
   "repository": {
     "type": "git",
