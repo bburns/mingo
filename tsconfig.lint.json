@@ -3,8 +3,7 @@
     "declaration": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "noEmit": true,
-    "declarationDir": "./build/dist/types"
+    "noEmit": true
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "browser.ts"]
 }

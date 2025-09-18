@@ -1,10 +1,10 @@
-const fs = require("fs");
-const path = require("path");
-const cp = require("child_process");
-const esbuild = require("esbuild");
+import fs from "fs";
+import path from "path";
+import cp from "child_process";
+import esbuild from "esbuild";
 
-const glob = require("glob").globSync;
-const packageJson = require("./package.json");
+import { globSync as glob } from "glob";
+import packageJson from "./package.json" with { type: "json" };
 
 const SRC_FILES = glob("./src/**/*.ts");
 const OUT_DIR = path.resolve("build");

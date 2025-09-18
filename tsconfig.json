@@ -1,10 +1,13 @@
 {
   "extends": "./tsconfig.lint.json",
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es6",
     "rootDir": "src",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "moduleResolution": "bundler",
+    "module": "preserve",
+    "declarationDir": "./build/dist/types"
   },
   "include": ["./src/**/*.ts"]
 }
