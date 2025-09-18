@@ -1,7 +1,7 @@
 import { Options } from "../../core";
 import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
 import { isNumber } from "../../util";
-import { $push } from "../accumulator";
+import { $push } from "../accumulator/push";
 import { withMemo } from "./_internal";
 
 /**

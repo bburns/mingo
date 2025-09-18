@@ -7,7 +7,7 @@ import {
   WindowOperatorInput
 } from "../../types";
 import { groupBy } from "../../util";
-import { $push } from "../accumulator";
+import { $push } from "../accumulator/push";
 
 export type WindowTimeUnit = Exclude<TimeUnit, "year" | "quarter" | "month">;
 

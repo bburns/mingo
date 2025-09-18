@@ -1,7 +1,7 @@
 import { Options } from "../../core";
 import { Any, AnyObject, WindowOperatorInput } from "../../types";
 import { assert, isArray, isNumber } from "../../util";
-import { $push } from "../accumulator";
+import { $push } from "../accumulator/push";
 import { withMemo } from "./_internal";
 
 /**
