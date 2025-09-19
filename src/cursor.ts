@@ -9,10 +9,12 @@ import { $limit } from "./operators/pipeline/limit";
 import { $project } from "./operators/pipeline/project";
 import { $skip } from "./operators/pipeline/skip";
 import { $sort } from "./operators/pipeline/sort";
-import { Any, AnyObject, Callback, Predicate } from "./types";
+import { Any, AnyObject, Predicate } from "./types";
 import { cloneDeep, has } from "./util";
 
 const OPERATORS: Record<string, PipelineOperator> = { $sort, $skip, $limit };
+
+type ArrayCallback<R, T> = (value: T, index: number, array: T[]) => R;
 
 /**
  * The `Cursor` class provides a mechanism for iterating over a collection of data
@@ -137,12 +139,12 @@ export class Cursor<T> {
   }
 
   /**
-   * Applies a sort operation to the cursor using the specified sort modifier.
+   * Sets the collation options for the cursor.
+   * Collation allows users to specify language-specific rules for string comparison,
+   * such as case sensitivity and accent marks.
    *
-   * @param modifier - An object specifying the sort order. The keys represent
-   * the field names, and the values indicate the sort direction (e.g., 1 for
-   * ascending and -1 for descending).
-   * @returns The current cursor instance for method chaining.
+   * @param spec - The collation specification to apply.
+   * @returns The current cursor instance for chaining.
    */
   collation(spec: CollationSpec): Cursor<T> {
     this.#options = { ...this.#options, collation: spec };
@@ -151,11 +153,6 @@ export class Cursor<T> {
 
   /**
    * Retrieves the next item in the cursor.
-   *
-   * If there are items in the internal buffer, the next item is returned from the buffer.
-   * Otherwise, it fetches the next item from the underlying data source.
-   *
-   * @returns The next item of type `T` if available, or `undefined` if there are no more items.
    */
   next(): T {
     // yield value obtains in hasNext()
@@ -169,11 +166,6 @@ export class Cursor<T> {
 
   /**
    * Determines if there are more elements available in the cursor.
-   *
-   * This method checks if there are any elements left in the internal buffer.
-   * If the buffer is empty, it attempts to fetch the next element from the source.
-   * If a new element is found, it is added to the buffer and the method returns `true`.
-   * Otherwise, it returns `false` indicating no more elements are available.
    *
    * @returns {boolean} `true` if there are more elements to iterate over, otherwise `false`.
    */
@@ -189,28 +181,22 @@ export class Cursor<T> {
   }
 
   /**
-   * Transforms the elements of the cursor using the provided callback function.
+   * Transforms each element in the cursor using the provided callback function.
    *
-   * @template R - The type of the elements in the resulting array.
-   * @template T - The type of the elements in the cursor.
-   * @param fn - A callback function that is invoked for each element in the cursor.
-   *             It receives the current element, its index, and the entire array as arguments.
-   * @returns An array of transformed elements of type `R`.
+   * @param f - A callback function.
+   * @returns An array of transformed elements.
    */
-  map<R>(fn: Callback<R, T>): R[] {
-    return this.all().map(fn as unknown as (t: T, i: number, a: T[]) => R);
+  map<R>(f: ArrayCallback<R, T>): R[] {
+    return this.all().map(f);
   }
 
   /**
-   * Iterates over all elements in the cursor and executes the provided callback function for each element.
+   * Applies the provided callback function to each element in the cursor.
    *
-   * @param fn - A callback function to execute for each element. The function receives the following arguments:
-   *   - `t`: The current element being processed in the cursor.
-   *   - `i`: The index of the current element in the array.
-   *   - `a`: The array of all elements in the cursor.
+   * @param f - A callback function that is invoked for each element in the cursor.
    */
-  forEach(fn: Callback<void, T>): void {
-    this.all().forEach(fn as unknown as (t: T, i: number, a: T[]) => void);
+  forEach(f: ArrayCallback<void, T>): void {
+    this.all().forEach(f);
   }
 
   /**

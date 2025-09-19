@@ -186,8 +186,9 @@ export function parseTimezone(tzstr?: string): number {
 }
 
 /**
- * Formats the timezone for output
- * @param tz A timezone object
+ * Formats a timezone offset in minutes into a string representation.
+ * The output is in the format of "+HHMM" or "-HHMM", where "HH" represents
+ * the hours and "MM" represents the minutes of the offset.
  */
 export function formatTimezone(minuteOffset: number): string {
   return (

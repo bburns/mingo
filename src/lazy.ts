@@ -19,8 +19,7 @@ interface Stream {
 export type Source = Stream | Callback<IteratorResult> | Iterable<Any>;
 
 /**
- * Returns an iterator
- * @param {*} source An iterable source (Array, Function, Generator, or Iterator)
+ * Creates a lazy iterator from the given source.
  */
 export function Lazy(source: Source): Iterator {
   return source instanceof Iterator ? source : new Iterator(source);
@@ -174,12 +173,10 @@ export class Iterator {
     });
   }
 
-  // Terminal methods
-
   /**
-   * Returns the fully realized values of the iterators.
-   * The return value will be an array unless `lazy.first()` was used.
-   * The realized values are cached for subsequent calls.
+   * Retrieves all remaining values from the lazy evaluation and returns them as an array.
+   * This method processes the underlying iterator until it is exhausted, storing the results
+   * in an internal buffer to ensure subsequent calls return the same data.
    */
   value<T>(): T[] {
     while (!this.#done) {
@@ -191,9 +188,9 @@ export class Iterator {
   }
 
   /**
-   * Execute the funcion for each value. Will stop when an execution returns false.
-   * @param {Function} f
-   * @returns {Boolean} false iff `f` return false for AnyVal execution, otherwise true
+   * Execute the callback for each value.
+   * @param f The callback function.
+   * @returns {Boolean} Returns false if the callback returned false to break the loop, otherwise true.
    */
   each<T = Any>(f: Callback<T>): boolean {
     for (;;) {
@@ -207,8 +204,8 @@ export class Iterator {
   /**
    * Returns the reduction of sequence according the reducing function
    *
-   * @param {*} f a reducing function
-   * @param {*} initialValue
+   * @param f The reducing function
+   * @param initialValue The initial value
    */
   reduce<T = Any>(f: Callback<T>, initialValue?: T): T {
     let o = this.next();

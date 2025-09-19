@@ -429,9 +429,6 @@ export function unique(
  * Encode value to string using a simple non-colliding stable scheme.
  * Handles user-defined types by processing keys on first non-empty prototype.
  * If a user-defined type provides a "toString" function, it is used.
- *
- * @param value The value to convert to a string representation.
- * @returns {string}
  */
 export function stringify(v: Any, refs?: Set<Any>): string {
   if (v === null) return "null";

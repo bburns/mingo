@@ -70,13 +70,6 @@ export function trimString(
   return s.substring(i, j + 1);
 }
 
-/**
- * Performs a regex search
- *
- * @param obj
- * @param expr
- * @param opts
- */
 export function regexSearch(
   obj: AnyObject,
   expr: Any,
