@@ -1,5 +1,3 @@
-// load all operators
-// import "../src/init/system";
 import { aggregate as srcAggregate, find as srcFind } from "../src";
 import {
   computeValue,
@@ -96,7 +94,7 @@ export function runTest(
 
           if (ctx.err) {
             it(`${prefix} => Error("${expected as string}")`, () => {
-              expect(() => computeValue(obj, input, field)).toThrowError();
+              expect(() => computeValue(obj, input, field)).toThrow();
             });
           } else {
             it(`${prefix} => ${JSON.stringify(expected)}`, () => {

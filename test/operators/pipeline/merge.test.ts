@@ -2,7 +2,7 @@ import "../../../src/init/system";
 
 import { aggregate } from "../../../src";
 import { initOptions, ProcessingMode } from "../../../src/core";
-import { AnyObject } from "../../../src/types";
+import { Any, AnyObject } from "../../../src/types";
 import { DEFAULT_OPTS } from "../../support";
 
 const options = initOptions({
@@ -12,7 +12,7 @@ const options = initOptions({
 
 describe("operators/pipeline/merge", () => {
   describe("On-Demand Materialized View", () => {
-    const budgets = [];
+    const budgets: Any[] = [];
     const salaries = [
       {
         _id: 1,
@@ -475,7 +475,7 @@ describe("operators/pipeline/merge", () => {
           }
         ]
       )
-    ).toThrowError();
+    ).toThrow();
   });
 
   it("Fail 'whenNotMatched' with 'fail' option", () => {
@@ -505,7 +505,7 @@ describe("operators/pipeline/merge", () => {
         ],
         options
       )
-    ).toThrowError();
+    ).toThrow();
   });
 
   it("Discard 'whenNotMatched' with 'discard' option", () => {

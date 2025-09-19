@@ -65,7 +65,7 @@ describe("lazy", () => {
   });
 
   it("should throw when source is invalid", () => {
-    expect(() => Lazy(5 as unknown as Source)).toThrowError();
+    expect(() => Lazy(5 as unknown as Source)).toThrow();
   });
 
   it("should iterate with for-loop", () => {
