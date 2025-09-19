@@ -2,13 +2,6 @@ export type Any = unknown;
 export type AnyObject = Record<string, Any>;
 export type ArrayOrObject = AnyObject | Any[];
 
-/** @deprecated use {@link Any}. */
-export type AnyVal = Any;
-/** @deprecated use {@link AnyObject}. */
-export type RawObject = AnyObject;
-/** @deprecated use {@link Array<Any>}. */
-export type RawArray = Array<Any>;
-
 // Generic callback
 export interface Callback<R = Any, T = Any> {
   (...args: T[]): R;
