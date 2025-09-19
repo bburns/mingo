@@ -46,7 +46,7 @@ export const $minMaxScaler = (
         else if (n > rmax) rmax = n;
       }
       const scale = max - min;
-      const range = rmax - rmin || 1;
+      const range = rmax - rmin;
       assert(range !== 0, "$minMaxScaler: input range must not be zero");
       return {
         min,

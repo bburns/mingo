@@ -205,7 +205,7 @@ export function typeOf(v: Any): string {
   // native objects and custom types
   const s = Object.prototype.toString.call(v) as string;
   return s === "[object Object]"
-    ? v?.constructor?.name?.toLowerCase() || "object"
+    ? (v?.constructor?.name?.toLowerCase() ?? "object")
     : s.substring(8, s.length - 1).toLowerCase();
 }
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
