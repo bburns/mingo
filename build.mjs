@@ -28,9 +28,9 @@ function build() {
 
   // browser
   esbuild.buildSync({
-    globalName: "mingo",
-    entryPoints: ["./browser.ts"],
-    outfile: path.join(OUT_DIR, "dist", "mingo.min.js"),
+    globalName: packageJson.name,
+    entryPoints: ["./src-browser/index.ts"],
+    outfile: path.join(OUT_DIR, "dist", `${packageJson.name}.min.js`),
     platform: "browser",
     minify: true,
     bundle: true
