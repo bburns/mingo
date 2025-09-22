@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import cp from "child_process";
+import fs from "node:fs";
+import path from "node:path";
+import cp from "node:child_process";
 import esbuild from "esbuild";
 
 import { globSync as glob } from "glob";

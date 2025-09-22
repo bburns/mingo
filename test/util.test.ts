@@ -78,7 +78,7 @@ describe("util", () => {
         { $eq: 10, $gt: 5, $le: 2 },
         { $eq: 10, $gt: 5, $le: 2 }
       ]
-    ])("should normalize: %p => %p", (input, output) => {
+    ])("should normalize: %o => %o", (input, output) => {
       expect(normalize(input)).toEqual(output);
     });
   });
@@ -122,7 +122,7 @@ describe("util", () => {
       ["object", {}],
       ["arraybuffer", new ArrayBuffer(0)],
       ["custom", new Custom("abc")]
-    ])("should expect %p for %p", (res, input) => {
+    ])("should expect %o for %o", (res, input) => {
       expect(typeOf(input)).toEqual(res);
     });
   });
@@ -148,7 +148,7 @@ describe("util", () => {
       [() => void {}, () => void {}, false],
       [RegExp, RegExp, true],
       [ObjectId("100"), ObjectId("100"), true]
-    ])("should check: %p == %p", (a, b, c) => {
+    ])("should check: %o == %o", (a, b, c) => {
       expect(isEqual(a, b)).toEqual(c);
     });
 
@@ -186,7 +186,7 @@ describe("util", () => {
       [[a, b, a, b], "[[1,2,3],[4,5,6],[1,2,3],[4,5,6]]"],
       [ObjectId("123"), "objectid(123)"],
       [new Custom("123"), 'custom({_id:"123"})']
-    ])("should pass: %p => %p", (input, output) => {
+    ])("should stringify %o => %o", (input, output) => {
       expect(stringify(input)).toEqual(output);
     });
 
@@ -274,8 +274,17 @@ describe("util", () => {
   });
 
   describe("isEmpty", () => {
-    const sample = ["0", 0, null, {}, "", []];
-    expect(sample.map(isEmpty)).toEqual([false, false, true, true, true, true]);
+    it("should detect empty values", () => {
+      const sample = ["0", 0, null, {}, "", []];
+      expect(sample.map(isEmpty)).toEqual([
+        false,
+        false,
+        true,
+        true,
+        true,
+        true
+      ]);
+    });
   });
 
   describe("cloneDeep", () => {
@@ -296,7 +305,7 @@ describe("util", () => {
       [new Float32Array([1.5, 2.5])],
       [{ a: a, b: a }],
       [[a, b, a, b]]
-    ])("should pass: %p => %p", input => {
+    ])("should clone: %o", input => {
       const other = cloneDeep(input);
       expect(isEqual(input, other)).toEqual(true);
       if (isObjectLike(input)) expect(input !== other).toEqual(true);
@@ -403,7 +412,7 @@ describe("util", () => {
   });
 
   describe("intersection", () => {
-    it("should find no intersection", () => {
+    it("should find empty intersection when non exists", () => {
       const res = intersection([
         [1, 2, 3],
         [4, 5, 6],
@@ -412,28 +421,11 @@ describe("util", () => {
       expect(res).toEqual([]);
     });
 
-    it("should find one intersection", () => {
+    it("should find intersection of multiple arrays", () => {
       const res = intersection([
         [1, 2, 3],
+        [3, 6, 2, 3], // include duplicates
         [4, 5, 3]
-      ]);
-      expect(res).toEqual([3]);
-    });
-
-    it("should find intersection of more than two arrays", () => {
-      const res = intersection([
-        [1, 2, 3],
-        [3, 6, 2],
-        [4, 5, 3]
-      ]);
-      expect(res).toEqual([3]);
-    });
-
-    it("should find intersection of multiple arrays with duplicates", () => {
-      const res = intersection([
-        [1, 2, 3, 6],
-        [4, 5, 3],
-        [3, 5, 3, 1]
       ]);
       expect(res).toEqual([3]);
     });
@@ -458,33 +450,29 @@ describe("util", () => {
   });
 
   describe("truthy", () => {
-    // [value, strict, result]
-    for (const [v, b, r] of Array.from<[unknown, boolean, boolean]>([
+    // [value, expected, mode]
+    it.each([
       ["", true, true],
       ["", false, false],
-      ["s", true, true],
-      ["s", false, true],
-      [0, true, false],
+      ["non-empty", true, true],
+      ["non-empty", true, false],
+      [0, false, true],
       [0, false, false],
       [1, true, true],
-      [1, false, true],
+      [1, true, false],
       [[], true, true],
-      [[], false, true],
-      [false, true, false],
+      [[], true, false],
+      [false, false, true],
       [false, false, false],
       [true, true, true],
-      [true, false, true],
-      [null, true, false],
+      [true, true, false],
+      [null, false, true],
       [null, false, false],
-      [undefined, true, false],
+      [undefined, false, true],
       [undefined, false, false]
-    ])) {
-      it(`should return ${String(r)} for '${JSON.stringify(
-        v
-      )}' with strict=${String(b)}.`, () => {
-        expect(truthy(v, b)).toEqual(r);
-      });
-    }
+    ])("coerce %o -> %o if strict=%o", (value, output, mode) => {
+      expect(truthy(value, mode)).toEqual(output);
+    });
   });
 
   describe("walk", () => {

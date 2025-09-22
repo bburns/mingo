@@ -43,7 +43,7 @@ export default [
       sourceType: "module",
 
       parserOptions: {
-        project: "./tsconfig.lint.json"
+        project: "./tsconfig.json"
       }
     },
 

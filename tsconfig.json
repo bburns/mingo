@@ -1,13 +1,11 @@
 {
-  "extends": "./tsconfig.lint.json",
   "compilerOptions": {
     "target": "es6",
-    "rootDir": "src",
-    "noEmit": false,
-    "emitDeclarationOnly": true,
-    "moduleResolution": "bundler",
+    "noEmit": true,
     "module": "preserve",
-    "declarationDir": "./build/dist/types"
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "types": ["vitest/globals"]
   },
-  "include": ["./src/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "src-browser/**/*.ts"]
 }
