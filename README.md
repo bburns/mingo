@@ -30,9 +30,7 @@ For more documentation on how to use operators see [mongodb](https://www.mongodb
 
 [API Documentation](http://kofrasa.github.io/mingo/).
 
-A minified version with full operator support is available in the distribution as;
-
-- [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) in `6.6.x` or [mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) since `6.7.0`.
+A minified bundle with all operators loaded is available in [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) since `6.6.0`.
 
 ## Usage
 

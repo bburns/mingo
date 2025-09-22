@@ -6,12 +6,11 @@ import esbuild from "esbuild";
 import { globSync as glob } from "glob";
 import packageJson from "./package.json" with { type: "json" };
 
+const NPM_ARGS = process.argv.slice(2);
 const SRC_FILES = glob("./src/**/*.ts");
-const OUT_DIR = path.resolve("build");
-const npmArgs = process.argv.slice(2);
-
-// .npmignore
+const BUILD_DIR = path.resolve("build");
 const NPM_IGNORE = [".*", "*.tgz", "node_modules", "package-lock.json"];
+const BUNDLE_NAME = `./dist/${packageJson.name}.min.js`;
 
 /** Builds */
 function build() {
@@ -19,7 +18,7 @@ function build() {
   for (const format of ["esm", "cjs"]) {
     esbuild.buildSync({
       entryPoints: SRC_FILES,
-      outdir: path.join(OUT_DIR, format),
+      outdir: path.join(BUILD_DIR, format),
       format: format,
       platform: "node",
       treeShaking: true
@@ -30,7 +29,7 @@ function build() {
   esbuild.buildSync({
     globalName: packageJson.name,
     entryPoints: ["./src-browser/index.ts"],
-    outfile: path.join(OUT_DIR, `${packageJson.name}.min.js`),
+    outfile: path.join(BUILD_DIR, BUNDLE_NAME),
     platform: "browser",
     minify: true,
     bundle: true
@@ -38,26 +37,23 @@ function build() {
 }
 
 /**
- * Create module in OUT_DIR
+ * Create module in BUILD_DIR
  */
 function createModule() {
-  console.log("Creating module at " + OUT_DIR);
+  console.log("Creating module at " + BUILD_DIR);
 
   // ensure directory exists
-  if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR);
+  if (!fs.existsSync(BUILD_DIR)) fs.mkdirSync(BUILD_DIR);
 
-  // write ignore file
-  fs.writeFileSync(path.join(OUT_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
+    // write ignore file
+  fs.writeFileSync(path.join(BUILD_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
 
-  // copy all the allowed files to the lib directory
-  packageJson.files = ["LICENSE", "README.md"].reduce(
-    (files, p) => {
-      fs.copyFileSync(path.resolve(p), path.join(OUT_DIR, p));
-      files.push(p);
-      return files;
-    },
-    ["**/*.js", "**/*.ts", "**/*.json"]
-  );
+  // copy all files listed in package.json
+  packageJson.files.forEach(f => {
+    if (fs.existsSync(f) && fs.lstatSync(f).isFile()) {
+      fs.copyFileSync(path.resolve(f), path.join(BUILD_DIR, f));
+    }
+  });
 
   // clear all dev config
   ["scripts", "devDependencies", "lint-staged"].forEach(
@@ -74,7 +70,9 @@ function createModule() {
     "./esm/init/system.js",
     "./esm/init/basic.js"
   ];
+  packageJson.browser = BUNDLE_NAME;
 
+  // configure aliases for all exports
   SRC_FILES.filter(s => !s.includes("_")).forEach(s => {
     // strip "src/" (prefix) and ".ts" (suffix)
     s = s.slice(4, -3);
@@ -100,20 +98,20 @@ function createModule() {
   const data = JSON.stringify(packageJson, null, 2);
 
   // write new package.json for lib
-  fs.writeFileSync(path.join(OUT_DIR, "package.json"), data);
+  fs.writeFileSync(path.join(BUILD_DIR, "package.json"), data);
 }
 
 function main() {
   build();
   createModule();
 
-  if (npmArgs.length) {
+  if (NPM_ARGS.length) {
     // execute within lib dir
-    console.log("\nExecuting command:", `npm ${npmArgs.join(" ")}`, "\n");
+    console.log("\nExecuting command:", `npm ${NPM_ARGS.join(" ")}`, "\n");
 
     // execute command
-    cp.spawnSync("npm", npmArgs, {
-      cwd: OUT_DIR,
+    cp.spawnSync("npm", NPM_ARGS, {
+      cwd: BUILD_DIR,
       env: process.env,
       stdio: "inherit"
     });
@@ -122,10 +120,10 @@ function main() {
 
     // if we created a tar file, copy to parent directory
     let tarball = packageJson.name + "-" + packageJson.version + ".tgz";
-    let tarballPath = path.join(OUT_DIR, tarball);
+    let tarballPath = path.join(BUILD_DIR, tarball);
     if (fs.existsSync(tarballPath)) {
       console.log("Copying", tarball, "to correct folder");
-      fs.renameSync(tarballPath, path.join(path.dirname(OUT_DIR), tarball));
+      fs.renameSync(tarballPath, path.join(path.dirname(BUILD_DIR), tarball));
     }
   }
 }
