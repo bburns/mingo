@@ -19,7 +19,7 @@ function build() {
   for (const format of ["esm", "cjs"]) {
     esbuild.buildSync({
       entryPoints: SRC_FILES,
-      outdir: path.join(OUT_DIR, "dist", format),
+      outdir: path.join(OUT_DIR, format),
       format: format,
       platform: "node",
       treeShaking: true
@@ -30,7 +30,7 @@ function build() {
   esbuild.buildSync({
     globalName: packageJson.name,
     entryPoints: ["./src-browser/index.ts"],
-    outfile: path.join(OUT_DIR, "dist", `${packageJson.name}.min.js`),
+    outfile: path.join(OUT_DIR, `${packageJson.name}.min.js`),
     platform: "browser",
     minify: true,
     bundle: true
@@ -59,14 +59,21 @@ function createModule() {
     ["**/*.js", "**/*.ts", "**/*.json"]
   );
 
-  // clear all scripts
-  packageJson.scripts = {};
-  packageJson.devDependencies = {};
+  // clear all dev config
+  ["scripts", "devDependencies", "lint-staged"].forEach(
+    k => delete packageJson[k]
+  );
 
   // add exports explicitly
   packageJson.exports = {
     "./package.json": "./package.json"
   };
+  packageJson.sideEffects = [
+    "./cjs/init/system.js",
+    "./cjs/init/basic.js",
+    "./esm/init/system.js",
+    "./esm/init/basic.js"
+  ];
 
   SRC_FILES.filter(s => !s.includes("_")).forEach(s => {
     // strip "src/" (prefix) and ".ts" (suffix)
@@ -79,27 +86,9 @@ function createModule() {
     // exclude distinct operator functions
     if (isLeaf && name.includes("operators")) return;
     // create distributions
-    const typesPath = `./dist/types/${outFile}.d.ts`;
-    const cjsPath = `./dist/cjs/${outFile}.js`;
-    const esmPath = `./dist/esm/${outFile}.js`;
-
-    if (key != ".") {
-      // create subpackage package.json
-      const subPackagePath = path.join(OUT_DIR, name);
-      if (!fs.existsSync(subPackagePath)) {
-        fs.mkdirSync(subPackagePath, { recursive: true });
-      }
-      const subPackageJson = {
-        main: path.relative(subPackagePath, path.join(OUT_DIR, cjsPath)),
-        module: path.relative(subPackagePath, path.join(OUT_DIR, esmPath)),
-        types: path.relative(subPackagePath, path.join(OUT_DIR, typesPath)),
-        sideEffects: outFile.startsWith("init")
-      };
-      fs.writeFileSync(
-        path.join(subPackagePath, "package.json"),
-        JSON.stringify(subPackageJson, null, 2)
-      );
-    }
+    const typesPath = `./types/${outFile}.d.ts`;
+    const cjsPath = `./cjs/${outFile}.js`;
+    const esmPath = `./esm/${outFile}.js`;
 
     packageJson.exports[key] = {
       types: typesPath,

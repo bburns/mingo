@@ -4,7 +4,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "declaration": true,
-    "declarationDir": "./build/dist/types"
+    "declarationDir": "./build/types"
   },
   "include": ["./src/**/*.ts"]
 }
