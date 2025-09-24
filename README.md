@@ -32,13 +32,23 @@ For more documentation on how to use operators see [mongodb](https://www.mongodb
 
 A minified bundle with all operators loaded is available in [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) since `6.6.0`.
 
+**Note:**
+
+The package exports 3 different distributions on [NPM](https://www.npmjs.com/package/mingo).
+
+1. A minified bundle under `dist/mingo.min.js` since `6.6.0`, for use in browsers. See free CDNs such as [esm.run](https://esm.run/mingo/dist/mingo.min.js) or [unpkg](https://unpkg.com/mingo/dist/mingo.min.js).
+1. A CommonJS module when loaded using `require`.
+1. An ESM module when loaded using `import`.
+
+Supporting both CJS and ESM modules makes it subject to the [dual package hazard](https://github.com/nodejs/package-examples). For browser use, it is **recommended** to use the bundled distribution. For backend environments, be consistent with the module loading format to avoid surprises and subtle errors.
+
 ## Usage
 
 ```js
-// Use as es6 module
+// Use as ESM module
 import mingo from "mingo";
 
-// or vanilla nodeJS
+// or CommonJS
 const mingo = require("mingo");
 ```
 
