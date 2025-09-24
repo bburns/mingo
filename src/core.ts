@@ -309,7 +309,14 @@ type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
 export class Context {
-  #operators = new Map<OpType, Record<string, Operator>>();
+  #operators = new Map<OpType, Record<string, Operator>>([
+    [OpType.ACCUMULATOR, {}],
+    [OpType.EXPRESSION, {}],
+    [OpType.PIPELINE, {}],
+    [OpType.PROJECTION, {}],
+    [OpType.QUERY, {}],
+    [OpType.WINDOW, {}]
+  ]);
 
   private constructor() {}
 
@@ -328,7 +335,6 @@ export class Context {
     type: OpType,
     operators: Record<string, Operator>
   ): Context {
-    if (!this.#operators.has(type)) this.#operators.set(type, {});
     for (const [name, fn] of Object.entries(operators)) {
       if (!this.getOperator(type, name)) {
         this.#operators.get(type)[name] = fn;
@@ -338,8 +344,7 @@ export class Context {
   }
 
   getOperator(type: OpType, name: string): Callback | null {
-    const ops = this.#operators.get(type) ?? {};
-    return ops[name] ?? null;
+    return this.#operators.get(type)[name] ?? null;
   }
 
   addAccumulatorOps(ops: AccumulatorOps) {
@@ -369,14 +374,14 @@ export class Context {
 
 type RegistryFunc = Callback<void, Record<string, Operator>>;
 // global context
-const GC = Context.init();
-const GC_REGISTRY: Record<OpType, RegistryFunc> = {
-  [OpType.ACCUMULATOR]: GC.addAccumulatorOps.bind(GC) as RegistryFunc,
-  [OpType.EXPRESSION]: GC.addExpressionOps.bind(GC) as RegistryFunc,
-  [OpType.PIPELINE]: GC.addPipelineOps.bind(GC) as RegistryFunc,
-  [OpType.PROJECTION]: GC.addProjectionOps.bind(GC) as RegistryFunc,
-  [OpType.QUERY]: GC.addQueryOps.bind(GC) as RegistryFunc,
-  [OpType.WINDOW]: GC.addWindowOps.bind(GC) as RegistryFunc
+const CONTEXT = Context.init();
+const REGISTRY: Record<OpType, RegistryFunc> = {
+  [OpType.ACCUMULATOR]: CONTEXT.addAccumulatorOps.bind(CONTEXT) as RegistryFunc,
+  [OpType.EXPRESSION]: CONTEXT.addExpressionOps.bind(CONTEXT) as RegistryFunc,
+  [OpType.PIPELINE]: CONTEXT.addPipelineOps.bind(CONTEXT) as RegistryFunc,
+  [OpType.PROJECTION]: CONTEXT.addProjectionOps.bind(CONTEXT) as RegistryFunc,
+  [OpType.QUERY]: CONTEXT.addQueryOps.bind(CONTEXT) as RegistryFunc,
+  [OpType.WINDOW]: CONTEXT.addWindowOps.bind(CONTEXT) as RegistryFunc
 };
 
 /**
@@ -411,7 +416,7 @@ export function useOperators(
     );
   }
   // add to registry
-  GC_REGISTRY[type](operators);
+  REGISTRY[type](operators);
 }
 
 /**
@@ -425,9 +430,10 @@ export function getOperator(
   name: string,
   options: Pick<Options, "useGlobalContext" | "context">
 ): Operator {
+  if (!isOperator(name)) return null;
   const { context: ctx, useGlobalContext: fallback } = options || {};
   const fn = ctx ? (ctx.getOperator(type, name) as Operator) : null;
-  return !fn && fallback ? GC.getOperator(type, name) : fn;
+  return !fn && fallback ? CONTEXT.getOperator(type, name) : fn;
 }
 
 /**

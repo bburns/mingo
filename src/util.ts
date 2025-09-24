@@ -771,7 +771,7 @@ export function removeValue(
  * @param {String} name
  */
 export const isOperator = (name: string): boolean =>
-  /^\$[a-zA-Z0-9_]+$/.test(name);
+  name && name[0] === "$" && /^\$[a-zA-Z0-9_]+$/.test(name);
 
 /**
  * Simplify expression for easy evaluation with query operators map
