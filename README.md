@@ -56,10 +56,9 @@ The [public API ](https://kofrasa.github.io/mingo/modules/index.html) exports in
 
 ### Loading Operators
 
-To use more operators load them into a `Context` object and pass with your options. This enables tree-shaking in ESM environments during bundling.
-As mentioned previously, some operators are always included in a context.
+To use extra operators, load them into a `Context` object and configure in your `Options`. For ESM environments, non-used operators are subject to tree-shaking during bundling.
 
-**NB**: To prevent surprises, operators loaded into a context cannot be replaced. Registering an operator with an already existing name for its type, is a no-op and does not throw an error. To ensure a custom versions of operators are used, add them first to your `Context` instance.
+**NB**: To avoid surprises, operators loaded into a `Context` cannot be replaced. Add a new operator with an existing name is a no-op and does not throw an error. To ensure a custom version of an operator is used, it must be he first to be added to the `Context`.
 
 > The gloabal operator functions `useOperators` and `getOperator` are deprecated and will be removed in `7.0.0`.
 
@@ -158,8 +157,7 @@ The example below uses [Ajv](https://www.npmjs.com/package/ajv) to implement sch
 
 ```js
 import * as mingo from "mingo"
-import type { AnyObject } from "mingo/types"
-import type { JsonSchemaValidator } from "mingo/core"
+import type { AnyObject, JsonSchemaValidator } from "mingo/types"
 import Ajv, { Schema } from "ajv"
 
 const jsonSchemaValidator: JsonSchemaValidator = (s: AnyObject) => {
