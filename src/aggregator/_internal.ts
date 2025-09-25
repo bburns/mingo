@@ -1,21 +1,20 @@
 import {
   getOperator,
-  initOptions,
   Options,
   OpType,
   PipelineOperator,
   ProcessingMode
-} from "./core";
-import { Iterator, Lazy, Source } from "./lazy";
-import { Any, AnyObject } from "./types";
-import { assert, cloneDeep } from "./util";
+} from "../core";
+import { Iterator, Lazy, Source } from "../lazy";
+import { Any, AnyObject } from "../types";
+import { assert, cloneDeep } from "../util";
 
 /**
  * The `Aggregator` class provides functionality to process data collections
  * through an aggregation pipeline. It supports streaming and executing
  * aggregation operations with customizable options.
  */
-export class Aggregator {
+export class AggregatorImpl {
   #pipeline: AnyObject[];
   #options: Options;
 
@@ -25,9 +24,9 @@ export class Aggregator {
    * @param pipeline - An array of objects representing the aggregation pipeline stages.
    * @param options - Optional configuration settings for the aggregator.
    */
-  constructor(pipeline: AnyObject[], options?: Partial<Options>) {
+  constructor(pipeline: AnyObject[], options: Options) {
     this.#pipeline = pipeline;
-    this.#options = initOptions(options);
+    this.#options = options;
   }
 
   /**
