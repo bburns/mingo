@@ -45,7 +45,7 @@ function createModule() {
   // ensure directory exists
   if (!fs.existsSync(BUILD_DIR)) fs.mkdirSync(BUILD_DIR);
 
-    // write ignore file
+  // write ignore file
   fs.writeFileSync(path.join(BUILD_DIR, ".npmignore"), NPM_IGNORE.join("\n"));
 
   // copy all files listed in package.json
@@ -64,12 +64,7 @@ function createModule() {
   packageJson.exports = {
     "./package.json": "./package.json"
   };
-  packageJson.sideEffects = [
-    "./cjs/init/system.js",
-    "./cjs/init/basic.js",
-    "./esm/init/system.js",
-    "./esm/init/basic.js"
-  ];
+  packageJson.sideEffects = ["./cjs/init/system.js", "./esm/init/system.js"];
   packageJson.browser = BUNDLE_NAME;
 
   // configure aliases for all exports
