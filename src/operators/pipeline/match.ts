@@ -1,6 +1,6 @@
 import { Options, PipelineOperator } from "../../core";
 import { Iterator } from "../../lazy";
-import { Query } from "../../query";
+import { QueryImpl } from "../../query/_internal";
 import { AnyObject } from "../../types";
 
 /**
@@ -18,6 +18,6 @@ export const $match: PipelineOperator = (
   expr: AnyObject,
   options: Options
 ): Iterator => {
-  const q = new Query(expr, options);
+  const q = new QueryImpl(expr, options);
   return collection.filter((o: AnyObject) => q.test(o));
 };

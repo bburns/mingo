@@ -1,45 +1,19 @@
-import {
-  getOperator,
-  initOptions,
-  Options,
-  OpType,
-  QueryOperator
-} from "./core";
-import { Cursor } from "./cursor";
-import { Source } from "./lazy";
-import { Any, AnyObject, Predicate } from "./types";
-import { assert, cloneDeep, isObject, isOperator, normalize } from "./util";
+import { getOperator, Options, OpType, QueryOperator } from "../core";
+import { Cursor } from "../cursor";
+import { Source } from "../lazy";
+import { Any, AnyObject, Predicate } from "../types";
+import { assert, cloneDeep, isObject, isOperator, normalize } from "../util";
 
 const TOP_LEVEL_RE = /^\$(and|or|nor|expr|jsonSchema)$/;
 
-/**
- * Represents a query object used to filter and match documents based on specified criteria.
- *
- * The `Query` class provides methods to compile query conditions, test objects against
- * the query criteria, and retrieve matching documents from a collection.
- *
- * @example
- * ```typescript
- * const query = new Query({ age: { $gt: 18 } });
- * const result = query.test({ name: "John", age: 25 }); // true
- * ```
- *
- * @template T - The type of objects being queried.
- */
-export class Query {
+export class QueryImpl {
   #compiled: Predicate<Any>[];
   #options: Options;
   #condition: AnyObject;
 
-  /**
-   * Creates an instance of the query with the specified condition and options.
-   *
-   * @param condition - The query condition object used to define the criteria for matching documents.
-   * @param options - Optional configuration settings to customize the query behavior.
-   */
-  constructor(condition: AnyObject, options?: Partial<Options>) {
+  constructor(condition: AnyObject, options: Options) {
     this.#condition = cloneDeep(condition);
-    this.#options = initOptions(options);
+    this.#options = options;
     this.#compiled = [];
     this.compile();
   }

@@ -1,7 +1,7 @@
 // $elemMatch operator. https://docs.mongodb.com/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
 
 import { Options, ProjectionOperator } from "../../core";
-import { Query } from "../../query";
+import { QueryImpl } from "../../query/_internal";
 import { Any, AnyObject } from "../../types";
 import { assert, isArray, resolve } from "../../util";
 
@@ -20,7 +20,7 @@ export const $elemMatch: ProjectionOperator = (
   options: Options
 ): Any => {
   const arr = resolve(obj, field) as AnyObject[];
-  const query = new Query(expr, options);
+  const query = new QueryImpl(expr, options);
 
   assert(isArray(arr), "$elemMatch: argument must resolve to array");
   const result: Any[] = [];

@@ -1,5 +1,3 @@
-// Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
-
 import { Options, QueryOperator } from "../../../core";
 import { Any, AnyObject, Callback } from "../../../types";
 import { assert, isArray } from "../../../util";

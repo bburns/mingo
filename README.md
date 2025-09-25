@@ -30,17 +30,17 @@ For more documentation on how to use operators see [mongodb](https://www.mongodb
 
 [API Documentation](http://kofrasa.github.io/mingo/).
 
-A minified bundle with all operators loaded is available in [dist/mingo.min.js](https://www.npmjs.com/package/mingo?activeTab=code) since `6.6.0`.
+## Distribution
 
-**Note:**
+The package provides 3 distributions on [NPM](https://www.npmjs.com/package/mingo?activeTab=code).
 
-The package exports 3 different distributions on [NPM](https://www.npmjs.com/package/mingo).
+1.  A minified bundle since `6.6.0` for browser targets. See [esm.run](https://esm.run/mingo/dist/mingo.min.js) or [unpkg](https://unpkg.com/mingo/dist/mingo.min.js) CDNs.
+1.  A CommonJS module when loaded using `require`.
+1.  An ESM module when loaded using `import`.
 
-1. A minified bundle under `dist/mingo.min.js` since `6.6.0`, for use in browsers. See free CDNs such as [esm.run](https://esm.run/mingo/dist/mingo.min.js) or [unpkg](https://unpkg.com/mingo/dist/mingo.min.js).
-1. A CommonJS module when loaded using `require`.
-1. An ESM module when loaded using `import`.
+**Important**
 
-Supporting both CJS and ESM modules makes it subject to the [dual package hazard](https://github.com/nodejs/package-examples). For browser use, it is **recommended** to use the bundled distribution. For backend environments, be consistent with the module loading format to avoid surprises and subtle errors.
+> Supporting both CJS and ESM modules makes this library subject to the [dual package hazard](https://github.com/nodejs/package-examples). In backend environments, be consistent with the module loading format to avoid surprises and subtle errors, and use the bundle instead of modules when loading over the network.
 
 ## Usage
 
@@ -52,7 +52,7 @@ import mingo from "mingo";
 const mingo = require("mingo");
 ```
 
-The main module exports functions `aggregate`, `find`, `remove`, and `update`, and the objects `Aggregator` and `Query`. [Query and Projection](https://docs.mongodb.com/manual/reference/operator/query/) operators are loaded by default by the root through the side-effect module [init/basic](https://github.com/kofrasa/mingo/blob/main/src/init/basic.ts). This also automatically includes pipeline operators; `$project`, `$skip`, `$limit`, and `$sort`.
+The module [entry point](https://kofrasa.github.io/mingo/modules/index.html) exports common functions and interfaces for most use cases. Use `initOptions` function from `mingo/init/basic` or `mingo/init/system` modules to construct an options object preinitialized with operators.
 
 ## Loading Operators
 

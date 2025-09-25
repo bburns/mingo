@@ -3,7 +3,7 @@
  */
 
 import { computeValue, Options } from "../core";
-import { Query } from "../query";
+import { QueryImpl } from "../query/_internal";
 import {
   Any,
   AnyObject,
@@ -277,7 +277,7 @@ export function $elemMatch(
       format = x => ({ temp: x });
     }
 
-    const query = new Query(criteria, options);
+    const query = new QueryImpl(criteria, options);
     for (let i = 0, len = a.length; i < len; i++) {
       if (query.test(format(a[i]) as AnyObject)) {
         return true;

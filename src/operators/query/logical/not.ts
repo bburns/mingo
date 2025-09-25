@@ -1,7 +1,5 @@
-// Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
-
 import { Options, QueryOperator } from "../../../core";
-import { Query } from "../../../query";
+import { QueryImpl } from "../../../query/_internal";
 import { Any, AnyObject, Callback } from "../../../types";
 import { normalize } from "../../../util";
 
@@ -19,6 +17,6 @@ export const $not: QueryOperator = (
 ): Callback<boolean> => {
   const criteria = {};
   criteria[selector] = normalize(rhs);
-  const query = new Query(criteria, options);
+  const query = new QueryImpl(criteria, options);
   return (obj: AnyObject) => !query.test(obj);
 };

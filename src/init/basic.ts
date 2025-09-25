@@ -1,22 +1,12 @@
-/**
- * Loads all Query and Projection operators
- */
-import { OpType, useOperators } from "../core";
-import * as booleanOperators from "../operators/expression/boolean";
-import * as comparisonOperators from "../operators/expression/comparison";
-import { $limit, $project, $skip, $sort } from "../operators/pipeline";
-import * as projectionOperators from "../operators/projection";
-import * as queryOperators from "../operators/query";
+// import { Options, OpType, useOperators } from "../core";
+// import * as booleanOperators from "../operators/expression/boolean";
+// import * as comparisonOperators from "../operators/expression/comparison";
+// import * as projectionOperators from "../operators/projection";
+// import * as queryOperators from "../operators/query";
+// import { newOptions } from "../_internal";
 
-useOperators(OpType.EXPRESSION, {
-  ...booleanOperators,
-  ...comparisonOperators
-});
-useOperators(OpType.PIPELINE, {
-  $project,
-  $skip,
-  $limit,
-  $sort
-});
-useOperators(OpType.PROJECTION, projectionOperators);
-useOperators(OpType.QUERY, queryOperators);
+// useOperators(OpType.EXPRESSION, booleanOperators);
+// useOperators(OpType.EXPRESSION, comparisonOperators);
+// useOperators(OpType.PROJECTION, projectionOperators);
+// useOperators(OpType.QUERY, queryOperators);
+// console.log("DEPRECATED: loading 'init/basic' is no longer required. Please remove this import.");

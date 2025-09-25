@@ -1,4 +1,3 @@
-// load all operators
 import { OpType, useOperators } from "../core";
 import * as accumulatorOperators from "../operators/accumulator";
 import * as expressionOperators from "../operators/expression";

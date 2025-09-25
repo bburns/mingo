@@ -1,6 +1,3 @@
-// loads basic operators
-import "./init/basic";
-
 import { Aggregator } from "./aggregator";
 import { Options, ProcessingMode } from "./core";
 import { Cursor } from "./cursor";

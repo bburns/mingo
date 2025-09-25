@@ -1,7 +1,5 @@
-// Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
-
 import { Options, QueryOperator } from "../../../core";
-import { Query } from "../../../query";
+import { QueryImpl } from "../../../query/_internal";
 import { AnyObject, Callback } from "../../../types";
 import { assert, isArray } from "../../../util";
 
@@ -21,6 +19,6 @@ export const $and: QueryOperator = (
     isArray(rhs),
     "Invalid expression: $and expects value to be an Array."
   );
-  const queries = rhs.map(expr => new Query(expr, options));
+  const queries = rhs.map(expr => new QueryImpl(expr, options));
   return (obj: AnyObject) => queries.every(q => q.test(obj));
 };
