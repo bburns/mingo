@@ -1,3 +1,6 @@
+/**
+ * @deprecated This module will be removed in `7.0.0`. Use `Context` from `mingo/init/context` instead.
+ */
 import { OpType, useOperators } from "../core";
 import * as accumulatorOperators from "../operators/accumulator";
 import * as expressionOperators from "../operators/expression";

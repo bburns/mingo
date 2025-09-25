@@ -74,7 +74,10 @@ export interface Options {
   readonly useStrictMode: boolean;
   /** Enable or disable custom script execution using `$where`, `$accumulator`, and `$function` operators. @default true. */
   readonly scriptEnabled: boolean;
-  /** Enable or disable falling back to the global context for operators. @default true. */
+  /**
+   * Enable or disable falling back to the global context for operators. @default true.
+   * @deprecated Will be removed in 7.0.0.
+   */
   readonly useGlobalContext: boolean;
   /** Hash function to replace the Effective Java default implementation. */
   readonly hashFunction?: HashFunction;
@@ -406,6 +409,8 @@ const REGISTRY: Record<OpType, RegistryFunc> = {
  * - An operator function is not valid.
  * - An operator with the same name is already registered for the given type
  *   and the function differs from the existing one.
+ *
+ * @deprecated use {@link Context} to manage new operators. Will be removed in 7.0.0.
  */
 export function useOperators(
   type: OpType,
@@ -431,6 +436,7 @@ export function useOperators(
  * @param type Type of operator
  * @param name Name of the operator
  * @param options
+ * @deprecated use {@link Context.getOperator} instead. Will be removed in 7.0.0.
  */
 export function getOperator(
   type: OpType,
