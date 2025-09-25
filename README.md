@@ -52,48 +52,52 @@ import mingo from "mingo";
 const mingo = require("mingo");
 ```
 
-The module [entry point](https://kofrasa.github.io/mingo/modules/index.html) exports common functions and interfaces for most use cases. Use `initOptions` function from `mingo/init/basic` or `mingo/init/system` modules to construct an options object preinitialized with operators.
+The [public API ](https://kofrasa.github.io/mingo/modules/index.html) exports interfacs suitable for most use cases. By default the `Query` and `Aggregator` objects load their basic operators in the context. These include all [query predicates](https://www.mongodb.com/docs/manual/reference/mql/query-predicates/) and [projection](https://www.mongodb.com/docs/manual/reference/mql/projection/) operators, plus [$project](https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/), [$match](https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/), and [$sort](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/) for `Aggregator`. All other operators must be explicitly added through a custom `Context`.
 
-## Loading Operators
+### Loading Operators
 
-MongoDB query library is huge and you may not need all the operators. When using this library on the server-side where bundle size is not a concern, you can load all operators as shown below.
+To use more operators load them into a `Context` object and pass with your options. This enables tree-shaking in ESM environments during bundling.
+As mentioned previously, some operators are always included in a context.
 
-```js
-// This effectively imports the entire library into your bundle.
-import "mingo/init/system";
-```
+**NB**: To prevent surprises, operators loaded into a context cannot be replaced. Registering an operator with an already existing name for its type, is a no-op and does not throw an error. To ensure a custom versions of operators are used, add them first to your `Context` instance.
 
-Or from the node CLI
-
-```sh
-node -r 'mingo/init/system' myscript.js
-```
-
-To support tree-shaking for client side bundles, you can import and register specific operators that will be used in your application.
-
-### ES6
+> The gloabal operator functions `useOperators` and `getOperator` are deprecated and will be removed in `7.0.0`.
 
 ```js
-import { useOperators } from "mingo/core";
-import { $trunc } from "mingo/operators/expression";
-import { $bucket } from "mingo/operators/pipeline";
+import { aggregate, Context } from "mingo";
+import { $count } from "mingo/operators/pipeline";
 
-useOperators("expression", { $trunc });
-useOperators("pipeline", { $bucket });
+// creates a context with "$count" stage operator
+// can also use `Context.init({ pipeline: { $count } })`.
+const context = Context.init().addPipelineOps({ $count });
+
+const results = aggregate(
+  [
+    { _id: 1, score: 10 },
+    { _id: 2, score: 60 },
+    { _id: 3, score: 100 }
+  ],
+  [
+    // $match is included by default.
+    { $match: { score: { $gt: 80 } } },
+    { $count: "passing_scores" }
+  ],
+  { context } // pass context in options
+);
 ```
 
-### CommonJS
+A fully loaded `Context` with every operator is provided through the module `mingo/init/context`.
 
 ```js
-const useOperators = require("mingo/core").useOperators;
-const $trunc = require("mingo/operators/expression").$trunc;
-const $bucket = require("mingo/operators/pipeline").$bucket;
+import fullContext from "mingo/init/context";
 
-useOperators("expression", { $trunc });
-useOperators("pipeline", { $bucket });
+// include every operator in the context.
+const context = fullContext();
+
+// use in options for queries (find) and aggregation (aggregate)
 ```
 
-## Using query to test objects
+### Using query to test objects
 
 ```js
 import { Query } from "mingo";
@@ -109,7 +113,7 @@ let query = new Query({
 query.test(doc);
 ```
 
-## Searching and Filtering
+### Searching and Filtering
 
 ```js
 import { Query } from "mingo";
@@ -145,7 +149,7 @@ for (let value of cursor) {
 cursor.all();
 ```
 
-## Using $jsonSchema operator
+### Using $jsonSchema operator
 
 To use the `$jsonSchema` operator, you must register your own `JsonSchemaValidator` in the options.
 No default implementation is provided out of the box so users can use a library with their preferred schema format.
@@ -192,20 +196,24 @@ mingo.find(docs, { $jsonSchema: schema }, {}, { jsonSchemaValidator }).all();
 ## Aggregation Pipeline
 
 ```js
-import { Aggregator } from "mingo/aggregator";
-import { useOperators } from "mingo/core";
-import { $match, $group } from "mingo/operators/pipeline";
+import { Aggregator, Context } from "mingo";
+import { $group } from "mingo/operators/pipeline";
 import { $min } from "mingo/operators/accumulator";
 
 // ensure the required operators are preloaded prior to using them.
-useOperators("pipeline", { $match, $group });
-useOperators("accumulator", { $min });
+const context = Context.init({
+  pipeline: { $group },
+  accumulator: { $min }
+});
 
-let agg = new Aggregator([
-  { $match: { type: "homework" } },
-  { $group: { _id: "$student_id", score: { $min: "$score" } } },
-  { $sort: { _id: 1, score: 1 } }
-]);
+let agg = new Aggregator(
+  [
+    { $match: { type: "homework" } },
+    { $group: { _id: "$student_id", score: { $min: "$score" } } },
+    { $sort: { _id: 1, score: 1 } }
+  ],
+  { context }
+);
 
 // return an iterator for streaming results
 let stream = agg.stream(collection);
@@ -251,7 +259,6 @@ To define custom operators, the following imports are useful.
 
 ```js
 const mingo = require("mingo");
-const core = require("mingo/core");
 const util = require("mingo/util");
 ```
 
@@ -279,27 +286,12 @@ const collection = [
 The custom operator is registered with a user-provided context object that is passed an option to the query. The context will be searched for operators used in a query and fallback to the global context when not found.
 
 ```ts
-const context = core.Context.init().addQueryOps({ $between });
+const context = mingo.Context.init().addQueryOps({ $between });
 // must specify context option to make operator available
 const result = mingo
   .find(collection, { a: { $between: [5, 10] } }, {}, { context })
   .all();
-console.log(result); // output => [ { a: 7, b: 1 }, { a: 10, b: 6 } ]
-```
 
-#### Register custom operator globally using useOperators.
-
-The custom operator is registered to be available globally.
-
-```ts
-// register the operator for global use.
-try {
-  core.useOperators("query", { $between });
-} catch {
-  // error thrown if an operator with name "$between" is already registered.
-}
-// query with new operator
-const result = mingo.find(collection, { a: { $between: [5, 10] } }).all();
 console.log(result); // output => [ { a: 7, b: 1 }, { a: 10, b: 6 } ]
 ```
 

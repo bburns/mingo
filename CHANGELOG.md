@@ -6,10 +6,23 @@
 
 - Added `$minMaxScaler` window operator.
 - Added `$toHashedIndexKey` expression operator.
+- Added `mingo/init/context` module to provide a fully loaed `Context` object.
+- `Context.init` now supports a record of operators.
+- `Query` object autoloads query and projection operators.
+- `Aggregator` object autoloads `$match`, `$project`, and `$sort` pipeline stage operators.
+- Module `mingo/init/basic` is now a no-op.
 
 **Fixes**
 
 - Fix `$isArray` to support top-level expression arguments and improve validation.
+
+**Deprecated**
+The following will no longer be supported from `7.0.0`.
+
+- `useOperators` function from `mingo/core`. Replaced with `Context`.
+- `getOperator` function from `mingo/core`. Replaced with `Context`.
+- `mingo/init/basic` module is currently a no-op.
+- `mingo/init/system` module. Replace with `mingo/init/context` which exports a context builder with all operators included.
 
 ## 6.6.1 / 2025-04-30
 
