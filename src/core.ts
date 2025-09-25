@@ -342,6 +342,14 @@ export class Context {
     return Context.init((ctx && Object.fromEntries(ctx.#operators)) || null);
   }
 
+  static merge(first: Context, second: Context): Context {
+    const ctx = Context.from(first);
+    for (const type of Object.values(OpType)) {
+      ctx.addOperators(type, second.#operators.get(type));
+    }
+    return ctx;
+  }
+
   private addOperators(
     type: OpType,
     operators: Record<string, Operator>

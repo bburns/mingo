@@ -11,6 +11,7 @@ import {
 } from "../src/core";
 import fullContext from "../src/init/context";
 import { Iterator } from "../src/lazy";
+import { $toString } from "../src/operators/expression";
 import { $match } from "../src/operators/pipeline/match";
 import { Any, AnyObject } from "../src/types";
 import { resolve } from "../src/util";
@@ -56,6 +57,28 @@ describe("core", () => {
 
       const clone = Context.from(ctx);
       expect(clone.getOperator(OpType.PIPELINE, "$match")).toEqual($match);
+    });
+
+    it("should merge two contexts with Context.merge()", () => {
+      const ctx1 = Context.init({
+        pipeline: { $match }
+      });
+      const ctx2 = Context.init({
+        expression: { $toString }
+      });
+
+      const res = Context.merge(ctx1, ctx2);
+
+      expect(ctx1.getOperator(OpType.PIPELINE, "$match")).toEqual($match);
+      expect(ctx2.getOperator(OpType.EXPRESSION, "$toString")).toEqual(
+        $toString
+      );
+      expect(ctx1.getOperator(OpType.EXPRESSION, "$toString")).toBeNull();
+      expect(ctx2.getOperator(OpType.PIPELINE, "$match")).toBeNull();
+      expect(res.getOperator(OpType.PIPELINE, "$match")).toEqual($match);
+      expect(res.getOperator(OpType.EXPRESSION, "$toString")).toEqual(
+        $toString
+      );
     });
   });
 
