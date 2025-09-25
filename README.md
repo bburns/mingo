@@ -34,7 +34,7 @@ For more documentation on how to use operators see [mongodb](https://www.mongodb
 
 The package provides 3 distributions on [NPM](https://www.npmjs.com/package/mingo?activeTab=code).
 
-1.  A minified bundle since `6.6.0` for browser targets. See [esm.run](https://esm.run/mingo/dist/mingo.min.js) or [unpkg](https://unpkg.com/mingo/dist/mingo.min.js) CDNs.
+1.  A minified bundle since `6.6.0` for browser targets. See [unpkg](https://unpkg.com/mingo/dist/mingo.min.js).
 1.  A CommonJS module when loaded using `require`.
 1.  An ESM module when loaded using `import`.
 

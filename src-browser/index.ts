@@ -14,6 +14,7 @@ const makeOpts = (options?: Partial<Options>) => {
   const opts = initOptions(options);
   return { ...opts, context: Context.merge(context, opts.context) };
 };
+
 export class Query extends QueryImpl {
   constructor(condition: AnyObject, options?: Partial<Options>) {
     super(condition, makeOpts(options));
@@ -31,6 +32,8 @@ export const createUpdater = (defaultOptions?: UpdateOptions) =>
     ...defaultOptions,
     queryOptions: makeOpts(defaultOptions?.queryOptions)
   });
+
+export const update = createUpdater();
 
 export const aggregate = (
   collection: Source,
