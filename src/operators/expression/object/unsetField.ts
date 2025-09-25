@@ -1,5 +1,3 @@
-// Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
-
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { $setField } from "./setField";

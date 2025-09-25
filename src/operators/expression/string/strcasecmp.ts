@@ -1,7 +1,3 @@
-/**
- * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
- */
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { assert, isEqual, isNil, isString } from "../../../util";

@@ -1,5 +1,5 @@
 /**
- * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
+
  */
 
 import { computeValue, ExpressionOperator, Options } from "../../../core";

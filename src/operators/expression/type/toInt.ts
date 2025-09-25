@@ -1,7 +1,3 @@
-/**
- * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
- */
-
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { MAX_INT, MIN_INT, toInteger } from "./_internal";

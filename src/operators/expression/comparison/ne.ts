@@ -1,5 +1,3 @@
-// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
-
 import { ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { $ne as __ne, processExpression } from "../../_predicates";

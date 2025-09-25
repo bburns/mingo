@@ -1,5 +1,3 @@
-// Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
-
 import { Options, QueryOperator } from "../../../core";
 import { Any } from "../../../types";
 import { $lte as __lte, processQuery } from "../../_predicates";

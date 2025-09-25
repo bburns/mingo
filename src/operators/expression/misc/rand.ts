@@ -1,5 +1,3 @@
-// Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/rand/#mongodb-expression-exp.-rand
-
 import { Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 

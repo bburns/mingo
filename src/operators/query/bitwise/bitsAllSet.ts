@@ -1,5 +1,3 @@
-// Query Bitwise Operators: https://docs.mongodb.com/manual/reference/operator/query-bitwise/
-
 import { Options, QueryOperator } from "../../../core";
 import { Any } from "../../../types";
 import { processBitwiseQuery } from "./_internal";

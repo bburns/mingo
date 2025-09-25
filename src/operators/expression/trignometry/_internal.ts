@@ -1,5 +1,3 @@
-// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
-
 import { computeValue, Options } from "../../../core";
 import { Any, AnyObject, Callback } from "../../../types";
 import { assert } from "../../../util";

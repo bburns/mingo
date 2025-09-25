@@ -1,5 +1,3 @@
-// $slice operator. https://docs.mongodb.com/manual/reference/operator/projection/slice/#proj._S_slice
-
 import { Options, ProjectionOperator } from "../../core";
 import { Any, AnyObject } from "../../types";
 import { isArray, resolve } from "../../util";

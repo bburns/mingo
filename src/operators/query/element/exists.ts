@@ -1,5 +1,3 @@
-// Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
-
 import { Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { isArray, resolve, resolveGraph } from "../../../util";

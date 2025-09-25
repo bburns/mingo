@@ -1,5 +1,3 @@
-// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject, TimeUnit } from "../../../types";
 import { dateAdd } from "./_internal";

@@ -1,5 +1,3 @@
-// $elemMatch operator. https://docs.mongodb.com/manual/reference/operator/projection/elemMatch/#proj._S_elemMatch
-
 import { Options, ProjectionOperator } from "../../core";
 import { QueryImpl } from "../../query/_internal";
 import { Any, AnyObject } from "../../types";

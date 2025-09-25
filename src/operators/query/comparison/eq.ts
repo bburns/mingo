@@ -1,5 +1,3 @@
-// Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
-
 import { Options, QueryOperator } from "../../../core";
 import { Any } from "../../../types";
 import { $eq as __eq, processQuery } from "../../_predicates";

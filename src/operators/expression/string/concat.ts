@@ -1,7 +1,3 @@
-/**
- * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
- */
-
 import { computeValue, ExpressionOperator, Options } from "../../../core";
 import { Any, AnyObject } from "../../../types";
 import { assert, isNil, isString } from "../../../util";
@@ -18,7 +14,7 @@ export const $concat: ExpressionOperator = (
   expr: Any,
   options: Options
 ): Any => {
-  const args = computeValue(obj, expr, null, options) as Any[];
+  const args = computeValue(obj, expr, null, options) as string[];
   assert(
     args.every(v => isString(v) || isNil(v)),
     "$concat only supports strings."

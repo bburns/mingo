@@ -1,7 +1,3 @@
-/**
- * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
- */
-
 import {
   ComputeOptions,
   computeValue,

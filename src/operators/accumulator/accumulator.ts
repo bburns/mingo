@@ -1,5 +1,3 @@
-// Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
-
 import {
   AccumulatorOperator,
   ComputeOptions,
