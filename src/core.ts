@@ -214,9 +214,7 @@ export function initOptions(options?: Partial<Options>): Options {
         useGlobalContext: true,
         processingMode: ProcessingMode.CLONE_OFF,
         ...options,
-        context: options?.context
-          ? Context.from(options?.context)
-          : Context.init()
+        context: Context.from(options?.context ?? Context.init())
       });
 }
 
@@ -339,7 +337,7 @@ export class Context {
   }
 
   static from(ctx?: Context): Context {
-    return Context.init((ctx && Object.fromEntries(ctx.#operators)) || null);
+    return Context.init((ctx && Object.fromEntries(ctx.#operators)) || {});
   }
 
   static merge(first: Context, second: Context): Context {
