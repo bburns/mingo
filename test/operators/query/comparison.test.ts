@@ -1,17 +1,11 @@
-import "../../../src/init/system";
-
 import { find, Query } from "../../../src";
-import { OpType, useOperators } from "../../../src/core";
-import { $where } from "../../../src/operators/query/evaluation/where";
 import { Any, AnyObject } from "../../../src/types";
-import { ObjectId, personData } from "../../support";
+import { DEFAULT_OPTS, ObjectId, personData } from "../../support";
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 const objectId = ObjectId("123456789abe");
 const obj = Object.assign({}, personData, { _id: objectId });
-
-useOperators(OpType.QUERY, { $where });
 
 describe("operators/query/comparison", () => {
   const queries = [
@@ -96,7 +90,7 @@ describe("operators/query/comparison", () => {
 
   queries.forEach((q: Any[]) => {
     const [criteria, message] = q;
-    const query = new Query(criteria as AnyObject);
+    const query = new Query(criteria as AnyObject, DEFAULT_OPTS);
     it(message as string, () => {
       expect(query.test(obj)).toEqual(true);
     });
@@ -105,7 +99,7 @@ describe("operators/query/comparison", () => {
   it("can match null and missing types correctly", () => {
     //https://github.com/kofrasa/mingo/issues/54
     const data = [{ _id: 1, item: null }, { _id: 2 }];
-    const result = find(data, { item: null }).all();
+    const result = find(data, { item: null }, {}, DEFAULT_OPTS).all();
     expect(result).toEqual(data);
   });
 });

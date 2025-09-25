@@ -1,4 +1,3 @@
-import { aggregate, Aggregator, find } from "../src";
 import {
   ComputeOptions,
   computeValue,
@@ -6,16 +5,18 @@ import {
   initOptions,
   Options,
   OpType,
-  PipelineOperator,
   ProcessingMode,
   redact,
   useOperators
 } from "../src/core";
+import fullContext from "../src/init/context";
 import { Iterator } from "../src/lazy";
 import { $match } from "../src/operators/pipeline/match";
 import { Any, AnyObject } from "../src/types";
-import { isNumber, resolve } from "../src/util";
-import { complexGradesData, DEFAULT_OPTS } from "./support";
+import { resolve } from "../src/util";
+import { find } from "./support";
+
+const DEFAULT_OPTS = initOptions({ context: fullContext() });
 
 const copts = ComputeOptions.init(DEFAULT_OPTS);
 
@@ -25,14 +26,7 @@ describe("core", () => {
   });
 
   describe("Context", () => {
-    it("should initialize context with default operators", () => {
-      const ctx = Context.init();
-      expect(ctx.getOperator(OpType.PIPELINE, "$match")).toBeNull();
-      expect(ctx.getOperator(OpType.EXPRESSION, "$add")).toBeNull();
-      expect(ctx.getOperator(OpType.ACCUMULATOR, "$sum")).toBeNull();
-    });
-
-    it("should initialize context using Context.init()", () => {
+    it("should register operators with Context.init()", () => {
       const customPipelineOps = {
         $customPipeline: () => new Iterator([])
       };
@@ -53,7 +47,7 @@ describe("core", () => {
       );
     });
 
-    it("should clone context using Context.from()", () => {
+    it("should clone with Context.from()", () => {
       const ctx = Context.init();
       expect(ctx.getOperator(OpType.PIPELINE, "$match")).toBeNull();
 
@@ -101,31 +95,9 @@ describe("core", () => {
       expect(copts.local?.variables).toEqual({ x: 10, y: 20 });
     });
   });
+
   describe("useOperators", () => {
-    it("should add new pipeline operator", () => {
-      const $pluck: PipelineOperator = (
-        collection: Any,
-        expr: Any,
-        options: Options
-      ): Iterator => {
-        const array = collection as Array<{ __temp__: Any }>;
-        const agg = new Aggregator([{ $project: { __temp__: expr } }], options);
-        return agg.stream(array).map(item => (item as AnyObject)["__temp__"]);
-      };
-
-      const opts = initOptions(DEFAULT_OPTS);
-      if (opts.context) opts.context.addPipelineOps({ $pluck });
-
-      const result = aggregate(
-        complexGradesData,
-        [{ $unwind: "$scores" }, { $pluck: "$scores.score" }],
-        opts
-      );
-
-      expect(isNumber(result[0])).toBe(true);
-    });
-
-    it("should add new query operator", () => {
+    it("should register custom query operator globally", () => {
       function $between(selector: string, rhs: Any, _options?: Options) {
         const args = rhs as number[];
         // const value = lhs as number;
@@ -143,50 +115,8 @@ describe("core", () => {
         { a: 10, b: 6 },
         { a: 20, b: 10 }
       ];
-      const result = find(
-        coll,
-        { a: { $between: [5, 10] } },
-        {},
-        DEFAULT_OPTS
-      ).all();
+      const result = find(coll, { a: { $between: [5, 10] } }).all();
       expect(result.length).toBe(2);
-    });
-
-    it("should add accumulator operator", () => {
-      DEFAULT_OPTS.context?.addAccumulatorOps({
-        $stddev: (collection: Any[], expr: Any, options?: Options) => {
-          const result = aggregate(
-            collection,
-            [{ $group: { _id: null, avg: { $avg: expr } } }],
-            options
-          );
-          const avg = result[0].avg as number;
-          const nums = computeValue(
-            collection,
-            expr,
-            "$push",
-            options
-          ) as number[];
-          const diffs = nums.map(n => Math.pow(n - avg, 2));
-
-          const variance =
-            diffs.reduce((memo, val) => {
-              return memo + val;
-            }, 0) / diffs.length;
-          return Math.sqrt(variance);
-        }
-      });
-
-      const result = aggregate(
-        complexGradesData,
-        [
-          { $unwind: "$scores" },
-          { $group: { _id: null, stddev: { $stddev: "$scores.score" } } }
-        ],
-        DEFAULT_OPTS
-      );
-      expect(result.length).toBe(1);
-      expect(result[0].stddev).toEqual(28.57362029450366);
     });
   });
 

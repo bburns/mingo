@@ -1,34 +1,19 @@
 import { aggregate as srcAggregate, find as srcFind } from "../src";
 import {
   computeValue,
-  Context,
   initOptions,
   Options,
   ProcessingMode
 } from "../src/core";
+import fullContext from "../src/init/context";
 import { Source } from "../src/lazy";
-import * as accumulatorOperators from "../src/operators/accumulator";
-import * as expressionOperators from "../src/operators/expression";
-import * as pipelineOperators from "../src/operators/pipeline";
-import * as projectionOperators from "../src/operators/projection";
-import * as queryOperators from "../src/operators/query";
-import * as windowOperators from "../src/operators/window";
 import { Any, AnyObject, Callback } from "../src/types";
 import complexGrades from "./data/grades_complex";
 import simpleGrades from "./data/grades_simple";
 import person from "./data/person";
 import students from "./data/students";
 
-/** The full context of all operators defined in the library. */
-const FULL_CONTEXT = Context.init()
-  .addAccumulatorOps(accumulatorOperators)
-  .addExpressionOps(expressionOperators)
-  .addPipelineOps(pipelineOperators)
-  .addProjectionOps(projectionOperators)
-  .addQueryOps(queryOperators)
-  .addWindowOps(windowOperators);
-
-export const DEFAULT_OPTS = initOptions({ context: FULL_CONTEXT });
+export const DEFAULT_OPTS = initOptions({ context: fullContext() });
 
 export const complexGradesData = complexGrades;
 export const simpleGradesData = simpleGrades;
