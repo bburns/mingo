@@ -25,6 +25,34 @@ describe("core", () => {
   });
 
   describe("Context", () => {
+    it("should initialize context with default operators", () => {
+      const ctx = Context.init();
+      expect(ctx.getOperator(OpType.PIPELINE, "$match")).toBeNull();
+      expect(ctx.getOperator(OpType.EXPRESSION, "$add")).toBeNull();
+      expect(ctx.getOperator(OpType.ACCUMULATOR, "$sum")).toBeNull();
+    });
+
+    it("should initialize context using Context.init()", () => {
+      const customPipelineOps = {
+        $customPipeline: () => new Iterator([])
+      };
+      const customExpressionOps = {
+        $customExpression: () => 42
+      };
+
+      const ctx = Context.init({
+        pipeline: customPipelineOps,
+        expression: customExpressionOps
+      });
+
+      expect(ctx.getOperator(OpType.PIPELINE, "$customPipeline")).toEqual(
+        customPipelineOps.$customPipeline
+      );
+      expect(ctx.getOperator(OpType.EXPRESSION, "$customExpression")).toEqual(
+        customExpressionOps.$customExpression
+      );
+    });
+
     it("should clone context using Context.from()", () => {
       const ctx = Context.init();
       expect(ctx.getOperator(OpType.PIPELINE, "$match")).toBeNull();

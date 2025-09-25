@@ -309,37 +309,44 @@ type PipelineOps = Record<string, PipelineOperator>;
 type WindowOps = Record<string, WindowOperator>;
 
 export class Context {
-  #operators = new Map<OpType, Record<string, Operator>>([
-    [OpType.ACCUMULATOR, {}],
-    [OpType.EXPRESSION, {}],
-    [OpType.PIPELINE, {}],
-    [OpType.PROJECTION, {}],
-    [OpType.QUERY, {}],
-    [OpType.WINDOW, {}]
-  ]);
+  #operators = new Map<OpType, Record<string, Operator>>(
+    Object.values(OpType).map(k => [k, {}])
+  );
 
   private constructor() {}
 
-  static init(): Context {
-    return new Context();
+  static init(
+    ops: {
+      accumulator?: AccumulatorOps;
+      expression?: ExpressionOps;
+      pipeline?: PipelineOps;
+      projection?: ProjectionOps;
+      query?: QueryOps;
+      window?: WindowOps;
+    } = {}
+  ): Context {
+    const ctx = new Context();
+    // ensure all operator types are initialized
+    for (const [type, operators] of Object.entries(ops)) {
+      if (ctx.#operators.has(type as OpType) && operators) {
+        ctx.addOperators(type as OpType, operators);
+      }
+    }
+    return ctx;
   }
 
   static from(ctx?: Context): Context {
-    const instance = Context.init();
-    if (isNil(ctx)) return instance;
-    ctx.#operators.forEach((v, k) => instance.addOperators(k, v));
-    return instance;
+    return Context.init((ctx && Object.fromEntries(ctx.#operators)) || null);
   }
 
   private addOperators(
     type: OpType,
     operators: Record<string, Operator>
   ): Context {
-    for (const [name, fn] of Object.entries(operators)) {
-      if (!this.getOperator(type, name)) {
-        this.#operators.get(type)[name] = fn;
-      }
-    }
+    this.#operators.set(
+      type,
+      Object.assign({}, operators, this.#operators.get(type))
+    );
     return this;
   }
 
