@@ -58,7 +58,7 @@ The [public API ](https://kofrasa.github.io/mingo/modules/index.html) exports in
 
 To use extra operators, load them into a `Context` object and configure in your `Options`. For ESM environments, non-used operators are subject to tree-shaking during bundling.
 
-**NB**: To avoid surprises, operators loaded into a `Context` cannot be replaced. Add a new operator with an existing name is a no-op and does not throw an error. To ensure a custom version of an operator is used, it must be he first to be added to the `Context`.
+**NB**: To avoid surprises, operators loaded into a `Context` cannot be replaced. Adding a new operator with an existing name is a no-op and does not throw an error. To ensure a specific implementation of an operator is used, it must be the first to be registered in the `Context`.
 
 ```js
 import { aggregate, Context } from "mingo";
