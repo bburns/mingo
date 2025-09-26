@@ -64,30 +64,9 @@ export const TIME_UNITS = [
 /** Time unit for datetime periods */
 export type TimeUnit = (typeof TIME_UNITS)[number];
 
-// Window operator types.
-export type Boundary = "current" | "unbounded" | number;
-
-export interface WindowOutputOption {
-  readonly documents?: [Boundary, Boundary];
-  readonly range?: [Boundary, Boundary];
-  readonly unit?: TimeUnit;
-}
-
-export interface SetWindowFieldsInput {
-  readonly partitionBy?: Any;
-  readonly sortBy: Record<string, 1 | -1>;
-  readonly output: Record<
-    string,
-    {
-      [x: string]: Any;
-      window?: WindowOutputOption;
-    }
-  >;
-}
-
-export interface WindowOperatorInput {
-  readonly parentExpr: SetWindowFieldsInput;
-  readonly inputExpr: Any;
-  readonly documentNumber: number;
-  readonly field: string;
-}
+// export interface WindowOperatorInput {
+//   readonly parentExpr: SetWindowFieldsInput;
+//   readonly inputExpr: Any;
+//   readonly documentNumber: number;
+//   readonly field: string;
+// }

@@ -1,6 +1,6 @@
 import { Options, WindowOperator } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
-import { rank } from "./_internal";
+import { Any, AnyObject } from "../../types";
+import { rank, WindowOperatorInput } from "./_internal";
 
 /** Returns the document position relative to other documents in the $setWindowFields stage partition. */
 export const $denseRank: WindowOperator = (

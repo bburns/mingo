@@ -1,5 +1,6 @@
 import { Options } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject } from "../../types";
+import { WindowOperatorInput } from "./_internal";
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export const $documentNumber = (

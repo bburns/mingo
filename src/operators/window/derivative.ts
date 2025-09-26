@@ -1,9 +1,9 @@
 import { Options, WindowOperator } from "../../core";
-import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator/push";
 import { TIMEUNIT_IN_MILLIS } from "../expression/date/_internal";
-import { WindowTimeUnit } from "./_internal";
+import { WindowOperatorInput, WindowTimeUnit } from "./_internal";
 
 /**
  * Returns the average rate of change within the specified window

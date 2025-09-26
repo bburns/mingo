@@ -1,5 +1,5 @@
 import { Iterator } from "./lazy";
-import type { WindowOperatorInput } from "./operators/pipeline/setWindowFields";
+import type { WindowOperatorInput } from "./operators/window/_internal";
 import {
   Any,
   AnyObject,

@@ -1,6 +1,6 @@
 import { Options } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
-import { rank } from "./_internal";
+import { Any, AnyObject } from "../../types";
+import { rank, WindowOperatorInput } from "./_internal";
 
 /** Returns the position of a document in the $setWindowFields stage partition. */
 export const $rank = (

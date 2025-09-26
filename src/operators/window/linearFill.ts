@@ -1,8 +1,8 @@
 import { Options } from "../../core";
-import { Any, AnyObject, Callback, WindowOperatorInput } from "../../types";
+import { Any, AnyObject, Callback } from "../../types";
 import { isNumber } from "../../util";
 import { $push } from "../accumulator/push";
-import { withMemo } from "./_internal";
+import { WindowOperatorInput, withMemo } from "./_internal";
 
 /**
  * Given two points (x1, y1) and (x2, y2) and a value 'x' that lies between those two points,

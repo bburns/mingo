@@ -1,5 +1,6 @@
 import { computeValue, Options } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject } from "../../types";
+import { WindowOperatorInput } from "./_internal";
 
 /**
  * Returns the value from an expression applied to a document in a specified

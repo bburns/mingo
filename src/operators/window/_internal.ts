@@ -1,13 +1,35 @@
-import { Options } from "../../core";
-import {
-  Any,
-  AnyObject,
-  Callback,
-  TimeUnit,
-  WindowOperatorInput
-} from "../../types";
+import type { Options } from "../../core";
+import type { Any, AnyObject, Callback, TimeUnit } from "../../types";
 import { groupBy } from "../../util";
 import { $push } from "../accumulator/push";
+
+// Window operator types.
+export type Boundary = "current" | "unbounded" | number;
+
+export interface WindowOutputOption {
+  readonly documents?: [Boundary, Boundary];
+  readonly range?: [Boundary, Boundary];
+  readonly unit?: TimeUnit;
+}
+
+export interface SetWindowFieldsInput {
+  readonly partitionBy?: Any;
+  readonly sortBy: Record<string, 1 | -1>;
+  readonly output: Record<
+    string,
+    {
+      [x: string]: Any;
+      window?: WindowOutputOption;
+    }
+  >;
+}
+
+export interface WindowOperatorInput {
+  readonly parentExpr: SetWindowFieldsInput;
+  readonly inputExpr: Any;
+  readonly documentNumber: number;
+  readonly field: string;
+}
 
 export type WindowTimeUnit = Exclude<TimeUnit, "year" | "quarter" | "month">;
 

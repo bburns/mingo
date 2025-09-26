@@ -1,8 +1,8 @@
 import { Options } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { assert, isArray, isNumber } from "../../util";
 import { $push } from "../accumulator/push";
-import { withMemo } from "./_internal";
+import { WindowOperatorInput, withMemo } from "./_internal";
 
 /**
  * Normalizes a numeric expression within a window of values. By default, values can range between zero and one.

@@ -1,8 +1,8 @@
 import { Options } from "../../core";
-import { Any, AnyObject, WindowOperatorInput } from "../../types";
+import { Any, AnyObject } from "../../types";
 import { assert, isNumber } from "../../util";
 import { $push } from "../accumulator/push";
-import { withMemo } from "./_internal";
+import { WindowOperatorInput, withMemo } from "./_internal";
 
 /**
  * Returns the exponential moving average of numeric expressions applied to documents
