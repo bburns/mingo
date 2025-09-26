@@ -52,7 +52,7 @@ import mingo from "mingo";
 const mingo = require("mingo");
 ```
 
-The [public API ](https://kofrasa.github.io/mingo/modules/index.html) exports interfacs suitable for most use cases. By default the `Query` and `Aggregator` objects load their basic operators in the context. These include all [query predicates](https://www.mongodb.com/docs/manual/reference/mql/query-predicates/) and [projection](https://www.mongodb.com/docs/manual/reference/mql/projection/) operators, plus [$project](https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/), [$match](https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/), and [$sort](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/) for `Aggregator`. All other operators must be explicitly added through a custom `Context`.
+The [public API ](https://kofrasa.github.io/mingo/modules/index.html) exports interfacs suitable for most use cases. By default the `Query` and `Aggregator` objects add [query predicates](https://www.mongodb.com/docs/manual/reference/mql/query-predicates/) and [projection](https://www.mongodb.com/docs/manual/reference/mql/projection/) operators to their context whether one is provided or not. For `Aggregator`, pipeline stage operators [$project](https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/), [$match](https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/), and [$sort](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sort/) are also included. All other operators must be explicitly registered using a custom `Context`.
 
 ### Loading Operators
 
@@ -60,15 +60,13 @@ To use extra operators, load them into a `Context` object and configure in your 
 
 **NB**: To avoid surprises, operators loaded into a `Context` cannot be replaced. Add a new operator with an existing name is a no-op and does not throw an error. To ensure a custom version of an operator is used, it must be he first to be added to the `Context`.
 
-> The gloabal operator functions `useOperators` and `getOperator` are deprecated and will be removed in `7.0.0`.
-
 ```js
 import { aggregate, Context } from "mingo";
 import { $count } from "mingo/operators/pipeline";
 
 // creates a context with "$count" stage operator
-// can also use `Context.init({ pipeline: { $count } })`.
-const context = Context.init().addPipelineOps({ $count });
+// can also use `Context.init().addPipelineOps({ $count })`.
+const context = Context.init({ pipeline: { $count } });
 
 const results = aggregate(
   [
@@ -77,11 +75,11 @@ const results = aggregate(
     { _id: 3, score: 100 }
   ],
   [
-    // $match is included by default.
+    // $match will be added to `context` by default.
     { $match: { score: { $gt: 80 } } },
     { $count: "passing_scores" }
   ],
-  { context } // pass context in options
+  { context } // pass context as part of options
 );
 ```
 
@@ -93,7 +91,7 @@ import fullContext from "mingo/init/context";
 // include every operator in the context.
 const context = fullContext();
 
-// use in options for queries (find) and aggregation (aggregate)
+// use in options for queries (find) and aggregation (aggregate) to get access to full operator support.
 ```
 
 ### Using query to test objects
