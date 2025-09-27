@@ -63,10 +63,3 @@ export const TIME_UNITS = [
 
 /** Time unit for datetime periods */
 export type TimeUnit = (typeof TIME_UNITS)[number];
-
-// export interface WindowOperatorInput {
-//   readonly parentExpr: SetWindowFieldsInput;
-//   readonly inputExpr: Any;
-//   readonly documentNumber: number;
-//   readonly field: string;
-// }

@@ -21,34 +21,6 @@ import { $addFields } from "./addFields";
 import { $group } from "./group";
 import { $sort } from "./sort";
 
-// // Window operator types.
-// type Boundary = "current" | "unbounded" | number;
-
-// interface WindowOutputOption {
-//   readonly documents?: [Boundary, Boundary];
-//   readonly range?: [Boundary, Boundary];
-//   readonly unit?: TimeUnit;
-// }
-
-// interface SetWindowFieldsInput {
-//   readonly partitionBy?: Any;
-//   readonly sortBy: Record<string, 1 | -1>;
-//   readonly output: Record<
-//     string,
-//     {
-//       [x: string]: Any;
-//       window?: WindowOutputOption;
-//     }
-//   >;
-// }
-
-// export interface WindowOperatorInput {
-//   readonly parentExpr: SetWindowFieldsInput;
-//   readonly inputExpr: Any;
-//   readonly documentNumber: number;
-//   readonly field: string;
-// }
-
 // Operators that require 'sortBy' option.
 const SORT_REQUIRED_OPS = new Set([
   "$denseRank",
