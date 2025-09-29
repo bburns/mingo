@@ -91,7 +91,8 @@ describe("core", () => {
     });
 
     it("should preserve 'local' on init if defined", () => {
-      expect(copts.local).toEqual({});
+      expect(copts.local).toHaveProperty("now");
+      expect(copts.local.now).toBeLessThanOrEqual(Date.now());
       copts.update(null, { groupId: 5 });
       expect(copts.local?.groupId).toEqual(5);
       expect(ComputeOptions.init(copts).local?.groupId).toEqual(5);
@@ -116,6 +117,20 @@ describe("core", () => {
       copts.update(true, { variables: { x: 10 } });
       copts.update(true, { variables: { y: 20 } });
       expect(copts.local?.variables).toEqual({ x: 10, y: 20 });
+    });
+
+    it("should preserve value of 'local.now' across init() and update()", () => {
+      const now = copts.local?.now;
+      expect(now).toBeLessThanOrEqual(Date.now());
+
+      // initializing with existing options preserves 'now'
+      const other = ComputeOptions.init(copts, { local: { now: 100 } });
+      expect(other.local?.now).not.toEqual(100);
+      expect(other.local?.now).toEqual(now);
+
+      copts.update(false, { groupId: 5, now: 200 });
+      expect(copts.local?.groupId).toEqual(5);
+      expect(copts.local?.now).toEqual(now);
     });
   });
 
@@ -161,6 +176,34 @@ describe("core", () => {
       };
       expect(result.date).toBeInstanceOf(Date);
       expect(result.date.getTime()).toBeLessThanOrEqual(Date.now());
+    });
+
+    it("should return different values for $$NOW for successive calls with same plain options", async () => {
+      const expr = { date: "$$NOW" };
+      const result1 = computeValue({}, expr, null, DEFAULT_OPTS) as {
+        date: Date;
+      };
+
+      // Introduce a delay
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const result2 = computeValue({}, expr, null, DEFAULT_OPTS) as {
+        date: Date;
+      };
+
+      expect(result2.date.getTime()).toBeGreaterThan(result1.date.getTime());
+    });
+
+    it("should return same value for $$NOW for successive calls with same compute options", async () => {
+      const expr = { date: "$$NOW" };
+      const result1 = computeValue({}, expr, null, copts) as { date: Date };
+
+      // Introduce a delay
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const result2 = computeValue({}, expr, null, copts) as { date: Date };
+
+      expect(result2.date.getTime()).toEqual(result1.date.getTime());
     });
 
     it("issues#526: passes root object down call stack", () => {

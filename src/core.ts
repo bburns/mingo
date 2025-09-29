@@ -96,6 +96,8 @@ interface LocalData {
   readonly groupId?: Any;
   /** Local user-defind variables. */
   readonly variables?: AnyObject;
+  /** The current timestamp */
+  readonly now?: number;
 }
 
 /** Custom type to facilitate type checking for global options */
@@ -107,6 +109,7 @@ export class ComputeOptions implements Options {
 
   private constructor(options: Options, root: Any, local?: LocalData) {
     this.#options = options;
+    this.#local = {};
     this.update(root, local);
   }
 
@@ -117,15 +120,10 @@ export class ComputeOptions implements Options {
   static init(options: Options, root?: Any, local?: LocalData): ComputeOptions {
     return !(options instanceof ComputeOptions)
       ? new ComputeOptions(options, root, local)
-      : new ComputeOptions(options.#options, options.root ?? root, {
-          ...options.#local,
-          ...local,
-          variables: Object.assign(
-            {},
-            options.#local?.variables,
-            local?.variables
-          )
-        });
+      : new ComputeOptions(options.#options, null, options.#local).update(
+          options.#root ?? root,
+          local
+        );
   }
 
   /**
@@ -138,17 +136,14 @@ export class ComputeOptions implements Options {
   update(root?: Any, local?: LocalData): ComputeOptions {
     // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
     this.#root = root;
-    // retain existing variables
-    const variables = Object.assign(
-      {},
-      this.#local?.variables,
-      local?.variables
-    );
-    if (Object.keys(variables).length) {
-      this.#local = { ...local, variables };
-    } else {
-      this.#local = local ?? {};
-    }
+    Object.assign(this.#local, {
+      // merge variables.
+      variables: { ...this.#local?.variables, ...local?.variables },
+      // take the groupId if defined
+      groupId: local?.groupId ?? this.#local?.groupId,
+      // preserve current timestamp if exists or initialize new one.
+      now: this.#local?.now ?? local?.now ?? Date.now()
+    });
     return this;
   }
 
@@ -509,7 +504,7 @@ function computeExpression(obj: Any, expr: Any, options: ComputeOptions): Any {
           ctx = undefined;
           break;
         case "$$NOW":
-          ctx = new Date();
+          ctx = new Date(options.local?.now);
           break;
       }
       expr = expr.slice(arr[0].length + 1); //  +1 for '.'
