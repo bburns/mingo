@@ -286,15 +286,21 @@ export function merge(target: Any, input: Any): Any {
   // take care of missing inputs
   if (isMissing(target) || isNil(target)) return input;
   if (isMissing(input) || isNil(input)) return target;
-  if (isPrimitive(target) || isPrimitive(input)) return input;
+  const t = typeOf(target);
+  if (t !== typeOf(input)) return input;
   if (isArray(target) && isArray(input)) {
-    assert(
-      target.length === input.length,
-      "arrays must be of equal length to merge."
-    );
-  }
-  for (const k of Object.keys(input as AnyObject)) {
-    target[k] = merge(target[k], input[k]);
+    for (let i = 0; i < input.length; i++) {
+      if (i < target.length) {
+        target[i] = merge(target[i], input[i]);
+      } else {
+        // append remaining items
+        target.push(input[i]);
+      }
+    }
+  } else if (t === "object") {
+    for (const k of Object.keys(input as AnyObject)) {
+      target[k] = merge(target[k], input[k]);
+    }
   }
   return target;
 }

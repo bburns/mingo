@@ -238,11 +238,11 @@ Query and aggregation operations can be configured with options to enabled diffe
 
 ## Custom Operators
 
-Custom operators can be registered using a `Context` object via the `context` option which is the recommended way since `6.4.2`. `Context` provides a container for operators, that the execution engine will use to process queries. To register an operator globally, the [useOperators(...)](https://kofrasa.github.io/mingo/functions/core.useOperators.html) function is available. Globally registered operators cannot be overwritten whereas a new context may be created and used at anytime.
+Custom operators can be registered using a `Context` object via the `context` option which is the recommended way since `6.4.2`. `Context` provides a container for operators, that the execution engine will use to process queries. The [useOperators(...)](https://kofrasa.github.io/mingo/functions/core.useOperators.html) function is available to register operators globally but it is deprecated and will be removed in `7.0.0`.
 
 **NB: Note that the execution engine will first try to find the operator in the context and fallback to the global context when not found if the `useGlobalContext` option is `true`.**
 
-Custom operators must conform to the signatures of their types.
+Operators must conform to the signatures of their types.
 
 - [AccumulatorOperator](http://kofrasa.github.io/mingo/types/core.AccumulatorOperator.html)
 - [ExpressionOperator](http://kofrasa.github.io/mingo/types/core.ExpressionOperator.html)
