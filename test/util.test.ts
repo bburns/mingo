@@ -447,6 +447,10 @@ describe("util", () => {
       ]);
       expect(res).toEqual([[2], 3]);
     });
+
+    it("should return copy of first array if input size is 1", () => {
+      expect(intersection([[1, 2, 3]])).toEqual([1, 2, 3]);
+    });
   });
 
   describe("truthy", () => {

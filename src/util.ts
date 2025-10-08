@@ -185,7 +185,7 @@ export class HashMap<K, V> extends Map<K, V> {
   }
 }
 
-export function assert(condition: boolean, message: string): void {
+export function assert(condition: Any, message: string): void {
   if (!condition) throw new MingoError(message);
 }
 
@@ -206,7 +206,7 @@ export function typeOf(v: Any): string {
   const s = Object.prototype.toString.call(v) as string;
   return s === "[object Object]"
     ? (v?.constructor?.name?.toLowerCase() ?? "object")
-    : s.substring(8, s.length - 1).toLowerCase();
+    : s.slice(8, -1).toLowerCase();
 }
 export const isBoolean = (v: Any): v is boolean => typeof v === "boolean";
 export const isString = (v: Any): v is string => typeof v === "string";
@@ -319,7 +319,7 @@ export function intersection(
   const vmaps = [HashMap.init(hashFunc), HashMap.init(hashFunc)];
   if (input.length === 0) return [];
   if (input.some(arr => arr.length === 0)) return [];
-  if (input.length === 1) return [...input];
+  if (input.length === 1) return [...input[0]];
   // start with last array to ensure stableness.
   input[input.length - 1].forEach(v => vmaps[0].set(v, true));
   // process collection backwards.
