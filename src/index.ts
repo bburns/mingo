@@ -16,18 +16,18 @@ export { createUpdater, update } from "./updater";
  *
  * @template T - The type of the documents in the collection.
  * @param collection - The source collection to search.
- * @param criteria - The query criteria to filter the documents.
+ * @param condition - The query criteria to filter the documents.
  * @param projection - Optional. Specifies the fields to include or exclude in the returned documents.
  * @param options - Optional. Additional options to customize the query behavior.
  * @returns A `Cursor` object that allows iteration over the matching documents.
  */
 export function find<T>(
   collection: Source,
-  criteria: AnyObject,
+  condition: AnyObject,
   projection?: AnyObject,
   options?: Partial<Options>
 ): Cursor<T> {
-  return new Query(criteria, options).find<T>(collection, projection);
+  return new Query(condition, options).find<T>(collection, projection);
 }
 
 /**

@@ -104,7 +104,7 @@ function createHandler(
             projectFn(o, subExpr[operator], key, options.update(o));
         }
       } else if (isOperator(operator)) {
-        // pipelien projection
+        // pipeline projection
         handlers[key] = (o: AnyObject) =>
           computeValue(o, subExpr[operator], operator, options);
       } else {
@@ -136,22 +136,6 @@ function createHandler(
   const handlerKeys = Object.keys(handlers);
   // the exclude keys includes.
   const idKeyExcluded = excludedKeys.includes(idKey);
-  // for root key only.
-  const idKeyOnlyExcluded =
-    isRoot &&
-    idKeyExcluded &&
-    excludedKeys.length === 1 &&
-    !includedKeys.length &&
-    !handlerKeys.length;
-
-  // special case for root object with only idKey excluded.
-  if (idKeyOnlyExcluded) {
-    return (o: AnyObject) => {
-      const newObj = { ...o };
-      delete newObj[idKey];
-      return newObj;
-    };
-  }
 
   // implicitly add the 'idKey' only for root object.
   const idKeyImplicit =
@@ -164,14 +148,6 @@ function createHandler(
 
   return (o: AnyObject) => {
     const newObj = {};
-
-    // if there is at least one excluded key (not including idKey)
-    if (excludedKeys.length && !includedKeys.length) {
-      merge(newObj, o);
-      for (const k of excludedKeys) {
-        removeValue(newObj, k, { descendArray: true });
-      }
-    }
 
     for (const k of includedKeys) {
       // get value with object graph
@@ -192,10 +168,25 @@ function createHandler(
       }
     }
 
+    // if the only excluded key is the ID key
+    if (excludedKeys.length === 1 && idKeyExcluded) {
+      // ..and no keys were found during processing, then we merge in all the keys. the exluded key will be removed below.
+      if (Object.keys(newObj).length === 0) Object.assign(newObj, o);
+    } else if (excludedKeys.length) {
+      // if there are excluded keys (ID key inclusive or not),
+      // .. we first ensure every key exists in the object but correctly overriden with the new values.
+      Object.assign(newObj, { ...o, ...newObj });
+    }
+
+    // remove all excluded keys from newObj
+    for (const k of excludedKeys) {
+      removeValue(newObj, k, { descendArray: true });
+    }
+
+    // if the ID key was not explicitly included or excluded, we always add it to the final result.
     if (idKeyImplicit && has(o, idKey)) {
       newObj[idKey] = resolve(o, idKey);
     }
-
     return newObj;
   };
 }

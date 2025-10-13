@@ -44,10 +44,10 @@ export const aggregate = (
 
 export const find = (
   collection: Source,
-  criteria: AnyObject,
+  condition: AnyObject,
   projection?: AnyObject,
   options?: Partial<Options>
-) => srcFind(collection, criteria, projection ?? {}, options ?? DEFAULT_OPTS);
+) => srcFind(collection, condition, projection ?? {}, options ?? DEFAULT_OPTS);
 
 export function runTest(
   description: string,
