@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.7.1 / 2025-10-14
+
+**Fixes**
+
+- Revert switch to `"require"` and `"import"` exports. Closes [#575](https://github.com/kofrasa/mingo/issues/575)
+- Fix bug in `$all` due to incorrect behaviour or resolving nested array values. Closes [#576](https://github.com/kofrasa/mingo/issues/576)
+
 ## 6.7.0 / 2025-09-26
 
 **New**
