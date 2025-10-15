@@ -85,8 +85,8 @@ function createModule() {
 
     packageJson.exports[key] = {
       types: typesPath,
-      require: cjsPath,
-      import: esmPath
+      node: cjsPath,
+      default: esmPath
     };
   });
 
