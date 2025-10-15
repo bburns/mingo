@@ -525,7 +525,7 @@ function getValue(obj: ArrayOrObject, key: string | number): Any {
  */
 function unwrap(arr: Any[], depth: number): Any[] {
   if (depth < 1) return arr;
-  while (depth-- && arr.length === 1) arr = arr[0] as Any[];
+  while (depth-- && arr.length === 1 && isArray(arr[0])) arr = arr[0] as Any[];
   return arr;
 }
 

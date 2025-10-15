@@ -8,8 +8,8 @@
       "name": "ts-node",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["${fileBasenameNoExtension}", "--config", "jest.config.js"],
+      "program": "${workspaceFolder}/node_modules/.bin/vitest",
+      "args": ["${relativeFile}", "--config", "vitest.config.mjs"],
       "runtimeArgs": ["-r", "ts-node/register"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart"
