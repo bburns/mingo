@@ -295,10 +295,7 @@ describe("operators/query/array", () => {
 
     expect(results.length).toEqual(2);
     expect((results[0] as UserResult).user.username).toEqual("User1");
-    expect(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      (results[1] as UserResult).user.username
-    ).toEqual("User2");
+    expect((results[1] as UserResult).user.username).toEqual("User2");
   });
 
   it("can match $all with strings, numbers and empty lists", () => {
@@ -332,10 +329,7 @@ describe("operators/query/array", () => {
 
     expect(results.length).toEqual(1);
 
-    expect(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      results[0].user.username
-    ).toEqual("User1");
+    expect(results[0].user.username).toEqual("User1");
 
     criteria["user.projects"].$all = [];
     expect(find(data, criteria).count()).toEqual(0);
@@ -481,5 +475,32 @@ describe("operators/query/array", () => {
         ]
       });
     });
+  });
+
+  it("should match array of single element with $all", () => {
+    const doc = {
+      nested: [{ id: "123", name: "abc" }]
+    };
+
+    const query = new Query({
+      "nested.id": {
+        $all: ["123"]
+      }
+    });
+    expect(query.test(doc)).toBe(true);
+  });
+
+  it("should match array of multiple elements with $all", () => {
+    const doc = {
+      nested: [
+        { id: "123", name: "abc" },
+        { id: "456", name: "cde" }
+      ]
+    };
+
+    const query = new Query({
+      "nested.id": { $all: ["123"] }
+    });
+    expect(query.test(doc)).toBe(true);
   });
 });

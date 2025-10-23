@@ -110,15 +110,19 @@ function createHandler(
       } else {
         // repeat for nested expression
         validateExpression(subExpr as AnyObject, options);
+        assert(subExprKeys.length > 0, `Invalid empty sub-projection: ${key}`);
         handlers[key] = (o: AnyObject) => {
-          if (!has(o, key)) return computeValue(o, subExpr, null, options);
           // ensure that the root object is passed down.
           if (isRoot) options.update(o);
           const target = resolve(o, key);
           const fn = createHandler(subExpr as AnyObject, options, false);
           if (isArray(target)) return target.map(fn);
           if (isObject(target)) return fn(target as AnyObject);
-          return fn(o);
+          const res = fn(o);
+          if (has(o, key)) return res;
+          // when the key does not exist in the source object, the result is only valid if
+          // it is a non-object or non-empty object. an empty object indicates no projected fields.
+          return !isObject(res) || Object.keys(res).length ? res : undefined;
         };
       }
     } else {

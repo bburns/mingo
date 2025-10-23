@@ -240,5 +240,40 @@ describe("operators/projection", () => {
         expect(result).toEqual({ sub: [{ id: 11, name: "OneOne" }] });
       });
     });
+
+    describe("project consistently with nested OR dot expressions", () => {
+      it.each([
+        [
+          [{ _id: 1 }, { _id: 2, test: { a: 3 } }],
+          { test: { a: 1 } },
+          { "test.a": 1 }
+        ],
+
+        [
+          [
+            { _id: 1, test: { a: [] } },
+            { _id: 2, test: { a: [] } }
+          ],
+          { test: { a: [] } },
+          { "test.a": [] }
+        ],
+
+        [
+          [
+            { _id: 1, test: { a: "yes" } },
+            { _id: 2, test: { a: "yes" } }
+          ],
+          { test: { a: "yes" } },
+          { "test.a": "yes" }
+        ]
+      ])(
+        "should project with consistent behaviour for nested and dot expressions. %o",
+        (output, projectA, projectB) => {
+          const input = [{ _id: 1 }, { _id: 2, test: { a: 3, b: 5 } }];
+          expect(find(input, {}, projectA).all()).toEqual(output);
+          expect(find(input, {}, projectB).all()).toEqual(output);
+        }
+      );
+    });
   });
 });
