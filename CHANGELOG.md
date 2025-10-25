@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.7.2 / 2025-10-24
+
+**Fixes**
+
+- fix(projection): make sub-projections behave correctly on document with missing keys. Closes [#577](https://github.com/kofrasa/mingo/issues/577)
+- Use strict mode option for boolean check in `$expr` operator.
+- `intersection()` returns copy of array when argument size is 1.
+- Fix projection rules for including or excluding keys based on what is already specified.
+
 ## 6.7.1 / 2025-10-14
 
 **Fixes**
@@ -22,7 +31,7 @@
 
 **Fixes**
 
-- Fix `$isArray` to support top-level expression arguments and improve validation.
+- Fix `$isArray` to support top-level expression arguments and improve validation. Closes [#573](https://github.com/kofrasa/mingo/issues/573)
 
 **Deprecated**
 The following will no longer be supported from `7.0.0`.
