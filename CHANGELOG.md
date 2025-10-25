@@ -4,9 +4,9 @@
 
 **Fixes**
 
-- fix(projection): make sub-projections behave correctly on document with missing keys. Closes [#577](https://github.com/kofrasa/mingo/issues/577)
-- Use strict mode option for boolean check in `$expr` operator.
-- `intersection()` returns copy of array when argument size is 1.
+- Sub-projections behave correctly on document with missing keys. Closes [#577](https://github.com/kofrasa/mingo/issues/577)
+- Pass strict mode option for boolean check in `$expr` operator.
+- Util `intersection()` returns copy of array when argument size is 1.
 - Fix projection rules for including or excluding keys based on what is already specified.
 
 ## 6.7.1 / 2025-10-14
